@@ -1,0 +1,6 @@
+{
+  "version": "v1",
+  "profile": "daily_light",
+  "allow": ["group:memory", "group:messaging", "read"],
+  "deny": ["group:runtime", "exec", "deploy", "broad_write", "ops_actions"]
+}
