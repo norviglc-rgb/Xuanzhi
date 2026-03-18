@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "owner": "ops",
+  "rules": [
+    { "id": "ops-read-logs", "action": "read_logs", "scope": ["/var/log", "workspace-ops/logs"], "mode": "allowed" },
+    { "id": "ops-restart-approved-service", "action": "restart_service", "scope": ["approved-services"], "mode": "allowed_with_workflow" },
+    { "id": "ops-run-approved-deploy", "action": "deploy", "scope": ["approved-environments"], "mode": "allowed_with_workflow" },
+    { "id": "ops-package-install", "action": "install_package", "scope": ["approved-package-list"], "mode": "allowed_with_workflow" },
+    { "id": "ops-user-instance-lifecycle", "action": "manage_daily_user_instance", "scope": ["workspace-daily-*", "agents/daily-*"], "mode": "allowed" }
+  ],
+  "denyByDefault": true
+}
