@@ -1,0 +1,15 @@
+{
+  "agentId": "agent-smith",
+  "status": "bootstrapped",
+  "responsibilities": [
+    "core_agent_templates",
+    "daily_templates",
+    "schemas",
+    "workflow_templates"
+  ],
+  "managedScopes": [
+    "templates/",
+    "schemas/",
+    "workflows/"
+  ]
+}
