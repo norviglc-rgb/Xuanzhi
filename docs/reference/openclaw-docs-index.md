@@ -297,31 +297,29 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 - `reference/openclaw/concepts/agent.md` - Agent 概念
 - `reference/openclaw/concepts/agent-workspace.md` - Workspace
 - `reference/openclaw/concepts/memory.md` - Memory
+- `reference/openclaw/concepts/multi-agent.md` - 多 Agent
+- `reference/openclaw/concepts/context.md` - 上下文
+- `reference/openclaw/concepts/session.md` - 会话
 
-### 配置
-- `reference/openclaw/configuration/index.md` - 配置总览
-- `reference/openclaw/configuration/agents.md` - Agent 配置
-- `reference/openclaw/configuration/skills.md` - Skills 配置
-- `reference/openclaw/configuration/tools.md` - Tools 配置
-- `reference/openclaw/configuration/bindings.md` - Bindings
-
-### Skills
-- `reference/openclaw/skills/index.md` - Skills 总览
-- `reference/openclaw/skills/creating-skills.md` - 创建 Skills
-
-### 多 Agent
-- `reference/openclaw/agents/index.md` - 多 Agent 总览
-- `reference/openclaw/agents/multiple-agents.md` - 多 Agent 配置
-- `reference/openclaw/agents/agent-templates.md` - Agent 模板
+### 配置模板
+- `reference/openclaw/reference/templates/AGENTS.md` - AGENTS 模板
+- `reference/openclaw/reference/templates/SOUL.md` - SOUL 模板
+- `reference/openclaw/reference/templates/USER.md` - USER 模板
+- `reference/openclaw/reference/templates/IDENTITY.md` - IDENTITY 模板
+- `reference/openclaw/reference/templates/TOOLS.md` - TOOLS 模板
+- `reference/openclaw/reference/templates/BOOT.md` - BOOT 模板
+- `reference/openclaw/reference/templates/BOOTSTRAP.md` - BOOTSTRAP 模板
+- `reference/openclaw/reference/templates/HEARTBEAT.md` - HEARTBEAT 模板
 
 ### 部署
-- `reference/openclaw/deployment/index.md` - 部署总览
-- `reference/openclaw/deployment/vps.md` - VPS 部署
+- `reference/openclaw/vps.md` - VPS 部署
 - `reference/openclaw/pi.md` - Pi 部署
+- `reference/openclaw/install/` - 安装指南
 
 ### CLI
 - `reference/openclaw/cli/index.md` - CLI 总览
 - `reference/openclaw/cli/agent.md` - agent 命令
+- `reference/openclaw/cli/agents.md` - agents 命令
 - `reference/openclaw/cli/skills.md` - skills 命令
 - `reference/openclaw/cli/config.md` - config 命令
 - `reference/openclaw/cli/acp.md` - ACP 命令
@@ -330,6 +328,13 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 - `reference/openclaw/automation/hooks.md` - Hooks
 - `reference/openclaw/automation/cron-jobs.md` - Cron
 - `reference/openclaw/automation/webhook.md` - Webhook
+
+### 渠道集成
+- `reference/openclaw/channels/index.md` - 渠道总览
+- `reference/openclaw/channels/whatsapp.md` - WhatsApp
+- `reference/openclaw/channels/telegram.md` - Telegram
+- `reference/openclaw/channels/discord.md` - Discord
+- `reference/openclaw/channels/slack.md` - Slack
 
 ---
 
