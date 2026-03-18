@@ -2213,15 +2213,262 @@ event -> ops -> daily-template workflow -> state update -> git commit -> critic 
 8. review、handoff、bootstrap、命名规范。
 9. memory promotion workflow。
 
-# 附录 AJ：建议的下一阶段工作
+# 附录 AJ：`workflows/system/materialize-core-agents.json` 草案
 
-建议下一阶段不再继续扩文档，而是转入两类实际动作：
-1. 将本规格拆成真实目录与真实文件。
-2. 生成一版 OpenClaw 项目骨架仓库结构。
+```json
+{
+  "version": "v1",
+  "workflowId": "materialize-core-agents",
+  "owner": "ops",
+  "templateOwner": "agent-smith",
+  "trigger": {
+    "type": "manual",
+    "inputs": [
+      "agentIds",
+      "basePath",
+      "pathMapRef"
+    ]
+  },
+  "defaults": {
+    "agentIds": [
+      "orchestrator",
+      "critic",
+      "architect",
+      "ops",
+      "skills-smith",
+      "agent-smith",
+      "claude-code"
+    ]
+  },
+  "steps": [
+    {
+      "id": "validate_core_docs",
+      "action": "assert_files_exist",
+      "targets": [
+        "docs/system/ARCHITECTURE.md",
+        "docs/system/GOVERNANCE.md",
+        "docs/system/PATH-MAP.md",
+        "policies/routing-policy.json",
+        "policies/tool-policy-matrix.json"
+      ]
+    },
+    {
+      "id": "load_agent_catalog",
+      "action": "read_json",
+      "target": "state/agents/catalog.json"
+    },
+    {
+      "id": "for_each_agent",
+      "action": "for_each",
+      "items": "agentIds",
+      "steps": [
+        {
+          "id": "create_workspace_dir",
+          "action": "mkdir",
+          "target_template": "~/.openclaw/workspace-<item>/"
+        },
+        {
+          "id": "create_workspace_subdirs",
+          "action": "mkdir_many",
+          "targets_template": [
+            "~/.openclaw/workspace-<item>/memory",
+            "~/.openclaw/workspace-<item>/docs",
+            "~/.openclaw/workspace-<item>/state",
+            "~/.openclaw/workspace-<item>/policies",
+            "~/.openclaw/workspace-<item>/reports",
+            "~/.openclaw/workspace-<item>/logs"
+          ]
+        },
+        {
+          "id": "render_root_files",
+          "action": "render_core_agent_templates",
+          "targets_template": {
+            "AGENTS.md": "templates/core-agent/AGENTS.md.tpl",
+            "SOUL.md": "templates/core-agent/SOUL.md.tpl",
+            "IDENTITY.md": "templates/core-agent/IDENTITY.md.tpl",
+            "TOOLS.md": "templates/core-agent/TOOLS.md.tpl",
+            "HEARTBEAT.md": "templates/core-agent/HEARTBEAT.md.tpl",
+            "BOOT.md": "templates/core-agent/BOOT.md.tpl",
+            "BOOTSTRAP.md": "templates/core-agent/BOOTSTRAP.md.tpl",
+            "MEMORY.md": "templates/core-agent/MEMORY.md.tpl"
+          },
+          "destination_template": "~/.openclaw/workspace-<item>/"
+        },
+        {
+          "id": "create_agent_state_dir",
+          "action": "mkdir_many",
+          "targets_template": [
+            "~/.openclaw/agents/<item>/agent",
+            "~/.openclaw/agents/<item>/sessions"
+          ]
+        },
+        {
+          "id": "seed_local_state",
+          "action": "write_json_if_missing",
+          "target_template": "~/.openclaw/workspace-<item>/state/local-state.json",
+          "content_template": {
+            "agentId": "<item>",
+            "status": "materialized",
+            "createdBy": "ops"
+          }
+        },
+        {
+          "id": "register_agent",
+          "action": "append_or_upsert_json",
+          "target": "state/agents/catalog.json"
+        },
+        {
+          "id": "append_audit",
+          "action": "append_jsonl",
+          "target": "state/audit/core-agent-materialization.jsonl"
+        }
+      ]
+    },
+    {
+      "id": "git_commit",
+      "action": "git_commit",
+      "message_template": "materialize core agents"
+    },
+    {
+      "id": "submit_bootstrap_review",
+      "action": "create_review_record",
+      "reviewTargetType": "agent",
+      "reviewer": "critic"
+    }
+  ],
+  "successState": "pending_review",
+  "failureState": "failed"
+}
+```
 
-如继续文档化，仅建议补充：
-- `ops` 巡检 checklist
-- `architect` 项目目录模板
-- `critic` 风险分级准则
-- `skills-smith` 与 `agent-smith` 的模板维护流程
+# 附录 AK：`docs/system/BRING-UP-ORDER.md` 草案
+
+```md
+# BRING-UP-ORDER
+
+## 1. 目标
+定义 v1 的最小启动顺序，避免在基础角色尚未物化前过早开始用户级与自动化级测试。
+
+## 2. 启动顺序
+### Step 1: 物化 core agents
+先通过 `materialize-core-agents` 工作流创建以下基础角色的真实 workspace 与 agent 状态目录：
+- orchestrator
+- critic
+- architect
+- ops
+- skills-smith
+- agent-smith
+- claude-code（最小目录即可）
+
+### Step 2: bootstrap review
+由 critic 对 core agents 做一次 bootstrap 审查：
+- 目录是否存在
+- 根文件是否齐全
+- catalog/state/audit 是否已更新
+- 是否存在明显越权配置
+
+### Step 3: 注册与校验 claude-code handoff 区
+此阶段只验证：
+- handoff 工件路径可用
+- route 到 ACP 的配置路径正确
+- 暂不要求做高强度长跑测试
+
+### Step 4: 创建第一个 daily 测试用户
+由 ops 基于 daily-template 创建：
+- daily-test-user
+
+验收重点：
+- workspace 生成
+- state/users/index.json 更新
+- state/agents/catalog.json 更新
+- status 进入 pending_review
+
+### Step 5: 验证 complex routing
+使用一个明确属于 complex_development 的任务，验证：
+- orchestrator 判定正确
+- architect 产出 handoff 工件
+- route 到 claude-code ACP
+
+### Step 6: 验证 ops allowlist
+仅测试 allowlist 范围内的安全动作：
+- 读取日志
+- 写 incident/report
+- 一个无害的允许动作
+
+### Step 7: 最后开启 heartbeat
+只有在前 6 步稳定后，才开启 heartbeat 或定时工作流。
+
+## 3. 关于 main workspace 的迁移原则
+### 3.1 当前策略
+在 v1 bring-up 阶段，main workspace 仅作为过渡环境存在，不继续承担长期多角色职责。
+
+### 3.2 迁移方向
+应逐步把以下职责迁出 main workspace：
+- 主控调度
+- 运维巡检
+- 架构设计
+- 审查签核
+- 用户日常服务
+
+### 3.3 迁移完成判定
+当以下条件满足时，可进入 main workspace 退场阶段：
+- core agents 均已物化
+- daily 用户实例化链路稳定
+- complex routing 已验证
+- ops allowlist 已验证
+- critic 审查链路可用
+
+### 3.4 退场方式
+- 先停止向 main workspace 新增职责
+- 再将剩余职责逐一迁移到独立 workspace
+- 最后将 main workspace 仅保留为备份/兼容/观察用途
+
+## 4. 红线
+- 不要在 core agents 未物化前，把 main workspace 继续扩展成超级 agent
+- 不要在 daily 用户实例未稳定前，让 main workspace 继续充当多用户长期记忆容器
+- 不要在 heartbeat 启动前省略 bootstrap review
+```
+
+# 附录 AL：`state/audit/core-agent-materialization.jsonl` 示例结构
+
+```json
+{"timestamp":"2026-03-18T00:00:00Z","event":"core_agent_materialization_requested","agentId":"orchestrator","requestedBy":"ops","status":"accepted"}
+{"timestamp":"2026-03-18T00:00:02Z","event":"workspace_created","agentId":"orchestrator","workspaceId":"workspace-orchestrator","status":"success"}
+{"timestamp":"2026-03-18T00:00:04Z","event":"agent_state_dir_created","agentId":"orchestrator","status":"success"}
+{"timestamp":"2026-03-18T00:00:06Z","event":"catalog_updated","agentId":"orchestrator","status":"success"}
+{"timestamp":"2026-03-18T00:00:08Z","event":"bootstrap_review_submitted","agentId":"orchestrator","reviewer":"critic","status":"pending_review"}
+```
+
+# 附录 AM：关于 main workspace 逐步退场的记录
+
+```md
+# main workspace retirement note
+
+## 1. 背景
+当前系统仍保留 OpenClaw 默认 main workspace，但目标是逐步将其从长期多角色承载体迁移为过渡与兼容环境。
+
+## 2. 原则
+- 不做一次性硬切换。
+- 不在基础角色未物化时强行淘汰 main workspace。
+- 只有当独立 workspace 已稳定承接职责时，才迁出对应能力。
+
+## 3. 提醒时机
+在以下节点应主动提醒推进 main workspace 迁移：
+- core agents 全部物化完成后
+- 第一个 daily 用户实例稳定后
+- complex routing 验证通过后
+- ops allowlist 验证通过后
+
+## 4. 最终目标
+main workspace 不再承担系统主职责，仅保留为：
+- 兼容入口
+- 观察环境
+- 备份用途
+```
+
+# 附录 AN：建议
+
+建议下一步直接做两件事：
+1. 把这 3 份文件落成真实文件。
+2. 先跑一次 core agents 物化，再做第一次 bootstrap review。
 
