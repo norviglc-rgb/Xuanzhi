@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "agents": [
+    { "agentId": "orchestrator", "role": "control_plane", "runtime": "native", "workspaceId": "workspace-orchestrator", "status": "active" },
+    { "agentId": "critic", "role": "review_gate", "runtime": "native", "workspaceId": "workspace-critic", "status": "active" },
+    { "agentId": "architect", "role": "execution_domain", "runtime": "native", "workspaceId": "workspace-architect", "status": "active" },
+    { "agentId": "ops", "role": "execution_domain", "runtime": "native", "workspaceId": "workspace-ops", "status": "active" },
+    { "agentId": "skills-smith", "role": "expert_domain", "runtime": "native", "workspaceId": "workspace-skills-smith", "status": "active" },
+    { "agentId": "agent-smith", "role": "expert_domain", "runtime": "native", "workspaceId": "workspace-agent-smith", "status": "active" },
+    { "agentId": "claude-code", "role": "external_coding_domain", "runtime": "acp", "workspaceId": "workspace-claude-code", "status": "active" }
+  ]
+}
