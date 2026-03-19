@@ -1,11 +1,11 @@
 # GOVERNANCE
 
 ## Single source of truth layers
-- Architecture truth: `docs/system/ARCHITECTURE.md`
-- Governance truth: `docs/system/GOVERNANCE.md`
-- Machine-executable truth: `policies/*.json`, `schemas/*.json`, `workflows/*.json`
-- Runtime state truth: `state/*.json`
-- Audit/index only: database
+- Architecture truth: `runtime/docs/system/ARCHITECTURE.md`
+- Governance truth: `runtime/docs/system/GOVERNANCE.md`
+- Machine-executable truth: `runtime/policies/*.json`, `runtime/schemas/*.json`, `runtime/workflows/*.json`
+- Runtime state truth: `runtime/state/*.seed.json` (seeds) → `generated/state/*.json` (runtime)
+- Audit/index only: `generated/audit/*.jsonl`
 
 ## Red lines
 1. Prompt is not a system source of truth.

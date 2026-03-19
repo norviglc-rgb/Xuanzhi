@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "schemas/review.schema.json",
+  "$id": "runtime/schemas/review.schema.json",
   "title": "Review",
   "type": "object",
   "required": ["reviewId", "targetType", "targetRef", "reviewer", "status", "createdAt"],

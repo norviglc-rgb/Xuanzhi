@@ -1,2 +1,16 @@
+# Claude Code settings
 .claude/*
-reference/*
+
+# External reference mirror (651 files, keep untracked)
+reference/openclaw/
+
+# Generated 运行态
+generated/audit/*.jsonl
+generated/workspaces/**/logs/
+generated/workspaces/**/memory/
+generated/workspaces/**/reports/
+generated/agents/**/sessions/
+
+# Keep directory structure
+!generated/**/.gitkeep
+!runtime/**/.gitkeep

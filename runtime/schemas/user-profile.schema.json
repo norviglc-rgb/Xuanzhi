@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "schemas/user-profile.schema.json",
+  "$id": "runtime/schemas/user-profile.schema.json",
   "title": "UserProfile",
   "type": "object",
   "required": ["userId", "displayName", "persona", "dailyAgentId", "workspaceId", "capabilityProfile", "status"],

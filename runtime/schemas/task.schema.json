@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "schemas/task.schema.json",
+  "$id": "runtime/schemas/task.schema.json",
   "title": "Task",
   "type": "object",
   "required": ["taskId", "title", "type", "source", "owner", "status", "createdAt"],

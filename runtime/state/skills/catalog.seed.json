@@ -7,7 +7,7 @@
       "owner": "skills-smith",
       "version": "0.1.0",
       "status": "draft",
-      "inputSchema": "schemas/task.schema.json",
+      "inputSchema": "runtime/schemas/task.schema.json",
       "outputSchema": null,
       "requiredCapabilities": ["read"],
       "notes": "placeholder entry"

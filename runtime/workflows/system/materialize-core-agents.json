@@ -8,13 +8,11 @@
     "type": "manual",
     "inputs": [
       "agentIds",
-      "basePath",
-      "pathMapRef"
+      "basePath"
     ]
   },
   "defaults": {
     "basePath": "~/.openclaw",
-    "pathMapRef": "docs/system/PATH-MAP.md",
     "agentIds": [
       "orchestrator",
       "critic",
@@ -26,47 +24,44 @@
     ]
   },
   "preconditions": [
-    "docs/system/ARCHITECTURE.md exists",
-    "docs/system/GOVERNANCE.md exists",
-    "docs/system/PATH-MAP.md exists",
-    "policies/routing-policy.json exists",
-    "policies/tool-policy-matrix.json exists",
-    "state/agents/catalog.json exists",
-    "state/audit/core-agent-materialization.jsonl exists or can be created"
+    "runtime/docs/system/ARCHITECTURE.md exists",
+    "runtime/docs/system/GOVERNANCE.md exists",
+    "runtime/policies/routing-policy.json exists",
+    "runtime/policies/tool-policy-matrix.json exists",
+    "runtime/state/agents/catalog.seed.json exists",
+    "generated/audit/core-agent-materialization.jsonl exists or can be created"
   ],
   "steps": [
     {
       "id": "validate_system_files",
       "action": "assert_files_exist",
       "targets": [
-        "docs/system/ARCHITECTURE.md",
-        "docs/system/GOVERNANCE.md",
-        "docs/system/PATH-MAP.md",
-        "docs/system/BRING-UP-ORDER.md",
-        "policies/routing-policy.json",
-        "policies/tool-policy-matrix.json",
-        "state/agents/catalog.json"
+        "runtime/docs/system/ARCHITECTURE.md",
+        "runtime/docs/system/GOVERNANCE.md",
+        "runtime/policies/routing-policy.json",
+        "runtime/policies/tool-policy-matrix.json",
+        "runtime/state/agents/catalog.seed.json"
       ]
     },
     {
       "id": "validate_core_templates",
       "action": "assert_files_exist",
       "targets": [
-        "templates/core-agent/AGENTS.md.tpl",
-        "templates/core-agent/SOUL.md.tpl",
-        "templates/core-agent/IDENTITY.md.tpl",
-        "templates/core-agent/TOOLS.md.tpl",
-        "templates/core-agent/BOOT.md.tpl",
-        "templates/core-agent/BOOTSTRAP.md.tpl",
-        "templates/core-agent/HEARTBEAT.md.tpl",
-        "templates/core-agent/MEMORY.md.tpl"
+        "runtime/templates/core-agent/AGENTS.md.tpl",
+        "runtime/templates/core-agent/SOUL.md.tpl",
+        "runtime/templates/core-agent/IDENTITY.md.tpl",
+        "runtime/templates/core-agent/TOOLS.md.tpl",
+        "runtime/templates/core-agent/BOOT.md.tpl",
+        "runtime/templates/core-agent/BOOTSTRAP.md.tpl",
+        "runtime/templates/core-agent/HEARTBEAT.md.tpl",
+        "runtime/templates/core-agent/MEMORY.md.tpl"
       ]
     },
     {
       "id": "ensure_audit_file_parent",
       "action": "mkdir_many",
       "targets": [
-        "state/audit"
+        "generated/audit"
       ]
     },
     {
@@ -99,14 +94,14 @@
           "id": "render_root_files",
           "action": "render_templates",
           "source_map": {
-            "AGENTS.md": "templates/core-agent/AGENTS.md.tpl",
-            "SOUL.md": "templates/core-agent/SOUL.md.tpl",
-            "IDENTITY.md": "templates/core-agent/IDENTITY.md.tpl",
-            "TOOLS.md": "templates/core-agent/TOOLS.md.tpl",
-            "BOOT.md": "templates/core-agent/BOOT.md.tpl",
-            "BOOTSTRAP.md": "templates/core-agent/BOOTSTRAP.md.tpl",
-            "HEARTBEAT.md": "templates/core-agent/HEARTBEAT.md.tpl",
-            "MEMORY.md": "templates/core-agent/MEMORY.md.tpl"
+            "AGENTS.md": "runtime/templates/core-agent/AGENTS.md.tpl",
+            "SOUL.md": "runtime/templates/core-agent/SOUL.md.tpl",
+            "IDENTITY.md": "runtime/templates/core-agent/IDENTITY.md.tpl",
+            "TOOLS.md": "runtime/templates/core-agent/TOOLS.md.tpl",
+            "BOOT.md": "runtime/templates/core-agent/BOOT.md.tpl",
+            "BOOTSTRAP.md": "runtime/templates/core-agent/BOOTSTRAP.md.tpl",
+            "HEARTBEAT.md": "runtime/templates/core-agent/HEARTBEAT.md.tpl",
+            "MEMORY.md": "runtime/templates/core-agent/MEMORY.md.tpl"
           },
           "destination_template": "{{basePath}}/workspace-<item>/",
           "variables_template": {
@@ -134,14 +129,14 @@
             "workspaceId": "workspace-<item>",
             "status": "materialized",
             "createdBy": "ops",
-            "materializedFrom": "templates/core-agent",
+            "materializedFrom": "runtime/templates/core-agent",
             "reviewStatus": "pending_review"
           }
         },
         {
           "id": "register_agent_in_catalog",
           "action": "append_or_upsert_json",
-          "target": "state/agents/catalog.json",
+          "target": "runtime/state/agents/catalog.seed.json",
           "record_template": {
             "agentId": "<item>",
             "role": "core_agent",
@@ -153,7 +148,7 @@
         {
           "id": "append_audit_entry",
           "action": "append_jsonl",
-          "target": "state/audit/core-agent-materialization.jsonl",
+          "target": "generated/audit/core-agent-materialization.jsonl",
           "record_template": {
             "timestamp": "{{now}}",
             "event": "core_agent_materialized",

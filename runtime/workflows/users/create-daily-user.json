@@ -8,17 +8,17 @@
     "inputs": ["userId", "displayName", "persona", "bindings", "preferences"]
   },
   "steps": [
-    { "id": "validate_input", "action": "validate_against_schema", "schema": "schemas/user-profile.schema.json" },
+    { "id": "validate_input", "action": "validate_against_schema", "schema": "runtime/schemas/user-profile.schema.json" },
     { "id": "materialize_agent_id", "action": "render_string", "template": "daily-<userId>" },
     { "id": "materialize_workspace_id", "action": "render_string", "template": "workspace-daily-<userId>" },
-    { "id": "copy_template", "action": "copy_directory_template", "source": "templates/daily-template", "target": "workspaces/workspace-daily-<userId>" },
-    { "id": "render_profile", "action": "render_json_template", "target": "workspaces/workspace-daily-<userId>/profile.json" },
+    { "id": "copy_template", "action": "copy_directory_template", "source": "runtime/templates/daily-template", "target": "generated/workspaces/workspace-daily-<userId>" },
+    { "id": "render_profile", "action": "render_json_template", "target": "generated/workspaces/workspace-daily-<userId>/profile.json" },
     { "id": "render_root_files", "action": "render_workspace_templates", "targets": ["AGENTS.md", "SOUL.md", "USER.md", "IDENTITY.md", "TOOLS.md", "HEARTBEAT.md", "BOOT.md", "BOOTSTRAP.md", "MEMORY.md"] },
-    { "id": "register_user_state", "action": "append_or_upsert_json", "target": "state/users/index.json" },
-    { "id": "register_agent_catalog", "action": "append_or_upsert_json", "target": "state/agents/catalog.json" },
+    { "id": "register_user_state", "action": "append_or_upsert_json", "target": "runtime/state/users/index.seed.json" },
+    { "id": "register_agent_catalog", "action": "append_or_upsert_json", "target": "runtime/state/agents/catalog.seed.json" },
     { "id": "update_bindings", "action": "update_binding_config" },
     { "id": "git_commit", "action": "git_commit", "message_template": "provision daily agent for <userId>" },
-    { "id": "write_audit", "action": "append_jsonl", "target": "state/audit/user-provision.jsonl" },
+    { "id": "write_audit", "action": "append_jsonl", "target": "generated/audit/user-provision.jsonl" },
     { "id": "submit_for_review", "action": "create_review_record", "reviewTargetType": "user_instance", "reviewer": "critic" }
   ],
   "successState": "pending_review",
