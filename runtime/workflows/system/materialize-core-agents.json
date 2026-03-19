@@ -29,7 +29,7 @@
     "runtime/policies/routing-policy.json exists",
     "runtime/policies/tool-policy-matrix.json exists",
     "runtime/state/agents/catalog.seed.json exists",
-    "generated/audit/core-agent-materialization.jsonl exists or can be created"
+    "{{basePath}}/audit/core-agent-materialization.jsonl exists or can be created"
   ],
   "steps": [
     {
@@ -58,11 +58,25 @@
       ]
     },
     {
-      "id": "ensure_audit_file_parent",
+      "id": "ensure_runtime_parents",
       "action": "mkdir_many",
       "targets": [
-        "generated/audit"
+        "{{basePath}}/workspaces",
+        "{{basePath}}/agents",
+        "{{basePath}}/state/agents",
+        "{{basePath}}/audit"
       ]
+    },
+    {
+      "id": "ensure_runtime_catalog_exists",
+      "action": "copy_file_if_missing",
+      "source": "runtime/state/agents/catalog.seed.json",
+      "target": "{{basePath}}/state/agents/catalog.json"
+    },
+    {
+      "id": "ensure_audit_file_exists",
+      "action": "touch_if_missing",
+      "target": "{{basePath}}/audit/core-agent-materialization.jsonl"
     },
     {
       "id": "for_each_agent",
@@ -73,13 +87,13 @@
           "id": "create_workspace_dirs",
           "action": "mkdir_many",
           "targets_template": [
-            "{{basePath}}/workspace-<item>",
-            "{{basePath}}/workspace-<item>/memory",
-            "{{basePath}}/workspace-<item>/docs",
-            "{{basePath}}/workspace-<item>/state",
-            "{{basePath}}/workspace-<item>/policies",
-            "{{basePath}}/workspace-<item>/reports",
-            "{{basePath}}/workspace-<item>/logs"
+            "{{basePath}}/workspaces/workspace-<item>",
+            "{{basePath}}/workspaces/workspace-<item>/memory",
+            "{{basePath}}/workspaces/workspace-<item>/docs",
+            "{{basePath}}/workspaces/workspace-<item>/state",
+            "{{basePath}}/workspaces/workspace-<item>/policies",
+            "{{basePath}}/workspaces/workspace-<item>/reports",
+            "{{basePath}}/workspaces/workspace-<item>/logs"
           ]
         },
         {
@@ -103,7 +117,7 @@
             "HEARTBEAT.md": "runtime/templates/core-agent/HEARTBEAT.md.tpl",
             "MEMORY.md": "runtime/templates/core-agent/MEMORY.md.tpl"
           },
-          "destination_template": "{{basePath}}/workspace-<item>/",
+          "destination_template": "{{basePath}}/workspaces/workspace-<item>/",
           "variables_template": {
             "agentId": "<item>",
             "workspaceId": "workspace-<item>",
@@ -123,7 +137,7 @@
         {
           "id": "seed_local_state",
           "action": "write_json_if_missing",
-          "target_template": "{{basePath}}/workspace-<item>/state/local-state.json",
+          "target_template": "{{basePath}}/workspaces/workspace-<item>/state/local-state.json",
           "content_template": {
             "agentId": "<item>",
             "workspaceId": "workspace-<item>",
@@ -136,7 +150,7 @@
         {
           "id": "register_agent_in_catalog",
           "action": "append_or_upsert_json",
-          "target": "runtime/state/agents/catalog.seed.json",
+          "target": "{{basePath}}/state/agents/catalog.json",
           "record_template": {
             "agentId": "<item>",
             "role": "core_agent",
@@ -148,7 +162,7 @@
         {
           "id": "append_audit_entry",
           "action": "append_jsonl",
-          "target": "generated/audit/core-agent-materialization.jsonl",
+          "target": "{{basePath}}/audit/core-agent-materialization.jsonl",
           "record_template": {
             "timestamp": "{{now}}",
             "event": "core_agent_materialized",
