@@ -1,478 +1,513 @@
 # PATH-MAP
 
-本文档定义本项目在 **单一目录结构** 下的路径映射规则，统一约束：
+本文档定义本项目在 OpenClaw 中的**唯一有效路径标准**。
 
-1. **骨架逻辑路径** - 项目内使用的相对路径
-2. **OpenClaw 实际路径** - OpenClaw 运行时使用的绝对路径
-3. **引用关系** - 哪些文件、workflow、agent 会引用这些路径
-
----
-
-## 0. 路径标准结论（v1）
-
-当前环境采用以下统一路径标准：
-
-1. 默认 `main` workspace：
-   - `~/.openclaw/workspace`
-
-2. 非 `main` 的独立 Agent workspace：
-   - `~/.openclaw/workspaces/workspace-<agentId>`
-
-3. Daily 用户独立 workspace：
-   - `~/.openclaw/workspaces/workspace-daily-<userId>`
-
-4. Agent 状态目录：
-   - `~/.openclaw/agents/<agentId>/agent`
-
-5. Agent session 目录：
-   - `~/.openclaw/agents/<agentId>/sessions`
-
-6. 系统级 state 目录：
-   - `~/.openclaw/state/...`
-
-7. 系统级 templates / workflows / policies / schemas / docs：
-   - `~/.openclaw/<category>/...`
-
-8. 本地与远程应尽量保持同构：
-   - 开发、整理、同步时，原则上都以 `~/.openclaw/` 下的统一结构为准
-   - 不再额外维护第二套或第三套不同命名风格的 workspace 集合
+本文件的目标不是长期维护“路径映射表”，而是一次性把路径规则、目录结构、职责归属、解析语义全部定死。  
+当本项目完成整理并严格遵循本文档后，本文档即可退役；后续开发、同步、复制、替换都应直接以 `~/.openclaw/` 下的真实结构为准，不再维护第二套或第三套不同版本的 workspace 集合。
 
 ---
 
-## 一、配置与状态路径
+## 0. 设计目标
 
-### 1.1 主配置文件
+本项目的路径设计遵循以下目标：
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `openclaw.json` | `~/.openclaw/openclaw.json` | 主配置文件 | Gateway, CLI, ACP |
-| `OPENCLAW_CONFIG_PATH` | 环境变量覆盖 | 配置路径覆盖 | 部署脚本 |
+1. **系统根路径唯一**
+   - 所有系统级文件、模板、策略、schema、workflow、state 都相对于 `~/.openclaw/` 根目录。
+   - 不再维护“逻辑上是一套，真实目录又是另一套”的双重映射。
 
-**引用文件：**
-- `workflows/users/create-daily-user.json` → `update_binding_config` 步骤
-- `workflows/system/materialize-core-agents.json` → 依赖整体目录结构与配置有效
+2. **main 与非 main 分离**
+   - `main` 保留默认 `~/.openclaw/workspace`
+   - 所有独立 Agent 一律使用：
+     - `~/.openclaw/workspaces/workspace-<agentId>`
+   - 所有 daily 用户实例一律使用：
+     - `~/.openclaw/workspaces/workspace-daily-<userId>`
 
-### 1.2 状态目录
+3. **不维护多套 workspace 集合**
+   - 不再同时维护：
+     - `workspace-<agentId>`
+     - `workspaces/workspace-<agentId>`
+     - 项目根目录另一套自定义 workspace
+   - 后续所有新建与整理，都只保留一套统一结构。
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `state/agents/catalog.json` | `~/.openclaw/state/agents/catalog.json` | Agent 注册表 | orchestrator, ops, critic |
-| `state/users/index.json` | `~/.openclaw/state/users/index.json` | 用户索引 | ops, critic |
-| `state/skills/catalog.json` | `~/.openclaw/state/skills/catalog.json` | Skills 目录 | skills-smith |
-| `state/router/tasks.json` | `~/.openclaw/state/router/tasks.json` | 任务队列 | orchestrator |
-| `state/audit/` | `~/.openclaw/state/audit/` | 审计日志目录 | 所有 agents / workflows |
-
-**引用文件：**
-- `workflows/users/create-daily-user.json`
-  - Step `register_user_state` → `state/users/index.json`
-  - Step `register_agent_catalog` → `state/agents/catalog.json`
-  - Step `write_audit` → `state/audit/user-provision.jsonl`
-- `workflows/memory/promote.json`
-  - Step `write_audit_record` → `state/audit/memory-promotion.jsonl`
-- `workflows/system/materialize-core-agents.json`
-  - Step `register_agent_in_catalog` → `state/agents/catalog.json`
-  - Step `append_audit_entry` → `state/audit/core-agent-materialization.jsonl`
+4. **系统根路径优先，workspace 路径显式**
+   - 系统级相对路径默认相对于 `~/.openclaw/`
+   - workspace 内路径必须显式写成：
+     - `<workspace>/...`
+     - 或 `~/.openclaw/workspaces/workspace-<agentId>/...`
 
 ---
 
-## 二、Agent Workspace 路径
+## 1. 路径解析规则（v1，强制）
 
-### 2.1 Workspace 目录
+除非特别注明，以下路径前缀：
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `workspaces/workspace-<agentId>/` | `~/.openclaw/workspaces/workspace-<agentId>/` | Core Agent workspace | OpenClaw Gateway |
-| `workspaces/workspace-daily-<userId>/` | `~/.openclaw/workspaces/workspace-daily-<userId>/` | Daily 用户 workspace | ops（动态创建） |
-| `workspace/` | `~/.openclaw/workspace/` | 默认 main workspace | main (default) |
+- `docs/...`
+- `policies/...`
+- `schemas/...`
+- `templates/...`
+- `workflows/...`
+- `state/...`
+- `ops/...`
+- `review/...`
+- `architect/...`
 
-### 2.2 Bootstrap 文件
+**均解释为相对于 OpenClaw 根目录：**
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `AGENTS.md` | `<workspace>/AGENTS.md` | 操作指令与职责边界 | Agent loop |
-| `SOUL.md` | `<workspace>/SOUL.md` | 风格、语调、边界 | Agent loop |
-| `USER.md` | `<workspace>/USER.md` | 用户信息（主要用于 daily） | Agent loop |
-| `IDENTITY.md` | `<workspace>/IDENTITY.md` | Agent 标识与定位 | Agent loop |
-| `TOOLS.md` | `<workspace>/TOOLS.md` | 本地工具说明 | Agent loop |
-| `MEMORY.md` | `<workspace>/MEMORY.md` | 长期记忆 | memory tools |
-| `HEARTBEAT.md` | `<workspace>/HEARTBEAT.md` | 心跳任务说明 | heartbeat runner |
-| `BOOT.md` | `<workspace>/BOOT.md` | 启动恢复指令 | Agent startup |
-| `BOOTSTRAP.md` | `<workspace>/BOOTSTRAP.md` | 首次初始化说明 | Agent bootstrap |
+- `~/.openclaw/`
 
-**引用文件：**
-- `workflows/users/create-daily-user.json`
-  - Step `render_root_files` → daily workspace bootstrap 文件
-- `workflows/system/materialize-core-agents.json`
-  - Step `render_root_files` → core agent bootstrap 文件
+### 示例
 
-### 2.3 Agent 运行目录结构
+#### 系统级文档
+- `docs/system/ARCHITECTURE.md`
+  实际路径：
+  `~/.openclaw/docs/system/ARCHITECTURE.md`
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `agents/<agentId>/agent/` | `~/.openclaw/agents/<agentId>/agent/` | Agent 状态目录 | Gateway |
-| `agents/<agentId>/sessions/` | `~/.openclaw/agents/<agentId>/sessions/` | 会话存储 | session tools |
-| `agents/<agentId>/agent/auth-profiles.json` | `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` | 认证配置 | channel auth |
+- `docs/system/BRING-UP-ORDER.md`
+  实际路径：
+  `~/.openclaw/docs/system/BRING-UP-ORDER.md`
 
----
-
-## 三、Memory 路径
-
-### 3.1 双层 Memory
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `MEMORY.md` | `<workspace>/MEMORY.md` | 长期记忆 | memory_get, memory_search |
-| `memory/YYYY-MM-DD.md` | `<workspace>/memory/YYYY-MM-DD.md` | 每日日志 | memory tools |
-
-**引用文件：**
-- `policies/memory-policy.json`
-  - `layers.daily_memory.path_pattern` → `memory/YYYY-MM-DD.md`
-  - `layers.long_term_memory.path` → `MEMORY.md`
-- `workflows/memory/promote.json`
-  - Step `append_long_term_memory` → `MEMORY.md`
-
-### 3.2 Memory 搜索路径
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `<workspace>/` | Agent workspace | 主搜索路径 | memory_search |
-| `memorySearch.extraPaths[]` | 配置扩展 | 额外搜索路径 | memory_search |
-
----
-
-## 四、Templates 路径
-
-### 4.1 Daily 用户模板
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `templates/daily-template/` | `~/.openclaw/templates/daily-template/` | Daily 用户模板目录 | ops, agent-smith |
-| `templates/daily-template/*.tpl` | `~/.openclaw/templates/daily-template/*.tpl` | 模板文件 | create-daily-user workflow |
-| `templates/daily-template/policies/` | `~/.openclaw/templates/daily-template/policies/` | 本地策略模板 | 实例化时复制 |
-| `templates/daily-template/state/` | `~/.openclaw/templates/daily-template/state/` | 本地状态模板 | 实例化时复制 |
-
-**引用文件：**
-- `workflows/users/create-daily-user.json`
-  - Step `copy_template` → `templates/daily-template`
-  - Step `render_profile` → `profile.json`
-  - Step `render_root_files` → 所有 `.tpl` 文件
-
-### 4.2 Core Agent 模板
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `templates/core-agent/AGENTS.md.tpl` | `~/.openclaw/templates/core-agent/AGENTS.md.tpl` | Core agent AGENTS 模板 | materialize-core-agents |
-| `templates/core-agent/SOUL.md.tpl` | `~/.openclaw/templates/core-agent/SOUL.md.tpl` | Core agent SOUL 模板 | materialize-core-agents |
-| `templates/core-agent/IDENTITY.md.tpl` | `~/.openclaw/templates/core-agent/IDENTITY.md.tpl` | Core agent IDENTITY 模板 | materialize-core-agents |
-| `templates/core-agent/TOOLS.md.tpl` | `~/.openclaw/templates/core-agent/TOOLS.md.tpl` | Core agent TOOLS 模板 | materialize-core-agents |
-| `templates/core-agent/HEARTBEAT.md.tpl` | `~/.openclaw/templates/core-agent/HEARTBEAT.md.tpl` | Core agent HEARTBEAT 模板 | materialize-core-agents |
-| `templates/core-agent/BOOT.md.tpl` | `~/.openclaw/templates/core-agent/BOOT.md.tpl` | Core agent BOOT 模板 | materialize-core-agents |
-| `templates/core-agent/BOOTSTRAP.md.tpl` | `~/.openclaw/templates/core-agent/BOOTSTRAP.md.tpl` | Core agent BOOTSTRAP 模板 | materialize-core-agents |
-| `templates/core-agent/MEMORY.md.tpl` | `~/.openclaw/templates/core-agent/MEMORY.md.tpl` | Core agent MEMORY 模板 | materialize-core-agents |
-
-**引用文件：**
-- `workflows/system/materialize-core-agents.json`
-  - Step `validate_core_templates`
-  - Step `render_root_files`
-
-### 4.3 模板参考来源
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `templates/` | `~/.openclaw/templates/` | 项目主模板根目录 | agent-smith |
-| `reference/openclaw/reference/templates/` | 本地参考资料 | OpenClaw 内置模板参考 | agent-smith |
-
----
-
-## 五、Policies 路径
-
-### 5.1 系统级策略
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `policies/routing-policy.json` | `~/.openclaw/policies/routing-policy.json` | 任务路由策略 | orchestrator |
-| `policies/memory-policy.json` | `~/.openclaw/policies/memory-policy.json` | Memory 治理策略 | critic, memory workflow |
-| `policies/tool-policy-matrix.json` | `~/.openclaw/policies/tool-policy-matrix.json` | 工具权限矩阵 | 所有 agents |
-
-**引用文件：**
-- `workflows/memory/promote.json`
-  - Step `validate_candidate` → `policies/memory-policy.json`
-- `docs/system/GOVERNANCE.md` → 引用所有策略文件
-- `workflows/system/materialize-core-agents.json`
-  - Step `validate_system_files` → `policies/routing-policy.json`, `policies/tool-policy-matrix.json`
-
-### 5.2 Agent 本地策略
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `<workspace>/policies/local-tool-policy.json` | Workspace 内 | 本地工具策略覆盖 | Agent runtime |
-| `<workspace>/policies/memory-policy.json` | Workspace 内 | 本地 Memory 策略覆盖 | Agent runtime |
-
-**引用文件：**
-- `templates/daily-template/policies/local-tool-policy.json` → 实例化时复制
-- `templates/daily-template/policies/memory-policy.json` → 实例化时复制
-
----
-
-## 六、Schemas 路径
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `schemas/task.schema.json` | `~/.openclaw/schemas/task.schema.json` | 任务结构定义 | orchestrator, workflows |
-| `schemas/user-profile.schema.json` | `~/.openclaw/schemas/user-profile.schema.json` | 用户配置定义 | ops, create-daily-user |
-| `schemas/review.schema.json` | `~/.openclaw/schemas/review.schema.json` | 审查记录定义 | critic |
-
-**引用文件：**
-- `workflows/users/create-daily-user.json`
-  - Step `validate_input` → `schemas/user-profile.schema.json`
-- `state/skills/catalog.json`
-  - `inputSchema` → `schemas/task.schema.json`
-
----
-
-## 七、Workflows 路径
-
-### 7.1 系统工作流
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `workflows/system/materialize-core-agents.json` | `~/.openclaw/workflows/system/materialize-core-agents.json` | Core Agents 物化流程 | ops |
-| `workflows/users/create-daily-user.json` | `~/.openclaw/workflows/users/create-daily-user.json` | 用户创建流程 | ops |
-| `workflows/memory/promote.json` | `~/.openclaw/workflows/memory/promote.json` | Memory 升格流程 | critic |
-
-**引用文件：**
-- `workflows/system/materialize-core-agents.json`
-  - Step `validate_system_files` → `docs/system/ARCHITECTURE.md`, `docs/system/GOVERNANCE.md`, `docs/system/PATH-MAP.md`, `docs/system/BRING-UP-ORDER.md`
-  - Step `validate_core_templates` → `templates/core-agent/*.tpl`
-  - Step `register_agent_in_catalog` → `state/agents/catalog.json`
-  - Step `append_audit_entry` → `state/audit/core-agent-materialization.jsonl`
-
----
-
-## 八、Skills 路径
-
-### 8.1 Skills 目录
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `<workspace>/skills/` | Workspace 内 | 工作区特定 Skills | Agent runtime |
-| `~/.openclaw/skills/` | `~/.openclaw/skills/` | 托管 Skills | 所有 agents |
-| 内置 Skills | OpenClaw 安装目录 | 内置 Skills | 所有 agents |
-
-### 8.2 Skills 结构
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `<skill-name>/SKILL.md` | Skills 目录内 | 技能定义文件 | skills loader |
-| `<skill-name>/scripts/` | Skills 目录内 | 脚本目录 | skill execution |
-| `<skill-name>/resources/` | Skills 目录内 | 资源目录 | skill execution |
-
----
-
-## 九、Credentials 路径
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `~/.openclaw/credentials/` | `~/.openclaw/credentials/` | 凭证存储 | channel auth |
-| `~/.openclaw/credentials/<channel>/<account>/` | 按渠道/账号 | 渠道凭证 | channel drivers |
-
-**注意：** 凭证路径不应在项目骨架中硬编码，由 OpenClaw 运行时管理。
-
----
-
-## 十、ACP 路径
-
-### 10.1 ACP 配置
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `agents/claude-code/acp-config.json` | `~/.openclaw/agents/claude-code/acp-config.json` | ACP 连接配置 | claude-code agent |
-| `agents/claude-code/handoff/` | `~/.openclaw/agents/claude-code/handoff/` | Handoff 文件目录 | orchestrator → claude-code |
-
-### 10.2 Handoff 文件
-
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `TASK.json` | handoff 目录内 | 任务描述 | architect → claude-code |
-| `PLAN.md` | handoff 目录内 | 执行计划 | architect → claude-code |
-| `DECISIONS.md` | handoff 目录内 | 决策记录 | claude-code |
-| `ACCEPTANCE.md` | handoff 目录内 | 验收标准 | critic |
-| `NEXT_STEPS.md` | handoff 目录内 | 后续步骤 | claude-code → orchestrator |
-
-**引用文件：**
+#### 系统级策略
 - `policies/routing-policy.json`
-  - `complexity_upgrade.handoff_required` → 所有 handoff 文件
+  实际路径：
+  `~/.openclaw/policies/routing-policy.json`
+
+#### 系统级 workflow
+- `workflows/system/materialize-core-agents.json`
+  实际路径：
+  `~/.openclaw/workflows/system/materialize-core-agents.json`
+
+#### 系统级 state
+- `state/agents/catalog.json`
+  实际路径：
+  `~/.openclaw/state/agents/catalog.json`
+
+### 明确禁止
+
+以下写法在系统级文件中不得再被模糊使用：
+
+- 把 `docs/...` 解释成当前 workspace 下的 `docs/...`
+- 把 `templates/...` 解释成某个 agent workspace 下的 `templates/...`
+- 把 `state/...` 解释成当前会话目录下的 `state/...`
+
+### workspace 本地路径必须显式写法
+
+如果要表示某个 agent 的本地 workspace 文件，必须写成以下形式之一：
+
+- `<workspace>/MEMORY.md`
+- `<workspace>/memory/YYYY-MM-DD.md`
+- `<workspace>/policies/local-tool-policy.json`
+
+或者写成绝对路径，例如：
+
+- `~/.openclaw/workspaces/workspace-agent-smith/MEMORY.md`
+- `~/.openclaw/workspaces/workspace-ops/reports/`
 
 ---
 
-## 十一、路径优先级
+## 2. 根目录标准
 
-### 11.1 Skills 加载优先级
+项目根目录固定为：
 
-1. `<workspace>/skills/` - 工作区 Skills  
-2. `~/.openclaw/skills/` - 托管 Skills  
-3. 内置 Skills - OpenClaw 安装目录
+- `~/.openclaw/`
 
-### 11.2 配置覆盖优先级
+在此目录下，系统级目录应统一为：
 
-1. 环境变量 (`OPENCLAW_*`)
-2. 命令行参数 (`--url`, `--token` 等)
-3. `openclaw.json`
-4. 默认值
-
-### 11.3 策略覆盖优先级
-
-1. `<workspace>/policies/*.json` - 本地覆盖  
-2. `~/.openclaw/policies/*.json` - 系统级  
-3. OpenClaw 默认策略
-
----
-
-## 十二、本地参考文档路径
-
-### 12.1 需求文档
-
-| 骨架逻辑路径 | 说明 | 状态 |
-|-------------|------|------|
-| `docs/requirements/open_claw多agent系统v1需求规格.md` | 系统需求规格 | ✅ 本地参考 |
-
-### 12.2 参考文档索引
-
-| 骨架逻辑路径 | 说明 | 状态 |
-|-------------|------|------|
-| `docs/reference/openclaw-docs-index.md` | OpenClaw 文档索引 | ✅ 本地参考 |
-| `reference/openclaw/` | OpenClaw 官方文档集合 | ✅ 本地参考 |
+- `docs/`
+- `policies/`
+- `schemas/`
+- `templates/`
+- `workflows/`
+- `state/`
+- `skills/`
+- `ops/`
+- `review/`
+- `architect/`
+- `agents/`
+- `workspaces/`
+- `workspace/`（仅 main）
 
 ---
 
-## 十三、角色配置路径
+## 3. 系统级文件与目录
 
-### 13.1 角色清单与配置
+### 3.1 主配置
 
-| 骨架逻辑路径 | OpenClaw 实际路径 | 说明 | 引用方 |
-|-------------|------------------|------|--------|
-| `architect/handoff-checklist.md` | `~/.openclaw/architect/handoff-checklist.md` | Architect Handoff 清单 | architect → claude-code |
-| `ops/ALLOWLIST.json` | `~/.openclaw/ops/ALLOWLIST.json` | Ops 允许列表 | ops agent |
-| `review/critic-review-checklist.md` | `~/.openclaw/review/critic-review-checklist.md` | Critic 审查清单 | critic agent |
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/openclaw.json` | OpenClaw 主配置文件 |
 
 ---
 
-## 十四、统一目录策略（本地与远程）
+### 3.2 系统级文档
 
-### 14.1 原则
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/docs/system/ARCHITECTURE.md` | 系统拓扑与职责边界 |
+| `~/.openclaw/docs/system/GOVERNANCE.md` | 治理规则与红线 |
+| `~/.openclaw/docs/system/BRING-UP-ORDER.md` | bring-up 顺序 |
+| `~/.openclaw/docs/system/BOOTSTRAP-CHECKLIST.md` | 初始化检查清单 |
+| `~/.openclaw/docs/system/FILE-NAMING.md` | 文件命名规则 |
 
-本项目不再长期维护多套不同命名和层级的 workspace 集合。  
-后续整理原则如下：
+说明：
+- `PATH-MAP.md` 本身是过渡文档。
+- 当全项目路径整理完成后，可将其归档或删除。
+- 后续不应再依赖 `PATH-MAP.md` 做运行期解释。
 
-1. 本地开发目录与远程 OpenClaw 目录尽量同构。
-2. 核心运行目录统一以 `~/.openclaw/` 为根。
-3. `main` 保留在 `~/.openclaw/workspace`。
-4. 所有新增独立 Agent 一律放在：
+---
+
+### 3.3 系统级策略
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/policies/routing-policy.json` | 路由策略 |
+| `~/.openclaw/policies/memory-policy.json` | Memory 治理策略 |
+| `~/.openclaw/policies/tool-policy-matrix.json` | 工具权限矩阵 |
+
+---
+
+### 3.4 系统级 schema
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/schemas/task.schema.json` | 任务结构定义 |
+| `~/.openclaw/schemas/user-profile.schema.json` | 用户配置定义 |
+| `~/.openclaw/schemas/review.schema.json` | 审查记录定义 |
+
+---
+
+### 3.5 系统级 workflow
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/workflows/system/materialize-core-agents.json` | Core Agent 物化流程 |
+| `~/.openclaw/workflows/users/create-daily-user.json` | Daily 用户实例创建流程 |
+| `~/.openclaw/workflows/memory/promote.json` | Memory 升格流程 |
+
+---
+
+### 3.6 系统级 state
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/state/agents/catalog.json` | Agent 注册表 |
+| `~/.openclaw/state/users/index.json` | 用户索引 |
+| `~/.openclaw/state/skills/catalog.json` | Skills 目录 |
+| `~/.openclaw/state/router/tasks.json` | 路由任务状态 |
+| `~/.openclaw/state/audit/` | 审计日志目录 |
+
+常见审计文件包括：
+
+- `~/.openclaw/state/audit/user-provision.jsonl`
+- `~/.openclaw/state/audit/core-agent-materialization.jsonl`
+- `~/.openclaw/state/audit/memory-promotion.jsonl`
+
+---
+
+### 3.7 系统级模板
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/templates/core-agent/` | Core Agent 模板目录 |
+| `~/.openclaw/templates/daily-template/` | Daily 用户模板目录 |
+
+#### Core Agent 模板文件
+
+- `~/.openclaw/templates/core-agent/AGENTS.md.tpl`
+- `~/.openclaw/templates/core-agent/SOUL.md.tpl`
+- `~/.openclaw/templates/core-agent/IDENTITY.md.tpl`
+- `~/.openclaw/templates/core-agent/TOOLS.md.tpl`
+- `~/.openclaw/templates/core-agent/BOOT.md.tpl`
+- `~/.openclaw/templates/core-agent/BOOTSTRAP.md.tpl`
+- `~/.openclaw/templates/core-agent/HEARTBEAT.md.tpl`
+- `~/.openclaw/templates/core-agent/MEMORY.md.tpl`
+
+#### Daily Template 模板文件
+
+- `~/.openclaw/templates/daily-template/AGENTS.md.tpl`
+- `~/.openclaw/templates/daily-template/SOUL.md.tpl`
+- `~/.openclaw/templates/daily-template/USER.md.tpl`
+- `~/.openclaw/templates/daily-template/IDENTITY.md.tpl`
+- `~/.openclaw/templates/daily-template/TOOLS.md.tpl`
+- `~/.openclaw/templates/daily-template/HEARTBEAT.md.tpl`
+- `~/.openclaw/templates/daily-template/BOOT.md.tpl`
+- `~/.openclaw/templates/daily-template/BOOTSTRAP.md.tpl`
+- `~/.openclaw/templates/daily-template/MEMORY.md.tpl`
+- `~/.openclaw/templates/daily-template/profile.json.tpl`
+
+---
+
+## 4. Workspace 标准
+
+### 4.1 main workspace（保留但逐步退场）
+
+| 路径 | 说明 |
+|------|------|
+| `~/.openclaw/workspace` | 默认 main workspace |
+
+说明：
+- 这是 OpenClaw 默认路径
+- 当前保留为过渡与兼容入口
+- 后续不再继续向其添加长期多角色职责
+
+---
+
+### 4.2 Core Agent workspaces
+
+所有非 main 的核心 Agent，一律放在：
+
+- `~/.openclaw/workspaces/workspace-<agentId>`
+
+例如：
+
+- `~/.openclaw/workspaces/workspace-orchestrator`
+- `~/.openclaw/workspaces/workspace-critic`
+- `~/.openclaw/workspaces/workspace-architect`
+- `~/.openclaw/workspaces/workspace-ops`
+- `~/.openclaw/workspaces/workspace-skills-smith`
+- `~/.openclaw/workspaces/workspace-agent-smith`
+- `~/.openclaw/workspaces/workspace-claude-code`
+
+---
+
+### 4.3 Daily 用户 workspaces
+
+所有 daily 用户实例，一律放在：
+
+- `~/.openclaw/workspaces/workspace-daily-<userId>`
+
+例如：
+
+- `~/.openclaw/workspaces/workspace-daily-test-user`
+
+---
+
+### 4.4 workspace 内标准结构
+
+任一 workspace 的最小标准结构为：
+
+- `AGENTS.md`
+- `SOUL.md`
+- `IDENTITY.md`
+- `TOOLS.md`
+- `BOOT.md`
+- `BOOTSTRAP.md`
+- `HEARTBEAT.md`
+- `MEMORY.md`
+- `memory/`
+- `docs/`
+- `state/`
+- `policies/`
+- `reports/`
+- `logs/`
+
+对于 daily 用户实例，额外包含：
+
+- `USER.md`
+- `profile.json`
+
+---
+
+## 5. Agent 运行目录标准
+
+所有 Agent 的运行态目录都在：
+
+- `~/.openclaw/agents/<agentId>/`
+
+其中：
+
+### 5.1 Agent 状态目录
+- `~/.openclaw/agents/<agentId>/agent`
+
+### 5.2 Session 目录
+- `~/.openclaw/agents/<agentId>/sessions`
+
+### 5.3 认证配置（如使用）
+- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
+
+---
+
+## 6. Memory 标准
+
+### 6.1 长期记忆
+- `<workspace>/MEMORY.md`
+
+### 6.2 每日日志记忆
+- `<workspace>/memory/YYYY-MM-DD.md`
+
+### 6.3 规则
+- 所有新记忆默认先写 daily memory
+- 只有满足 durable 条件才允许升格到 `MEMORY.md`
+- 系统级 workflow 中如果写：
+  - `MEMORY.md`
+  - `memory/YYYY-MM-DD.md`
+  
+  必须明确这些属于 `<workspace>` 本地路径，而不是系统根路径
+
+---
+
+## 7. 特殊目录标准
+
+### 7.1 ops
+- `~/.openclaw/ops/ALLOWLIST.json`
+
+### 7.2 review
+- `~/.openclaw/review/critic-review-checklist.md`
+
+### 7.3 architect
+- `~/.openclaw/architect/handoff-checklist.md`
+
+### 7.4 skills
+- `~/.openclaw/skills/`
+
+说明：
+- `~/.openclaw/skills/` 为系统级托管 skills
+- `<workspace>/skills/` 为 workspace 本地 skills 覆盖目录
+- 后续如无特殊需要，不再单独维护 repo 根目录另一套 `skills/` 镜像
+
+---
+
+## 8. ACP 标准
+
+### 8.1 claude-code Agent 目录
+- `~/.openclaw/agents/claude-code/`
+
+### 8.2 可选 handoff 目录
+- `~/.openclaw/agents/claude-code/handoff/`
+
+### 8.3 Handoff 工件
+如果使用 handoff 目录，文件名标准为：
+
+- `TASK.json`
+- `PLAN.md`
+- `DECISIONS.md`
+- `ACCEPTANCE.md`
+- `NEXT_STEPS.md`
+
+---
+
+## 9. 职责归属与路径所有权
+
+### 9.1 agent-smith 负责维护
+以下内容由 `agent-smith` 负责维护：
+
+- `~/.openclaw/templates/core-agent/*`
+- `~/.openclaw/templates/daily-template/*`
+- `~/.openclaw/schemas/*`
+- `~/.openclaw/workflows/*`
+- 模板、schema、workflow 之间的一致性
+
+### 9.2 ops 负责执行
+以下内容由 `ops` 负责物化与运行时创建：
+
+- `~/.openclaw/workspaces/workspace-<agentId>/`
+- `~/.openclaw/workspaces/workspace-daily-<userId>/`
+- `~/.openclaw/agents/<agentId>/agent`
+- `~/.openclaw/agents/<agentId>/sessions`
+- `~/.openclaw/state/audit/*.jsonl`
+- `state/*.json` 的运行时注册更新
+
+### 9.3 critic 负责审查
+以下内容由 `critic` 负责审查：
+
+- bootstrap 物化结果
+- daily 用户实例创建结果
+- memory promotion
+- route / review / signoff
+
+---
+
+## 10. 禁止事项
+
+以下情况视为结构违规，应逐步清理：
+
+1. 同时维护：
+   - `~/.openclaw/workspace-<agentId>`
    - `~/.openclaw/workspaces/workspace-<agentId>`
-5. 所有 daily 用户实例一律放在：
-   - `~/.openclaw/workspaces/workspace-daily-<userId>`
 
-### 14.2 不再推荐的做法
+2. 在 repo 根目录再维护一套平行的：
+   - `workspaces/`
+   - `agents/`
+   - `templates/`
+   - `state/`
+   与 `~/.openclaw/` 长期分叉
 
-以下做法应逐步停止：
-- 同时维护 `workspace-<agentId>` 与 `workspaces/workspace-<agentId>` 两套路由
-- 在项目根目录再复制一套独立 workspaces 集合
-- 让本地骨架与远程运行目录长期结构不一致
+3. 在 workflow / policy / schema 中使用含糊相对路径，
+   让系统无法判断它到底相对于：
+   - `~/.openclaw/`
+   - 当前 workspace
+   - 当前执行目录
 
----
+4. 让 `agent-smith` 直接承担 runtime 物化职责
 
-## 十五、职责与待创建路径
-
-以下路径在骨架中定义，但应区分“模板维护责任”和“物化执行责任”：
-
-| 路径 | 类型 | 负责人 | 说明 |
-|------|------|--------|------|
-| `openclaw.json` | 配置 | ops | 运行时主配置 |
-| `workspaces/workspace-orchestrator/` | Workspace | ops | 由 core materialization workflow 物化 |
-| `workspaces/workspace-critic/` | Workspace | ops | 由 core materialization workflow 物化 |
-| `workspaces/workspace-architect/` | Workspace | ops | 由 core materialization workflow 物化 |
-| `workspaces/workspace-ops/` | Workspace | ops | 由 core materialization workflow 物化 |
-| `workspaces/workspace-skills-smith/` | Workspace | ops | 由 core materialization workflow 物化 |
-| `workspaces/workspace-agent-smith/` | Workspace | ops | 已存在，后续纳入统一治理 |
-| `workspaces/workspace-claude-code/` | Workspace | ops | 先做最小目录物化 |
-| `agents/<agentId>/agent/` | Agent 状态目录 | ops | 运行时目录物化 |
-| `agents/<agentId>/sessions/` | Session 目录 | ops | 运行时目录物化 |
-| `state/audit/*.jsonl` | 状态 / 审计 | workflows / ops | workflow 写入，ops 负责执行链路 |
-| `templates/core-agent/*.tpl` | 模板 | agent-smith | 模板维护责任 |
-| `templates/daily-template/*.tpl` | 模板 | agent-smith | 模板维护责任 |
-| `workflows/system/materialize-core-agents.json` | 工作流 | agent-smith 维护 / ops 执行 | 施工蓝图与执行分离 |
-| `workflows/users/create-daily-user.json` | 工作流 | agent-smith 维护 / ops 执行 | 用户实例创建 |
-| `workflows/memory/promote.json` | 工作流 | agent-smith / critic | 记忆升格流程 |
-
-**已完成的路径：**
-- `templates/core-agent/*.tpl` - 已创建
-- `workflows/system/materialize-core-agents.json` - 已创建
+5. 让 `main workspace` 持续扩展成长期多角色超级 workspace
 
 ---
 
-## 十六、远程服务器路径映射
+## 11. 统一复制/替换原则
 
-### 16.1 服务器信息
+本项目整理完成后，应遵循以下原则：
 
-| 服务器 | 地址 | 用户 | OpenClaw 根目录 |
-|--------|------|------|-----------------|
-| OpenClaw Server | `10.0.1.70` | `lc` | `~/.openclaw/` |
+### 11.1 仓库结构即运行结构
+仓库内的目录布局应尽可能与 `~/.openclaw/` 完全同构。
 
-### 16.2 远程目录结构
+### 11.2 复制方式
+用户应能够：
 
-| 本地骨架路径 | 远程实际路径 | 状态 |
-|-------------|-------------|------|
-| `openclaw.json` | `~/.openclaw/openclaw.json` | ✅ 已存在 |
-| `state/agents/catalog.json` | `~/.openclaw/state/agents/catalog.json` | ✅ 已存在 |
-| `state/users/index.json` | `~/.openclaw/state/users/index.json` | ✅ 已存在 |
-| `state/skills/catalog.json` | `~/.openclaw/state/skills/catalog.json` | ✅ 已存在 |
-| `state/router/tasks.json` | `~/.openclaw/state/router/tasks.json` | ✅ 已存在 |
-| `state/audit/` | `~/.openclaw/state/audit/` | ✅ 已存在 |
-| `templates/daily-template/` | `~/.openclaw/templates/daily-template/` | ✅ 已存在 |
-| `templates/core-agent/` | `~/.openclaw/templates/core-agent/` | ✅ 已存在 |
-| `workflows/users/` | `~/.openclaw/workflows/users/` | ✅ 已存在 |
-| `workflows/memory/` | `~/.openclaw/workflows/memory/` | ✅ 已存在 |
-| `workflows/system/` | `~/.openclaw/workflows/system/` | ✅ 已存在 |
-| `policies/` | `~/.openclaw/policies/` | ✅ 已存在 |
-| `schemas/` | `~/.openclaw/schemas/` | ✅ 已存在 |
-| `docs/system/ARCHITECTURE.md` | `~/.openclaw/docs/system/ARCHITECTURE.md` | ✅ 已存在 |
-| `docs/system/GOVERNANCE.md` | `~/.openclaw/docs/system/GOVERNANCE.md` | ✅ 已存在 |
-| `docs/system/PATH-MAP.md` | `~/.openclaw/docs/system/PATH-MAP.md` | ✅ 已存在 |
-| `docs/system/BOOTSTRAP-CHECKLIST.md` | `~/.openclaw/docs/system/BOOTSTRAP-CHECKLIST.md` | ✅ 已存在 |
-| `docs/system/FILE-NAMING.md` | `~/.openclaw/docs/system/FILE-NAMING.md` | ✅ 已存在 |
-| `docs/system/BRING-UP-ORDER.md` | `~/.openclaw/docs/system/BRING-UP-ORDER.md` | ⏳ 建议补齐 |
-| `agents/claude-code/` | `~/.openclaw/agents/claude-code/` | ✅ 已存在 |
+1. clone 仓库
+2. 将仓库内容复制 / 覆盖到 `~/.openclaw/`
+3. 按 bring-up 流程继续运行
 
-### 16.3 远程 Workspaces 映射
+### 11.3 不再维护多套结构
+后续不再需要：
+- “本地开发结构一套”
+- “远程 OpenClaw 结构一套”
+- “给 agent 看的一套逻辑结构”
 
-| Agent ID | 远程 Workspace 路径 | 状态 |
-|----------|-------------------|------|
-| `main` | `~/.openclaw/workspace` | ✅ 已存在 |
-| `orchestrator` | `~/.openclaw/workspaces/workspace-orchestrator` | ✅ 已存在 |
-| `critic` | `~/.openclaw/workspaces/workspace-critic` | ✅ 已存在 |
-| `architect` | `~/.openclaw/workspaces/workspace-architect` | ✅ 已存在 |
-| `ops` | `~/.openclaw/workspaces/workspace-ops` | ✅ 已存在 |
-| `skills-smith` | `~/.openclaw/workspaces/workspace-skills-smith` | ✅ 已存在 |
-| `agent-smith` | `~/.openclaw/workspaces/workspace-agent-smith` | ✅ 已存在 |
-| `claude-code` | `~/.openclaw/workspaces/workspace-claude-code` | ⚠️ 路径存在，注册状态需单独核对 |
+应统一为：
+- **所有文件最终都以 `~/.openclaw/` 结构为唯一标准**
 
-### 16.4 同步命令（仅在需要时使用）
+---
 
-```bash
-# 同步文档
-scp docs/system/*.md lc@10.0.1.70:~/.openclaw/docs/system/
+## 12. 与 main workspace 退场的关系
 
-# 同步 workflows
-scp workflows/users/*.json lc@10.0.1.70:~/.openclaw/workflows/users/
-scp workflows/memory/*.json lc@10.0.1.70:~/.openclaw/workflows/memory/
-scp workflows/system/*.json lc@10.0.1.70:~/.openclaw/workflows/system/
+这份路径标准建立后，意味着：
 
-# 同步 policies
-scp policies/*.json lc@10.0.1.70:~/.openclaw/policies/
+1. `main` 仍可保留
+2. 但系统主职责应逐步迁入：
+   - `workspaces/workspace-orchestrator`
+   - `workspaces/workspace-ops`
+   - `workspaces/workspace-agent-smith`
+   - 等独立 workspace
 
-# 同步 schemas
-scp schemas/*.json lc@10.0.1.70:~/.openclaw/schemas/
+### 当以下条件满足时，可推进 main 退场阶段
+- core agents 已物化
+- bring-up 已跑通
+- daily 用户实例已稳定
+- routing 与 ops allowlist 已验证
+- critic 审查链路可用
 
-# 同步 templates
-scp -r templates/daily-template lc@10.0.1.70:~/.openclaw/templates/
-scp -r templates/core-agent lc@10.0.1.70:~/.openclaw/templates/
+在此之前：
+- `main` 仅作过渡入口
+- 不再新增长期职责
+
+---
+
+## 13. 本文件退役条件
+
+满足以下条件时，`PATH-MAP.md` 可以退役：
+
+1. 所有目录已按本文整理完成
+2. workflow / policy / schema 中不存在歧义相对路径
+3. 本地与远程均采用同一套 `~/.openclaw/` 结构
+4. 团队成员无需再用此文档做“路径翻译”
+
+退役后：
+- 以真实目录结构为准
+- `ARCHITECTURE.md`、`GOVERNANCE.md`、`FILE-NAMING.md` 继续保留
+- `PATH-MAP.md` 可归档到参考目录或删除
+
+---
+
+*创建时间：2026-03-19*  
+*最后更新：2026-03-19*  
+*状态：v1 最终路径收口文档，完成整理后可退役*
