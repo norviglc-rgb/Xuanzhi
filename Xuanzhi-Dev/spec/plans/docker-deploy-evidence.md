@@ -53,3 +53,26 @@ Observed common issues:
 - tools allowlist warning: unknown entries `apply_patch`, `image`.
 
 These findings are tracked in `release-fix-checklist.md` as RG-12 ~ RG-15.
+
+## Second Validation Round (clone from local repo, commit `b7ac6cf`)
+
+Deployment method:
+- New container `xuanzhi-fullval-v2`
+- Mounted local repo read-only to `/src`
+- Clone command:
+  - `git clone /src /home/node/.openclaw`
+
+Unit test result:
+- Command:
+  - `python3 -m unittest discover -s tests -p '*.py' -v`
+- Result:
+  - `Ran 33 tests`
+  - `OK (skipped=3)`
+  - skipped items are PowerShell-dependent tests on Linux image:
+    - `test_model_failover_audit`
+    - `test_workflow_runtime_replay`
+    - `test_docker_openrouter_e2e` (feature-gated)
+
+Conclusion:
+- Cross-platform compatibility fix is effective (from hard failure -> explicit skip).
+- Docker OpenRouter E2E now correctly fails when `stopReason=error` (no false success).
