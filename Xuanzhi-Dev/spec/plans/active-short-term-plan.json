@@ -1,17 +1,109 @@
 {
-  "plan_type": "short_term_slot",
-  "status": "idle",
+  "plan_type": "short_term",
+  "plan_id": "stp-m6-complex-upgrade-chain",
+  "parent_milestone_id": "m6",
+  "status": "active",
   "last_updated": "2026-03-20",
-  "rule": "当前没有 active 短期计划；开始下一阶段前，必须先创建唯一的 active 短期计划。",
-  "last_completed_plan": {
-    "id": "stp-m3-ops-provisioning-contract",
-    "archive": "Xuanzhi-Dev/spec/plans/archive/stp-m3-ops-provisioning-contract.completed.json",
-    "result": "completed"
+  "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
+  "goal": "跑通 orchestrator -> architect -> claude-code 的复杂任务升级链路，并形成可审计 handoff 证据。",
+  "execution_rule": "本短期计划必须包含实际链路执行、验证与回顾；仅文档演示不能关闭本计划。",
+  "scope": [
+    "定义复杂度判定与升级触发条件",
+    "执行一次完整升级链路实测",
+    "沉淀 handoff 工件模板与最小字段",
+    "验证 route.reason 可追踪",
+    "覆盖关键 agent 轨道测试（agent-smith、skills-smith、ops、orchestrator、critic、architect、claude-code）",
+    "评估产品级可用性与复制即用性",
+    "形成阶段验证与回顾"
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "name": "整理 m6 链路输入与升级判定基线",
+      "status": "completed",
+      "done_when": [
+        "明确复杂度判定字段",
+        "明确 orchestrator->architect->claude-code 交接输入输出",
+        "明确 route.reason 记录口径"
+      ],
+      "artifacts": [
+        "Xuanzhi-Dev/spec/plans/m6-chain-baseline-note.md"
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "设计并落地 handoff 工件最小模板",
+      "status": "in_progress",
+      "done_when": [
+        "形成 orchestrator->architect handoff 样例",
+        "形成 architect->claude-code handoff 样例",
+        "形成链路工件字段检查清单"
+      ],
+      "artifacts": [
+        "待创建：m6 handoff artifacts spec"
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "执行一次完整复杂任务升级链路",
+      "status": "pending",
+      "done_when": [
+        "完成链路实跑",
+        "记录 route.reason",
+        "记录链路结果与问题"
+      ],
+      "artifacts": [
+        "待创建：m6 execution proof"
+      ]
+    },
+    {
+      "id": "s4",
+      "name": "完成链路验证与 critic review",
+      "status": "pending",
+      "done_when": [
+        "验证链路工件完整性",
+        "验证 route.reason 可追踪",
+        "记录 critic review 结果",
+        "形成关键 agent 轨道测试覆盖记录",
+        "形成产品级可用性与复制即用性评估结论"
+      ],
+      "artifacts": [
+        "待创建：m6 verification note",
+        "待创建：m6 critic review note",
+        "待创建：m6 full-test-chain report",
+        "待创建：m6 product-readiness report"
+      ]
+    },
+    {
+      "id": "s5",
+      "name": "进行 m6 阶段回顾与重做决策",
+      "status": "pending",
+      "done_when": [
+        "形成阶段回顾",
+        "形成重做清单",
+        "给出下一里程碑切换建议"
+      ],
+      "artifacts": [
+        "待创建：m6 review and rework"
+      ]
+    }
+  ],
+  "completion_criteria": [
+    "s1-s5 全部完成",
+    "复杂任务升级链路有实跑证据",
+    "handoff 工件与 route.reason 可追踪",
+    "关键 agent 轨道测试覆盖结果完整",
+    "产品级可用性与复制即用性结论明确",
+    "验证与回顾结论完整",
+    "可无歧义进入 m7"
+  ],
+  "next_actions": [
+    "完成 s2：落地 orchestrator->architect->claude-code handoff 工件模板"
+  ],
+  "review_gate": {
+    "required": true,
+    "pass_rule": "必须同时具备链路实跑、handoff 工件、route.reason 跟踪、review 结论四类证据。",
+    "fail_rule": "若链路未实跑或关键工件缺失，本短期计划保持 active 并进入重做。"
   },
-  "next_expected_milestone": {
-    "id": "m4",
-    "name": "system agents 校验通过",
-    "status": "pending_short_term_plan"
-  },
-  "next_action": "先为 m4 创建唯一 active 的短期计划，再继续执行。"
+  "handoff_note": "若会话中断，从 s2 继续；当前目标是形成并验证 handoff 工件模板。"
 }

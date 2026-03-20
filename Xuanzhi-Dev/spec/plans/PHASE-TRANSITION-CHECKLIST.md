@@ -42,6 +42,8 @@ Use it:
 
 - if a milestone passed review, commit reviewed outputs
 - if a milestone did not pass review, do not treat it as ready for milestone commit
+- if commit is intentionally deferred, record explicit defer reason and owner
+- record milestone commit hash in stage artifacts
 - keep `.codex/` out of Git unless strategy explicitly changes
 
 ### 6. User Reporting
@@ -54,6 +56,8 @@ Use it:
 - if no short-term plan is active, do not continue execution until the next active short-term plan is created
 - confirm the next short-term plan is the only active one
 - confirm the next plan starts from the latest verified outputs, not stale drafts
+- confirm full-chain validation scope is defined (including previously completed key agent tracks)
+- confirm product-quality checks are defined (not only structural checks)
 
 ## Exit Condition
 

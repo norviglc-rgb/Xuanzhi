@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "users": [
+    {
+      "userId": "test-user-001",
+      "dailyAgentId": "daily-test-user-001",
+      "workspaceId": "workspace-daily-test-user-001",
+      "status": "pending_review",
+      "requestId": "m5-docker-001",
+      "updatedAt": "2026-03-20T10:28:35.210779+00:00"
+    }
+  ]
+}

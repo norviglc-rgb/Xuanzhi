@@ -1,0 +1,10 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "daily-test-user-001",
+        "workspace": "~/.openclaw/workspaces/workspace-daily-test-user-001"
+      }
+    ]
+  }
+}

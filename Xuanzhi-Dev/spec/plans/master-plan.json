@@ -31,6 +31,11 @@
     "status": "active",
     "rule": "每个里程碑在主 agent 完成阶段审查并通过后，应提交一次 Git，以保存已验证的阶段成果。",
     "commit_trigger": "milestone_review_passed",
+    "enforcement": [
+      "若里程碑已通过审查但尚未提交 Git，不得视为阶段切换完成",
+      "进入下一个里程碑前必须完成该里程碑提交，或显式记录暂缓原因",
+      "里程碑提交后应在验证/回顾工件中记录 commit hash"
+    ],
     "commit_scope": [
       "reviewed milestone outputs",
       "updated formal plans",
@@ -44,10 +49,53 @@
     "status": "active",
     "rule": "里程碑完成并提交 Git 后，再向用户汇报阶段结果；未达到里程碑时只做过程更新。"
   },
+  "quality_acceptance_policy": {
+    "status": "active",
+    "rule": "测试与验证不能停留在结构或冒烟层，必须评估产品可用性、复制即用性和可恢复性；不达标项必须回流重做。",
+    "required_checks": [
+      "功能是否可执行且结果稳定",
+      "是否具备复制即用路径（最小环境可复现）",
+      "关键路径是否有真实环境等价验证",
+      "失败后是否可回滚与可恢复",
+      "是否存在影响实际交付的明显缺口"
+    ],
+    "failure_rule": "若任一关键检查不通过，必须加入重做清单并保持当前短期计划 active。"
+  },
+  "full_test_chain_policy": {
+    "status": "active",
+    "rule": "在阶段验证中应覆盖已完成能力与关键 agent 链路，避免只验证当前增量功能。",
+    "required_agent_tracks": [
+      "agent-smith",
+      "skills-smith",
+      "ops",
+      "orchestrator",
+      "critic",
+      "architect",
+      "claude-code"
+    ],
+    "minimum_expectation": "每个里程碑至少说明哪些 agent 轨道被验证、哪些暂缓及原因。"
+  },
+  "validation_environments": {
+    "status": "active",
+    "rule": "验证优先在隔离容器完成，再进入真实测试环境；真实环境使用前必须先清理污染。",
+    "docker_policy": {
+      "allowed": true,
+      "default_usage": "开发过程中的测试与验证可使用 Docker，自行创建容器进行验证。",
+      "openclaw_install_rule": "容器内安装 OpenClaw 时，按 OpenClaw 文档中的容器安装说明执行。"
+    },
+    "real_test_env_policy": {
+      "host": "10.0.1.70",
+      "user": "lc",
+      "precondition": "该环境可能被污染，使用前必须先完成清理。",
+      "equivalence": "该环境已装好 API 与配套工具，且与生产环境完全相同。",
+      "docs_path": "~Doc"
+    }
+  },
   "subagent_policy": {
     "status": "active",
     "goal": "在长线任务中由主 agent 负责中长期规划与验收，由子 agent 执行短期计划中的具体任务，从而保持持续推进。",
     "default_mode": "main-agent-plans-subagents-execute",
+    "execution_preference_rule": "主 agent 默认只做长期计划、任务拆分、整合审查和结果验证；具体实现与执行默认优先交给子 agent。",
     "parallel_limit_default": 2,
     "when_to_use": [
       "当前短期计划已经明确，可以拆成具体执行子任务",
@@ -82,6 +130,7 @@
       "不自行变更中长期计划或里程碑定义"
     ],
     "lifecycle_rule": "可复用的子 agent 可以在同一短期计划内复用；一次性子 agent 在结果整合后应及时关闭。",
+    "milestone_cleanup_rule": "每个里程碑结束后必须检查并关闭不再使用的一次性子 agent。",
     "review_rule": "子 agent 的输出默认不是完成态，只有主 agent 审查通过并整合后，才可计入里程碑进度。"
   },
   "core_design_principles": [
@@ -218,7 +267,7 @@
     {
       "id": "m4",
       "name": "system agents 校验通过",
-      "status": "pending",
+      "status": "completed",
       "goal": "确认现有 system workspaces 足以承担最小运行闭环。",
       "done_when": [
         "现有 workspace-* 结构完整",
@@ -230,7 +279,7 @@
     {
       "id": "m5",
       "name": "首个 daily user 跑通",
-      "status": "pending",
+      "status": "completed",
       "goal": "创建一个隔离的 daily-test-user 并通过基础 review。",
       "done_when": [
         "daily workspace 创建完成",
