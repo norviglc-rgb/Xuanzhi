@@ -47,7 +47,7 @@
   "agents": {
     "defaults": {
       "heartbeat": {
-        "every": "0m"
+        "every": "10m"
       },
       "sandbox": {
         "mode": "non-main",

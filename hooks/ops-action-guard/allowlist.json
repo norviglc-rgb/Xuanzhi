@@ -6,6 +6,7 @@
     { "id": "ops-restart-approved-service", "action": "restart_service", "scope": ["approved-services"], "mode": "allowed_after_external_approval" },
     { "id": "ops-run-approved-deploy", "action": "deploy", "scope": ["approved-environments"], "mode": "allowed_after_external_approval" },
     { "id": "ops-package-install", "action": "install_package", "scope": ["approved-package-list"], "mode": "allowed_after_external_approval" },
+    { "id": "ops-generic-agent-provisioning", "action": "manage_generic_agent_instance", "scope": ["workspace-*", "agents/*"], "mode": "allowed" },
     { "id": "ops-user-instance-lifecycle", "action": "manage_daily_user_instance", "scope": ["workspace-daily-*", "agents/daily-*"], "mode": "allowed" }
   ],
   "denyByDefault": true,

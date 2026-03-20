@@ -1,101 +1,17 @@
 {
-  "plan_type": "short_term",
-  "plan_id": "stp-m7-governance-closure",
-  "parent_milestone_id": "m7",
-  "status": "active",
+  "plan_type": "short_term_slot",
+  "status": "idle",
   "last_updated": "2026-03-20",
-  "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
-  "goal": "补齐 allowlist、review gate、audit consistency，并在稳定后启用 heartbeat，完成治理闭环。",
-  "execution_rule": "主 agent 负责计划与验收，具体执行优先由低开销子 agent 完成；仅在复杂或失败时提升模型能力。",
-  "scope": [
-    "验证 ops allowlist 无害动作链路",
-    "落地并验证 review gate 可执行",
-    "做 audit consistency 对账并修复差异",
-    "在稳定条件达成后启用 heartbeat",
-    "输出治理闭环验证与回顾"
-  ],
-  "steps": [
-    {
-      "id": "s1",
-      "name": "整理 m7 治理闭环输入基线",
-      "status": "in_progress",
-      "done_when": [
-        "明确 allowlist/review gate/audit/heartbeat 的最小验收口径",
-        "明确执行顺序与风险边界",
-        "明确重做触发条件"
-      ],
-      "artifacts": [
-        "待创建：m7 governance baseline note"
-      ]
-    },
-    {
-      "id": "s2",
-      "name": "执行 allowlist 与 review gate 验证",
-      "status": "pending",
-      "done_when": [
-        "allowlist 无害动作验证通过",
-        "review gate 能实际阻断/放行",
-        "输出执行证据"
-      ],
-      "artifacts": [
-        "待创建：m7 allowlist proof",
-        "待创建：m7 review-gate proof"
-      ]
-    },
-    {
-      "id": "s3",
-      "name": "执行 audit consistency 对账与修复",
-      "status": "pending",
-      "done_when": [
-        "完成关键审计流对账",
-        "修复不一致项或形成阻塞说明",
-        "输出一致性报告"
-      ],
-      "artifacts": [
-        "待创建：m7 audit-consistency report"
-      ]
-    },
-    {
-      "id": "s4",
-      "name": "启用 heartbeat 并做稳定性验证",
-      "status": "pending",
-      "done_when": [
-        "heartbeat 在稳定条件下启用",
-        "稳定性验证通过",
-        "记录风险与回滚方案"
-      ],
-      "artifacts": [
-        "待创建：m7 heartbeat verification note"
-      ]
-    },
-    {
-      "id": "s5",
-      "name": "阶段回顾、重做决策与里程碑收口",
-      "status": "pending",
-      "done_when": [
-        "形成 m7 verification note",
-        "形成 m7 review and rework",
-        "形成里程碑关闭建议"
-      ],
-      "artifacts": [
-        "待创建：m7 verification note",
-        "待创建：m7 review and rework"
-      ]
-    }
-  ],
-  "completion_criteria": [
-    "s1-s5 全部完成",
-    "治理闭环关键能力可执行",
-    "验证与回顾结论完整",
-    "具备里程碑关闭条件"
-  ],
-  "next_actions": [
-    "完成 s1：整理 m7 治理闭环输入基线"
-  ],
-  "review_gate": {
-    "required": true,
-    "pass_rule": "必须具备 allowlist、review gate、audit consistency、heartbeat 稳定性四类证据。",
-    "fail_rule": "若任一治理能力未通过，保持短期计划 active 并回流重做。"
+  "rule": "当前没有 active 短期计划；如需继续演进，先创建唯一 active 的维护/硬化短期计划。",
+  "last_completed_plan": {
+    "id": "stp-m7-governance-closure",
+    "archive": "Xuanzhi-Dev/spec/plans/archive/stp-m7-governance-closure.completed.json",
+    "result": "completed"
   },
-  "handoff_note": "若会话中断，从 s1 继续；保持子 agent 低开销优先与里程碑后子 agent 清理。"
+  "next_expected_milestone": {
+    "id": null,
+    "name": "maintenance-and-hardening",
+    "status": "optional_next_phase"
+  },
+  "next_action": "全部既定里程碑已完成；如需继续，先定义维护期目标并创建唯一 active 短期计划。"
 }

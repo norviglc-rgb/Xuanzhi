@@ -1,0 +1,18 @@
+{
+  "schema": "review-decision-template/v1",
+  "scope": "<scope>",
+  "decision": "<pass|fail|rework>",
+  "reason": "<reason>",
+  "reviewer": "<reviewer>",
+  "timestamp": "<YYYY-MM-DDThh:mm:ss+08:00>",
+  "reworkItems": [
+    {
+      "id": "<rework-item-id>",
+      "item": "<rework item>",
+      "owner": "<owner>",
+      "due": "<YYYY-MM-DD>",
+      "status": "<open|blocked|done>"
+    }
+  ],
+  "nextAction": "<next action>"
+}

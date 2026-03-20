@@ -303,7 +303,7 @@
     {
       "id": "m7",
       "name": "治理闭环上线",
-      "status": "pending",
+      "status": "completed",
       "goal": "补齐 allowlist、review gate、audit consistency，最后再启用 heartbeat。",
       "done_when": [
         "ops allowlist 经无害动作验证",

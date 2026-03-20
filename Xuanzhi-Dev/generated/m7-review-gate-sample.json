@@ -1,0 +1,18 @@
+{
+  "schema": "review-decision-template/v1",
+  "scope": "m7/s2 review gate proof rework item 2",
+  "decision": "rework",
+  "reason": "The review gate now has a standardized decision artifact, but the proof still needs a durable reference chain that points from the decision back into the milestone evidence set.",
+  "reviewer": "critic",
+  "timestamp": "2026-03-20T00:00:00+08:00",
+  "reworkItems": [
+    {
+      "id": "rg-001",
+      "item": "Link the decision artifact from the milestone proof so the audit trail can be reconstructed from the proof page.",
+      "owner": "critic",
+      "due": "2026-03-20",
+      "status": "open"
+    }
+  ],
+  "nextAction": "Return to Xuanzhi-Dev/spec/plans/m7-review-gate-proof.md and cite this decision as the review-gate return-path evidence."
+}

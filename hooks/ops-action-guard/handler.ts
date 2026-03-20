@@ -16,6 +16,11 @@ export default async function opsActionGuard(event: HookEvent) {
   fs.mkdirSync(path.dirname(logPath), { recursive: true });
 
   const payload = {
+    requestId: null,
+    source: "gateway",
+    target: "hooks/ops-action-guard/allowlist.json",
+    action: "gateway_startup_guard_check",
+    decision: fs.existsSync(allowlistPath) ? "allow" : "deny",
     timestamp: new Date().toISOString(),
     hook: "ops-action-guard",
     allowlistPresent: fs.existsSync(allowlistPath),
