@@ -1,0 +1,219 @@
+{
+  "plan_type": "mid_long_term",
+  "plan_id": "xuanzhi-master-plan-v1",
+  "status": "active",
+  "last_updated": "2026-03-20",
+  "objective": "建设一个高质量、可执行、可自迭代、复制即用、可产品化、低复杂度但高适应性的 OpenClaw 环境与配置体系。",
+  "execution_policy": {
+    "status": "active",
+    "rule": "所有计划必须落到实际执行、验证、回顾与必要重做，不能只停留在文档、草案或表面修改。",
+    "workflow": [
+      "定义里程碑",
+      "创建唯一 active 的短期计划",
+      "补充实施细则",
+      "必要时设计并行子任务并启用子 agent",
+      "执行实际变更",
+      "整合子 agent 结果",
+      "验证执行结果",
+      "阶段性回顾与审查",
+      "将不合格项加入重做清单并重新执行",
+      "通过后才能关闭当前短期计划并进入下一个"
+    ]
+  },
+  "subagent_policy": {
+    "status": "active",
+    "goal": "在长线任务中使用子 agent 提高并行度，但不把主线判断、整合与审查外包掉。",
+    "when_to_use": [
+      "存在可并行的独立子问题",
+      "局部实现、盘点、检索、验证可以与主线工作并行",
+      "子任务边界清晰且结果可独立审查"
+    ],
+    "when_not_to_use": [
+      "主线下一步立即依赖该结果且无法并行推进",
+      "任务边界不清晰，容易重复劳动或引入冲突",
+      "需要全局权衡、最终裁决或阶段验收"
+    ],
+    "main_agent_duties": [
+      "拆分任务并定义边界",
+      "保留关键主线判断",
+      "审查子 agent 输出",
+      "整合结果并决定是否接受",
+      "将不合格输出加入重做计划"
+    ],
+    "review_rule": "子 agent 的输出默认不是完成态，只有主 agent 审查通过并整合后，才可计入里程碑进度。"
+  },
+  "core_design_principles": [
+    {
+      "id": "p1",
+      "name": "事实优先",
+      "status": "active",
+      "rule": "所有活文档、配置和流程必须以当前真实运行结构为准，不以历史草案或目标态替代现状。"
+    },
+    {
+      "id": "p2",
+      "name": "单一真相源",
+      "status": "active",
+      "rule": "运行真相源只能有一套；spec、legacy、generated 只能作为参考、迁移源或样例。"
+    },
+    {
+      "id": "p3",
+      "name": "低复杂度优先",
+      "status": "active",
+      "rule": "避免为少量场景引入额外层级、模板分叉或抽象；能用一套通用 agent 创建规则解决的，不拆成多套体系。"
+    },
+    {
+      "id": "p4",
+      "name": "职责清晰",
+      "status": "active",
+      "rule": "agent-smith 负责 agent 创建规则与结构；ops 负责执行 provisioning 与生命周期；critic 负责 review；orchestrator 负责路由。"
+    },
+    {
+      "id": "p5",
+      "name": "先可执行再自动化",
+      "status": "active",
+      "rule": "先把流程做成可跑、可验证、可回滚，再做 heartbeat、promotion、更多自动化。"
+    },
+    {
+      "id": "p6",
+      "name": "复制即用",
+      "status": "active",
+      "rule": "仓库根目录应尽量直接对应 ~/.openclaw 的可运行形态，减少额外安装解释层。"
+    },
+    {
+      "id": "p7",
+      "name": "可审计可恢复",
+      "status": "active",
+      "rule": "所有关键 provisioning、routing、review、lifecycle 动作都要有 state/audit/工件支撑，并可从中断点恢复。"
+    },
+    {
+      "id": "p8",
+      "name": "短期计划串行",
+      "status": "active",
+      "rule": "任一时刻只允许一个短期计划处于 active；当前短期计划完成后，才能创建下一个。"
+    },
+    {
+      "id": "p9",
+      "name": "执行闭环",
+      "status": "active",
+      "rule": "每个阶段都必须有实际执行结果、验证证据和阶段回顾，未通过项必须回到计划中重做。"
+    },
+    {
+      "id": "p10",
+      "name": "结果优先",
+      "status": "active",
+      "rule": "计划文件、说明文档和目录整理都只是支撑物，真正完成标准必须包含实际产物、运行结果或验证记录。"
+    },
+    {
+      "id": "p11",
+      "name": "主审查不外包",
+      "status": "active",
+      "rule": "可以使用子 agent 做并行工作，但最终整合、阶段验收、风险判断和重做决策必须由主 agent 负责。"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "m1",
+      "name": "运行语义收口",
+      "status": "completed",
+      "goal": "统一当前有效路径、模块职责、活文档口径，停止把历史结构当运行真相源。",
+      "done_when": [
+        "README、REPO-MAP、PATH-MAP、bring-up 文档与当前仓库事实一致",
+        "过时路径和术语被标记为 legacy 或待迁移",
+        "agent-smith 与 ops 的边界清晰",
+        "迁移清单和运行语义冻结结论已生成并可供后续执行直接使用"
+      ]
+    },
+    {
+      "id": "m2",
+      "name": "agent-smith 成型",
+      "status": "in_progress",
+      "goal": "建立通用 agent 创建契约与最小输出标准，不再依赖独立 core-agent 模板体系。",
+      "done_when": [
+        "定义 agent creation contract",
+        "定义最小 agent 文件与目录",
+        "定义失败回滚与验收方式",
+        "至少完成一次 agent 创建方案的实际落地或可执行演练",
+        "形成阶段回顾并记录待重做项"
+      ]
+    },
+    {
+      "id": "m3",
+      "name": "ops provisioning 成型",
+      "status": "pending",
+      "goal": "让 ops 可以执行 agent/user 创建工作流，并正确写入 runtime state 与 audit。",
+      "done_when": [
+        "定义 provisioning 执行方式",
+        "定义 live state 与 audit 写入点",
+        "定义 review 触发点",
+        "至少完成一次 provisioning 执行验证",
+        "对失败点或不合格项形成重做清单"
+      ]
+    },
+    {
+      "id": "m4",
+      "name": "system agents 校验通过",
+      "status": "pending",
+      "goal": "确认现有 system workspaces 足以承担最小运行闭环。",
+      "done_when": [
+        "现有 workspace-* 结构完整",
+        "角色职责可执行",
+        "不再需要额外物化层才能开始测试",
+        "完成一次 system agents 阶段审查"
+      ]
+    },
+    {
+      "id": "m5",
+      "name": "首个 daily user 跑通",
+      "status": "pending",
+      "goal": "创建一个隔离的 daily-test-user 并通过基础 review。",
+      "done_when": [
+        "daily workspace 创建完成",
+        "profile/state/audit 正确落盘",
+        "critic 可 review",
+        "daily provisioning 结果经过阶段回顾"
+      ]
+    },
+    {
+      "id": "m6",
+      "name": "复杂任务升级链路跑通",
+      "status": "pending",
+      "goal": "orchestrator -> architect -> claude-code 的复杂任务升级链路可验证。",
+      "done_when": [
+        "复杂度判定成立",
+        "handoff 工件齐全",
+        "route reason 可追踪",
+        "复杂任务链路完成一次阶段审查"
+      ]
+    },
+    {
+      "id": "m7",
+      "name": "治理闭环上线",
+      "status": "pending",
+      "goal": "补齐 allowlist、review gate、audit consistency，最后再启用 heartbeat。",
+      "done_when": [
+        "ops allowlist 经无害动作验证",
+        "review gate 可实际使用",
+        "heartbeat 在稳定后开启",
+        "治理闭环具备问题回流重做机制"
+      ]
+    }
+  ],
+  "review_policy": {
+    "status": "active",
+    "required_checks": [
+      "是否有实际执行内容",
+      "是否有结果验证",
+      "是否有阶段回顾",
+      "是否将不合格项回流到计划",
+      "若使用子 agent，是否完成主 agent 审查与整合"
+    ],
+    "failure_rule": "任一阶段若只有文档更新而无实际执行、验证或回顾，不得标记为完成。"
+  },
+  "resume_rules": [
+    "新开会话时先读取当前 active milestone 和 active short_term_plan",
+    "若短期计划未完成，不创建新的短期计划",
+    "若执行中断，优先检查该计划的 completion_criteria、artifacts、next_actions",
+    "若发现文档与事实冲突，以运行事实为准，并回写计划状态",
+    "若发现阶段输出不合格，必须把问题加入重做计划而不是直接跳到下一个里程碑"
+  ]
+}

@@ -1,8 +1,10 @@
 # Xuanzhi
 
-This repository is now shaped around official OpenClaw runtime concepts.
+Xuanzhi is currently a real OpenClaw runtime repository with a separate development area for specs, migration notes, and generated examples.
 
-## Runtime roots to keep
+## Runtime Surface In Use
+
+These paths exist at the repository root and reflect the current runtime shape:
 
 - `openclaw.json`
 - `agents/`
@@ -19,37 +21,34 @@ This repository is now shaped around official OpenClaw runtime concepts.
 - `workspace-agent-smith/`
 - `workspace-claude-code/`
 
-## Strong controls
+The current workspace convention is `workspace-<agentId>` at the root of `~/.openclaw/`, matching `openclaw.json`. This repository does not currently use `workspaces/workspace-<agentId>/`.
 
-Hard controls live in:
+## What Each Module Does
 
-- `openclaw.json` per-agent tool allow/deny
-- `openclaw.json` sandbox settings
-- `hooks/workspace-integrity/`
-- `hooks/ops-action-guard/`
-- `logs/`
+- `openclaw.json`: runtime agent registry, workspace paths, sandbox/tool controls, hooks, cron
+- `agents/`: per-agent runtime-owned state and session directories
+- `hooks/`: startup and guardrail checks such as workspace integrity and ops action auditing
+- `skills/`: machine-readable control and placement rules
+- `workspace-orchestrator/`: routing, delegation, and convergence
+- `workspace-critic/`: review gate and risk checking
+- `workspace-architect/`: requirement understanding, solution shaping, and handoff for complex coding
+- `workspace-ops/`: executes allowed operational actions and runs agent/user provisioning workflows
+- `workspace-skills-smith/`: skill design and maintenance
+- `workspace-agent-smith/`: agent creation logic, agent scaffolding rules, schemas, and workflow maintenance
+- `workspace-claude-code/`: long-running complex coding execution domain
+- `Xuanzhi-Dev/`: development-only materials, including specs, legacy migration candidates, references, and generated samples
 
-Soft controls live in workspace files:
+## Source Of Truth Status
 
-- `AGENTS.md`
-- `BOOT.md`
-- `HEARTBEAT.md`
-- `MEMORY.md`
+Current runtime truth lives at the repository root in the files and folders listed above.
 
-## Workflow placement
+`Xuanzhi-Dev/legacy-root/` is not active runtime truth today. It is a migration source containing candidate docs, schemas, workflows, templates, and state files that still need selective promotion.
 
-Machine-readable placement rules live in:
+`Xuanzhi-Dev/generated/` is generated output and examples, not authoritative runtime state.
 
-- `skills/xuanzhi-control/control-model.json`
-- `skills/xuanzhi-control/workflow-placement.json`
+## Design Direction
 
-Decision baseline:
-
-- OpenClaw: host execution, routing, cron, hooks, credentials, local audit
-- NocoBase: approval, forms, durable business state, queues, dashboards
-- FastGPT: RAG-heavy and LLM-only subflows
-
-## Development materials
-
-`Xuanzhi-Dev/` is temporary development storage only.
-Runtime should continue collapsing toward official OpenClaw roots, not toward custom top-level runtime directories.
+- Keep templates generic. Do not maintain a separate `core-agent` template family.
+- `agent-smith` should define how agents are created and what files they need.
+- `ops` should execute agent creation and user creation workflows in runtime.
+- Prefer fewer moving parts over speculative structure. If a path or module is not running today, document it as planned or legacy, not as current truth.

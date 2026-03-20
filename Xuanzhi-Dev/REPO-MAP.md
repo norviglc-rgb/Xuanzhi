@@ -1,54 +1,85 @@
 # Xuanzhi Repo Map
 
-## Current Layout
+## Current Repository Layout
 
 ```text
 D:\Xuanzhi\
-├── agents/           # ~/.openclaw/agents/
-├── architect/        # ~/.openclaw/architect/
-├── audit/            # ~/.openclaw/audit/
-├── docs/             # ~/.openclaw/docs/
-├── ops/              # ~/.openclaw/ops/
-├── policies/         # ~/.openclaw/policies/
-├── review/           # ~/.openclaw/review/
-├── schemas/          # ~/.openclaw/schemas/
-├── skills/           # ~/.openclaw/skills/
-├── state/            # ~/.openclaw/state/
-├── templates/        # ~/.openclaw/templates/
-├── workflows/        # ~/.openclaw/workflows/
-├── workspaces/       # ~/.openclaw/workspaces/
-└── Xuanzhi-Dev/      # development docs, references, and historical outputs
+|- agents/
+|- credentials/
+|- cron/
+|- hooks/
+|- logs/
+|- skills/
+|- workspace-agent-smith/
+|- workspace-architect/
+|- workspace-claude-code/
+|- workspace-critic/
+|- workspace-ops/
+|- workspace-orchestrator/
+|- workspace-skills-smith/
+|- Xuanzhi-Dev/
+|- openclaw.json
+|- openclaw.json.example
+|- README.md
+|- README-runtime.md
 ```
 
-## Runtime Package
+## Runtime Vs Development
 
-The repository root is the runtime package. Users can replace their `~/.openclaw/` with this directory directly.
+Repository root:
 
-Key runtime paths:
+- Active OpenClaw runtime surface
+- Agent workspaces
+- Runtime hooks and skills
+- Agent runtime directories
 
-- `docs/system/` - system source of truth
-- `policies/` - policy JSON files
-- `schemas/` - JSON schemas
-- `workflows/` - machine-readable workflows
-- `templates/` - workspace templates
-- `state/` - live runtime state
-- `audit/` - runtime audit logs
-- `workspaces/` - pre-materialized core workspaces
-- `agents/` - per-agent runtime directories
+`Xuanzhi-Dev/`:
 
-## Development Materials
+- `spec/`: requirements, bring-up notes, migration notes
+- `legacy-root/`: candidate system docs, schemas, workflows, templates, and state not yet promoted into runtime root
+- `generated/`: generated examples and audit samples
+- `reference/`: reference material only
 
-Development-only materials are isolated under `Xuanzhi-Dev/`:
+## Current Path Facts
 
-- `Xuanzhi-Dev/spec/`
-- `Xuanzhi-Dev/reference/`
-- `Xuanzhi-Dev/generated/`
+- Current agent workspaces live at `workspace-<agentId>/`
+- Current agent runtime directories live at `agents/<agentId>/agent` and `agents/<agentId>/sessions`
+- `openclaw.json` is the active registry for agent ids, workspace paths, and hard controls
+- Root-level `docs/`, `policies/`, `schemas/`, `state/`, `templates/`, and `workflows/` do not exist yet in the active runtime tree
 
-## Quick Navigation
+This means older documents that describe `workspaces/workspace-<agentId>/` or a fully promoted root-level `docs/policies/workflows/state/templates` tree are describing a target or a legacy draft, not the current repository state.
 
-- Architecture: `docs/system/ARCHITECTURE.md`
-- Governance: `docs/system/GOVERNANCE.md`
-- Core workflow: `workflows/system/materialize-core-agents.json`
-- Daily user workflow: `workflows/users/create-daily-user.json`
-- Requirements: `Xuanzhi-Dev/spec/requirements/open_claw多agent系统v1需求规格.md`
-- Bring-up order: `Xuanzhi-Dev/spec/bringup/BRING-UP-ORDER.md`
+## Module Responsibilities
+
+- `orchestrator`: route tasks and converge outcomes
+- `critic`: review gate, risk checks, and signoff
+- `architect`: shape implementation approach and prepare complex-task handoff
+- `ops`: execute operational actions and run provisioning workflows for agents and users
+- `skills-smith`: create and maintain skills
+- `agent-smith`: define and evolve agent creation rules, agent scaffolds, schemas, and workflows
+- `claude-code`: complex coding execution domain
+
+## Template Direction
+
+Current repository truth is workspace-first, not template-first.
+
+If templates are promoted into the active runtime later, keep them generic:
+
+- one agent template family for creating agents
+- one daily-user template family for creating isolated user agents
+
+Do not reintroduce a separate `templates/core-agent/` hierarchy unless runtime usage proves it is necessary.
+
+## Migration Notes
+
+The main migration gap is not workspace files. It is the system-level truth that still sits under `Xuanzhi-Dev/legacy-root/`.
+
+Priority migration candidates:
+
+- system docs
+- schemas
+- workflows
+- state seeds
+- provisioning contracts
+
+Before promoting any of them, re-check path assumptions against the current runtime shape in `openclaw.json`.
