@@ -1,0 +1,20 @@
+{
+  "agentId": "proof-agent",
+  "workspace": "workspace-proof-agent",
+  "agentDir": "agents/proof-agent/agent",
+  "tools": {
+    "allow": [
+      "read"
+    ],
+    "deny": [
+      "exec",
+      "write",
+      "edit",
+      "apply_patch",
+      "browser",
+      "canvas"
+    ]
+  },
+  "mode": "repo-drill",
+  "attemptId": "m3-proof-generic-001"
+}

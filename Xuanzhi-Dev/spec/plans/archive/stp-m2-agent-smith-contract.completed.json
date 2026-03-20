@@ -1,0 +1,8 @@
+{
+  "archived_from": "Xuanzhi-Dev/spec/plans/active-short-term-plan.json",
+  "status": "completed",
+  "archived_on": "2026-03-20",
+  "original_plan_id": "stp-m2-agent-smith-contract",
+  "parent_milestone_id": "m2",
+  "note": "Archived after m2 completion so the active short-term plan slot is unambiguous before creating m3."
+}

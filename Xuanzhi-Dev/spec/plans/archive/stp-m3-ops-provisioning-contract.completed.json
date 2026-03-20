@@ -1,0 +1,113 @@
+{
+  "plan_type": "short_term",
+  "plan_id": "stp-m3-ops-provisioning-contract",
+  "parent_milestone_id": "m3",
+  "status": "active",
+  "last_updated": "2026-03-20",
+  "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
+  "goal": "把 ops 做成可执行的 provisioning 执行者，明确 agent/user 创建时的执行步骤、state 写入点、audit 写入点和 review 触发点，并完成一次最小 dry-run 或等价验证。",
+  "execution_rule": "当前短期计划必须走完实施细则、实际执行、验证、回顾；任何仅停留在文档层的工作都不足以关闭本计划。",
+  "delegation_rule": "默认由主 agent 维护本短期计划并拆分任务，由 1 到 2 个低成本优先的子 agent 执行具体子任务；当前短期计划的判断、整合、验证和阶段审查仍由主 agent 负责。",
+  "scope": [
+    "定义 ops 执行 agent provisioning 的最小执行流程",
+    "定义 ops 执行 daily-user provisioning 的最小执行流程",
+    "明确 live state 写入点",
+    "明确 audit 写入点",
+    "明确 critic review 触发点",
+    "完成一次最小 dry-run 或等价执行验证"
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "name": "梳理 ops provisioning 输入输出边界",
+      "status": "completed",
+      "done_when": [
+        "明确 ops 执行时依赖的输入",
+        "明确 agent provisioning 与 daily-user provisioning 的输出",
+        "明确与 agent-smith、critic 的交接边界"
+      ],
+      "artifacts": [
+        "Xuanzhi-Dev/spec/plans/m3-agent-provisioning-boundary.md",
+        "Xuanzhi-Dev/spec/plans/m3-daily-provisioning-boundary.md",
+        "Xuanzhi-Dev/spec/plans/m3-provisioning-boundary-draft.md"
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "定义 provisioning 执行文档",
+      "status": "completed",
+      "done_when": [
+        "形成正式 provisioning 执行文档",
+        "写清 agent provisioning 步骤",
+        "写清 daily-user provisioning 步骤"
+      ],
+      "artifacts": [
+        "Xuanzhi-Dev/spec/plans/m3-agent-provisioning-execution.md",
+        "Xuanzhi-Dev/spec/plans/m3-daily-provisioning-execution.md",
+        "Xuanzhi-Dev/spec/plans/m3-ops-provisioning-contract.md"
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "定义 state、audit 与 review 写入规则",
+      "status": "completed",
+      "done_when": [
+        "明确 live state 写入点",
+        "明确 audit 写入点",
+        "明确 review 触发点"
+      ],
+      "artifacts": [
+        "Xuanzhi-Dev/spec/plans/m3-agent-state-audit-review-rules.md",
+        "Xuanzhi-Dev/spec/plans/m3-daily-state-audit-review-rules.md",
+        "Xuanzhi-Dev/spec/plans/m3-state-audit-review-rules.md"
+      ]
+    },
+    {
+      "id": "s4",
+      "name": "完成一次最小 dry-run 或等价执行证明",
+      "status": "completed",
+      "done_when": [
+        "至少完成一次 provisioning dry-run 或等价执行证明",
+        "证明 ops 可消费 m2 契约产物",
+        "记录发现的问题"
+      ],
+      "artifacts": [
+        "Xuanzhi-Dev/spec/plans/m3-execution-proof.md",
+        "Xuanzhi-Dev/generated/m3-dry-run/generic-agent-proof/request.json",
+        "Xuanzhi-Dev/generated/m3-dry-run/generic-agent-proof/openclaw.proof.json",
+        "Xuanzhi-Dev/generated/m3-dry-run/generic-agent-proof/self-check.json"
+      ]
+    },
+    {
+      "id": "s5",
+      "name": "进行 m3 验证与阶段回顾",
+      "status": "in_progress",
+      "done_when": [
+        "形成验证记录",
+        "形成阶段回顾",
+        "不合格项进入重做清单"
+      ],
+      "artifacts": [
+        "待创建：m3 verification note",
+        "待创建：m3 review and rework"
+      ]
+    }
+  ],
+  "completion_criteria": [
+    "s1-s5 全部完成",
+    "ops provisioning 执行方式已形成",
+    "state、audit、review 写入规则已形成",
+    "具备最小 dry-run 或等价执行证明",
+    "有验证记录和阶段回顾记录",
+    "能够无歧义进入 m4 或 m5"
+  ],
+  "next_actions": [
+    "完成 s5，做验证和阶段回顾"
+  ],
+  "review_gate": {
+    "required": true,
+    "pass_rule": "必须确认本阶段不仅写了流程，还明确了 state/audit/review 写入规则，并形成最小执行证明。",
+    "fail_rule": "若发现输出仍停留在概念层，必须新增重做项并保持本短期计划 active。"
+  },
+  "handoff_note": "如果会话中断，下一次从 s5 开始。m3 必须基于 m2 的 agent 契约产物推进，而不是回到旧的 legacy workflow。"
+}

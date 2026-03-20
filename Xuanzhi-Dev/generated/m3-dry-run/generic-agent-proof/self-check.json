@@ -1,0 +1,10 @@
+{
+  "attemptId": "m3-proof-generic-001",
+  "workspaceExists": true,
+  "runtimeAgentDirExists": true,
+  "runtimeSessionsDirExists": true,
+  "requiredFilesPresent": true,
+  "requiredDirsPresent": true,
+  "registryEntryPresent": true,
+  "status": "passed"
+}

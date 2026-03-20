@@ -18,8 +18,14 @@
       "阶段性回顾与审查",
       "将不合格项加入重做清单并重新执行",
       "里程碑审查通过后提交 Git",
+      "运行阶段切换检查清单",
       "通过后才能关闭当前短期计划并进入下一个"
     ]
+  },
+  "phase_transition_policy": {
+    "status": "active",
+    "checklist": "Xuanzhi-Dev/spec/plans/PHASE-TRANSITION-CHECKLIST.md",
+    "rule": "在关闭当前短期计划、关闭里程碑或开启下一个短期计划之前，必须运行阶段切换检查清单。"
   },
   "git_policy": {
     "status": "active",
@@ -34,10 +40,15 @@
       ".codex/"
     ]
   },
+  "reporting_policy": {
+    "status": "active",
+    "rule": "里程碑完成并提交 Git 后，再向用户汇报阶段结果；未达到里程碑时只做过程更新。"
+  },
   "subagent_policy": {
     "status": "active",
     "goal": "在长线任务中由主 agent 负责中长期规划与验收，由子 agent 执行短期计划中的具体任务，从而保持持续推进。",
     "default_mode": "main-agent-plans-subagents-execute",
+    "parallel_limit_default": 2,
     "when_to_use": [
       "当前短期计划已经明确，可以拆成具体执行子任务",
       "存在可并行的独立子问题",
@@ -49,21 +60,28 @@
       "任务边界不清晰，容易重复劳动或引入冲突",
       "需要全局权衡、最终裁决或阶段验收"
     ],
+    "model_selection_rule": {
+      "default": "prefer lower-cost subagent models first",
+      "upgrade_condition": "only increase model capability when task complexity, ambiguity, or quality risk requires it"
+    },
     "main_agent_duties": [
       "维护中长期计划和唯一 active 的短期计划",
+      "设计实现路径",
       "把短期计划拆成可执行子任务",
       "创建子 agent 并分配任务",
       "拆分任务并定义边界",
       "保留关键主线判断",
       "审查子 agent 输出",
       "整合结果并决定是否接受",
-      "将不合格输出加入重做计划"
+      "将不合格输出加入重做计划",
+      "里程碑通过后提交 Git 并向用户汇报"
     ],
     "subagent_duties": [
       "执行被分配的具体短期子任务",
       "返回清晰结果、问题和证据",
       "不自行变更中长期计划或里程碑定义"
     ],
+    "lifecycle_rule": "可复用的子 agent 可以在同一短期计划内复用；一次性子 agent 在结果整合后应及时关闭。",
     "review_rule": "子 agent 的输出默认不是完成态，只有主 agent 审查通过并整合后，才可计入里程碑进度。"
   },
   "core_design_principles": [
@@ -138,6 +156,24 @@
       "name": "主规划子执行",
       "status": "active",
       "rule": "主 agent 负责里程碑、短期计划、任务拆分和验收；子 agent 默认负责执行短期计划中的具体工作。"
+    },
+    {
+      "id": "p13",
+      "name": "低成本优先",
+      "status": "active",
+      "rule": "子 agent 默认优先使用低消耗模型；只有任务复杂度确实需要时才提升模型能力。"
+    },
+    {
+      "id": "p14",
+      "name": "小规模并行",
+      "status": "active",
+      "rule": "默认只开 1 到 2 个子 agent，避免过度并行带来的死锁、冲突或整合开销。"
+    },
+    {
+      "id": "p15",
+      "name": "里程碑后汇报",
+      "status": "active",
+      "rule": "里程碑完成、审查通过并提交 Git 后，再向用户做阶段完成汇报。"
     }
   ],
   "milestones": [
@@ -169,7 +205,7 @@
     {
       "id": "m3",
       "name": "ops provisioning 成型",
-      "status": "pending",
+      "status": "completed",
       "goal": "让 ops 可以执行 agent/user 创建工作流，并正确写入 runtime state 与 audit。",
       "done_when": [
         "定义 provisioning 执行方式",
