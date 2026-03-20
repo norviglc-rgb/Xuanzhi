@@ -3,7 +3,7 @@
 ## General
 - target reference exists
 - input/output traceable
-- relevant state/audit updated
+- relevant logs/audit updated
 - no obvious privilege violation
 
 ## User instance creation
@@ -24,3 +24,4 @@
 - new memory first lands in daily memory
 - promotion to MEMORY.md meets durable criteria
 - no secrets or unverified conclusions
+

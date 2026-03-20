@@ -1,25 +1,24 @@
 # Runtime Agents
 
-This directory contains documentation about the agent system.
+This directory contains per-agent runtime directories.
 
-## Actual Agent Locations
+## What Lives Here
 
-The actual agent workspaces are located at:
-- **OpenClaw default**: `~/.openclaw/agents/<agentId>/`
-- **Custom location**: As configured in `openclaw.json`
+- `~/.openclaw/agents/<agentId>/agent/` (agent state/config root)
+- `~/.openclaw/agents/<agentId>/sessions/` (session files)
 
-## Repository Role
+## Workspace Location
 
-This repository maintains:
-- **Templates**: `templates/` - Agent templates for creating new agents
-- **State**: `state/` - Live runtime state
-- **Workflows**: `workflows/` - Agent materialization workflows
+Managed workspaces are stored separately at:
+
+- `~/.openclaw/workspace-<agentId>/`
 
 ## Sessions
 
-Agent `sessions/` directories are runtime-only and NOT stored in this repository.
-They are generated and maintained by OpenClaw at runtime.
+The `sessions/` folders are runtime-owned and will change frequently.
 
-## Agent Catalog
+## Source of Truth
 
-See `state/agents/catalog.json` for the agent registry.
+The authoritative agent list and permissions are defined in:
+
+- `~/.openclaw/openclaw.json`
