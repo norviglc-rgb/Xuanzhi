@@ -1,6 +1,8 @@
 import json
 import pathlib
 import subprocess
+import tempfile
+import shutil
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,11 +14,47 @@ SCRIPTS = [
 
 
 class WorkflowRuntimeReplayTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir = tempfile.mkdtemp(prefix="workflow-replay-")
+        cls.sandbox = pathlib.Path(cls.temp_dir)
+        copy_items = [
+            "docs",
+            "policies",
+            "schemas",
+            "workflows",
+            "templates",
+            "state",
+            "scripts",
+        ]
+        for name in copy_items:
+            src = ROOT / name
+            dst = cls.sandbox / name
+            if src.is_dir():
+                shutil.copytree(src, dst)
+            elif src.exists():
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.temp_dir, ignore_errors=True)
+
     def run_script(self, script_name: str) -> dict:
-        script_path = ROOT / "scripts" / script_name
+        script_path = self.sandbox / "scripts" / script_name
         result = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(script_path)],
-            cwd=ROOT,
+            [
+                "powershell",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(script_path),
+                "-RepoRoot",
+                str(self.sandbox),
+            ],
+            cwd=self.sandbox,
             capture_output=True,
             text=True,
         )
@@ -29,7 +67,7 @@ class WorkflowRuntimeReplayTests(unittest.TestCase):
             self.fail(f"Failed to parse JSON from {script_name}: {exc}\nOutput:\n{output}")
 
     def assert_audit_entry(self, workflow_id: str, request_id: str):
-        audit_path = ROOT / "logs" / "audit" / f"{workflow_id}.jsonl"
+        audit_path = self.sandbox / "logs" / "audit" / f"{workflow_id}.jsonl"
         self.assertTrue(audit_path.exists(), f"audit log missing for {workflow_id}")
         lines = []
         for raw_line in audit_path.read_text(encoding="utf-8-sig").splitlines():
@@ -47,7 +85,7 @@ class WorkflowRuntimeReplayTests(unittest.TestCase):
         for script_name, workflow_id in SCRIPTS:
             summary = self.run_script(script_name)
             self.assertEqual(summary["workflowId"], workflow_id)
-            state_path = ROOT / "state" / "workflows" / f"{workflow_id}.json"
+            state_path = self.sandbox / "state" / "workflows" / f"{workflow_id}.json"
             self.assertTrue(state_path.exists(), f"state file missing for {workflow_id}")
             state = json.loads(state_path.read_text(encoding="utf-8-sig"))
             self.assertEqual(state["workflowId"], workflow_id)

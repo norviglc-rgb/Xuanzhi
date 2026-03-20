@@ -7,7 +7,7 @@ function Get-ModelFailoverAuditLogFilePath {
     $fullPath = [System.IO.Path]::GetFullPath($OverridePath)
   } else {
     $projectRoot = Resolve-Path -Path (Join-Path $PSScriptRoot "..")
-    $fullPath = Join-Path $projectRoot "logs" "audit" "model-failover.jsonl"
+    $fullPath = Join-Path (Join-Path (Join-Path $projectRoot "logs") "audit") "model-failover.jsonl"
   }
 
   $logDir = Split-Path -Parent $fullPath

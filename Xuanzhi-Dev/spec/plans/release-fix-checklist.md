@@ -15,7 +15,7 @@ Current Release Verdict: `NO-GO`
 
 | id | issue | required fix | owner | status |
 | --- | --- | --- | --- | --- |
-| RG-03 | audit envelope/path not unified | normalize audit schema and write-path policy across hooks/workflows/state | ops + critic | todo |
+| RG-03 | audit envelope/path not unified | normalize audit schema and write-path policy across hooks/workflows/state | ops + critic | in_progress |
 | RG-04 | multi-user daily isolation proof missing | create at least two daily users and isolation/denial test case | ops + critic | todo |
 | RG-05 | skills/agent lifecycle evidence incomplete | add one replayable create/update/review/audit lifecycle proof | skills-smith + agent-smith | todo |
 | RG-06 | deploy/runbook evidence weak | add minimal reproducible ops runbook with audit and review linkage | ops | todo |

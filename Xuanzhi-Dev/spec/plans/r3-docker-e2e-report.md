@@ -49,3 +49,21 @@ Container: `xuanzhi-r3-test`
 
 - `r3`目标（Docker内安装、复制、核心链路可观测）已达到。
 - 发布仍受 P0/P1 缺口约束（见 `release-gap-list.md` 与 `release-fix-checklist.md`），当前结论为 `no-go before fixes`.
+
+## R4 Credentialed Regression Update (2026-03-20)
+
+Scope extension:
+- Run Docker E2E with real `OPENROUTER_API_KEY`.
+- Validate OpenRouter free-model auto selection + fallback behavior.
+- Validate unified audit records for model-switch success/failure.
+
+Results:
+- Docker authenticated E2E: pass (`scripts/docker-openrouter-e2e.ps1` returned 0).
+- Full regression with Docker gate enabled: pass (`run-product-tests.ps1` + `RUN_PRODUCT_TESTS_DOCKER_OPENROUTER_E2E=1`, 34/34 OK).
+- Unified audit confirms model switch events:
+  - `action=model_switch decision=failure` (primary candidate timeout/failure)
+  - `action=model_switch decision=success` (fallback candidate success)
+  - location: `logs/audit/model-failover.jsonl`
+
+Notes:
+- Runtime still reports gateway closed and falls back to embedded execution in this container path, but authenticated OpenRouter call chain completed and was auditable.

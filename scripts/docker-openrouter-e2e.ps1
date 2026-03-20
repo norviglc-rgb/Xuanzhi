@@ -24,12 +24,52 @@ $tempConfig = $null
 $runRequestId = [guid]::NewGuid().ToString()
 
 . (Join-Path $scriptRoot "model-failover-audit.ps1")
+
+function Write-ModelSwitchEventsFromOutput {
+  param(
+    [Parameter(Mandatory = $true)][string[]]$Lines,
+    [Parameter(Mandatory = $true)][string]$RequestId
+  )
+
+  foreach ($line in $Lines) {
+    if (-not $line) {
+      continue
+    }
+    if ($line -notmatch "\[model-fallback/decision\]") {
+      continue
+    }
+
+    $decisionMatch = [regex]::Match($line, "decision=([^\s]+)")
+    $requestedMatch = [regex]::Match($line, "requested=([^\s]+)")
+    $candidateMatch = [regex]::Match($line, "candidate=([^\s]+)")
+    $nextMatch = [regex]::Match($line, "next=([^\s]+)")
+    $reasonMatch = [regex]::Match($line, "reason=([^\s]+)")
+
+    $decisionRaw = if ($decisionMatch.Success) { $decisionMatch.Groups[1].Value } else { "unknown" }
+    $requested = if ($requestedMatch.Success) { $requestedMatch.Groups[1].Value } else { "unknown" }
+    $candidate = if ($candidateMatch.Success) { $candidateMatch.Groups[1].Value } else { "unknown" }
+    $nextModel = if ($nextMatch.Success) { $nextMatch.Groups[1].Value } else { "none" }
+    $reason = if ($reasonMatch.Success) { $reasonMatch.Groups[1].Value } else { "unknown" }
+
+    $auditDecision = "failure"
+    if ($decisionRaw -eq "candidate_succeeded") {
+      $auditDecision = "success"
+    }
+
+    $target = "$requested->$candidate"
+    $errorCode = if ($auditDecision -eq "failure") { "MODEL_SWITCH_FAILED" } else { $null }
+    $reasonText = "decision=$decisionRaw; reason=$reason; next=$nextModel"
+
+    Write-ModelFailoverAuditEvent -RequestId $RequestId -Source "docker-openrouter-e2e" -Target $target -Action "model_switch" -Decision $auditDecision -Model $candidate -Reason $reasonText -ErrorCode $errorCode
+  }
+}
+
 Push-Location $projectRoot
 try {
   $tempConfig = Join-Path $env:TEMP ("openclaw-docker-openrouter-e2e-$([guid]::NewGuid().ToString()).json")
   Copy-Item -Path (Join-Path $projectRoot "openclaw.json") -Destination $tempConfig -Force
 
-  $syncScript = Join-Path $projectRoot "scripts" "sync-openrouter-free-models.ps1"
+  $syncScript = Join-Path (Join-Path $projectRoot "scripts") "sync-openrouter-free-models.ps1"
   if (-not (Test-Path $syncScript)) {
     throw "Missing $syncScript"
   }
@@ -87,7 +127,18 @@ try {
   )
 
   try {
-    & docker @openClawArgs
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $agentOutput = & docker @openClawArgs 2>&1
+    $dockerExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousErrorActionPreference
+    foreach ($line in $agentOutput) {
+      Write-Host $line
+    }
+    if ($dockerExitCode -ne 0) {
+      throw "docker returned exit code $dockerExitCode"
+    }
+    Write-ModelSwitchEventsFromOutput -Lines @($agentOutput | ForEach-Object { [string]$_ }) -RequestId $runRequestId
     Write-Host "OpenRouter call succeeded."
     Write-ModelFailoverAuditEvent -RequestId $runRequestId -Source "docker-openrouter-e2e" -Target $containerName -Action "docker_openrouter_agent_call" -Decision "success" -Reason "openclaw_agent_completed"
   } catch {
