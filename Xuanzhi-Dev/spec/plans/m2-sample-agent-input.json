@@ -1,0 +1,11 @@
+{
+  "id": "sample-helper",
+  "workspace": "workspace-sample-helper",
+  "agentDir": "agents/sample-helper/agent",
+  "tools": {
+    "allow": ["read", "sessions_list", "sessions_history"],
+    "deny": ["exec", "write", "edit", "apply_patch", "browser", "canvas"]
+  },
+  "sandboxOmitted": true,
+  "sandboxOmittedReason": "Use runtime default from openclaw.json agents.defaults.sandbox unless override is required."
+}

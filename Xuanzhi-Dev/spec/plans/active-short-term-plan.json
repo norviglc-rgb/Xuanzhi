@@ -2,12 +2,12 @@
   "plan_type": "short_term",
   "plan_id": "stp-m2-agent-smith-contract",
   "parent_milestone_id": "m2",
-  "status": "active",
+  "status": "completed",
   "last_updated": "2026-03-20",
   "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
   "goal": "把 agent-smith 落成可执行的通用 agent 创建契约，明确最小输出、命名规则、回滚方式和验收标准，并完成一次最小演练或等价验证。",
   "execution_rule": "当前短期计划必须走完实施细则、实际执行、验证、回顾；任何仅停留在文档层的工作都不足以关闭本计划。",
-  "delegation_rule": "必要时可以启用子 agent 处理并行子任务，但当前短期计划的判断、整合、验证和阶段审查仍由主 agent 负责。",
+  "delegation_rule": "默认由主 agent 维护本短期计划并拆分任务，由子 agent 执行具体子任务；当前短期计划的判断、整合、验证和阶段审查仍由主 agent 负责。",
   "scope": [
     "定义通用 agent creation contract",
     "定义 agent 最小根文件、最小目录和命名约定",
@@ -19,67 +19,68 @@
     {
       "id": "s1",
       "name": "梳理 agent 创建输入输出边界",
-      "status": "in_progress",
+      "status": "completed",
       "done_when": [
         "定义创建 agent 所需输入字段",
         "定义创建结果的最小输出文件和目录",
         "定义 agent-smith 与 ops 的交接边界"
       ],
       "artifacts": [
-        "待创建：m2 agent contract draft"
+        "Xuanzhi-Dev/spec/plans/m2-agent-contract-draft.md"
       ]
     },
     {
       "id": "s2",
       "name": "定义最小 agent 契约文档",
-      "status": "pending",
+      "status": "completed",
       "done_when": [
         "形成正式的 agent creation contract",
         "明确命名规则、文件规则、目录规则",
         "明确哪些内容属于通用约束，哪些留给具体角色覆盖"
       ],
       "artifacts": [
-        "待创建：agent creation contract"
+        "Xuanzhi-Dev/spec/plans/agent-creation-contract.md"
       ]
     },
     {
       "id": "s3",
       "name": "定义回滚与验收规则",
-      "status": "pending",
+      "status": "completed",
       "done_when": [
         "明确失败回滚方式",
         "明确验收检查项",
         "明确 critic 或后续 review 的接入点"
       ],
       "artifacts": [
-        "待创建：agent contract validation and rollback"
+        "Xuanzhi-Dev/spec/plans/agent-contract-validation-and-rollback.md"
       ]
     },
     {
       "id": "s4",
       "name": "完成一次最小演练或等价验证",
-      "status": "pending",
+      "status": "completed",
       "done_when": [
         "至少有一次基于契约的演练、样例落地或等价执行证明",
         "证明该契约可被 ops 后续执行使用",
         "记录发现的问题"
       ],
       "artifacts": [
-        "待创建：m2 execution proof"
+        "Xuanzhi-Dev/spec/plans/m2-sample-agent-input.json",
+        "Xuanzhi-Dev/spec/plans/m2-execution-proof.md"
       ]
     },
     {
       "id": "s5",
       "name": "进行 m2 验证与阶段回顾",
-      "status": "pending",
+      "status": "completed",
       "done_when": [
         "形成验证记录",
         "形成阶段回顾",
         "不合格项进入重做清单"
       ],
       "artifacts": [
-        "待创建：m2 verification note",
-        "待创建：m2 review and rework"
+        "Xuanzhi-Dev/spec/plans/m2-verification-note.md",
+        "Xuanzhi-Dev/spec/plans/m2-review-and-rework.md"
       ]
     }
   ],
@@ -91,14 +92,13 @@
     "能够无歧义进入 m3"
   ],
   "next_actions": [
-    "先完成 s1，梳理 agent 创建输入输出边界",
-    "然后完成 s2-s4，形成契约、回滚/验收和最小演练",
-    "最后完成 s5，做验证和阶段回顾"
+    "当前短期计划已完成",
+    "下一步可创建 m3 的新短期计划"
   ],
   "review_gate": {
     "required": true,
     "pass_rule": "必须确认本阶段不仅定义了契约，还产生了可供 ops 后续消费的明确输出和最小执行证据。",
     "fail_rule": "若发现输出仍停留在概念层，必须新增重做项并保持本短期计划 active。"
   },
-  "handoff_note": "如果会话中断，下一次从 s1 开始。优先围绕 agent-smith 的通用 agent 创建契约，而不是回到旧的 core-agent 模板体系。"
+  "handoff_note": "该短期计划已完成。新会话应先读取 m2 产物与审查记录，再设计 m3 的唯一 active 短期计划。"
 }

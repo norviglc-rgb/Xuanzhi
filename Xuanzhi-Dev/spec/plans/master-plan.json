@@ -17,13 +17,29 @@
       "验证执行结果",
       "阶段性回顾与审查",
       "将不合格项加入重做清单并重新执行",
+      "里程碑审查通过后提交 Git",
       "通过后才能关闭当前短期计划并进入下一个"
+    ]
+  },
+  "git_policy": {
+    "status": "active",
+    "rule": "每个里程碑在主 agent 完成阶段审查并通过后，应提交一次 Git，以保存已验证的阶段成果。",
+    "commit_trigger": "milestone_review_passed",
+    "commit_scope": [
+      "reviewed milestone outputs",
+      "updated formal plans",
+      "supporting runtime-facing docs when relevant"
+    ],
+    "exclude_by_default": [
+      ".codex/"
     ]
   },
   "subagent_policy": {
     "status": "active",
-    "goal": "在长线任务中使用子 agent 提高并行度，但不把主线判断、整合与审查外包掉。",
+    "goal": "在长线任务中由主 agent 负责中长期规划与验收，由子 agent 执行短期计划中的具体任务，从而保持持续推进。",
+    "default_mode": "main-agent-plans-subagents-execute",
     "when_to_use": [
+      "当前短期计划已经明确，可以拆成具体执行子任务",
       "存在可并行的独立子问题",
       "局部实现、盘点、检索、验证可以与主线工作并行",
       "子任务边界清晰且结果可独立审查"
@@ -34,11 +50,19 @@
       "需要全局权衡、最终裁决或阶段验收"
     ],
     "main_agent_duties": [
+      "维护中长期计划和唯一 active 的短期计划",
+      "把短期计划拆成可执行子任务",
+      "创建子 agent 并分配任务",
       "拆分任务并定义边界",
       "保留关键主线判断",
       "审查子 agent 输出",
       "整合结果并决定是否接受",
       "将不合格输出加入重做计划"
+    ],
+    "subagent_duties": [
+      "执行被分配的具体短期子任务",
+      "返回清晰结果、问题和证据",
+      "不自行变更中长期计划或里程碑定义"
     ],
     "review_rule": "子 agent 的输出默认不是完成态，只有主 agent 审查通过并整合后，才可计入里程碑进度。"
   },
@@ -108,6 +132,12 @@
       "name": "主审查不外包",
       "status": "active",
       "rule": "可以使用子 agent 做并行工作，但最终整合、阶段验收、风险判断和重做决策必须由主 agent 负责。"
+    },
+    {
+      "id": "p12",
+      "name": "主规划子执行",
+      "status": "active",
+      "rule": "主 agent 负责里程碑、短期计划、任务拆分和验收；子 agent 默认负责执行短期计划中的具体工作。"
     }
   ],
   "milestones": [
@@ -126,7 +156,7 @@
     {
       "id": "m2",
       "name": "agent-smith 成型",
-      "status": "in_progress",
+      "status": "completed",
       "goal": "建立通用 agent 创建契约与最小输出标准，不再依赖独立 core-agent 模板体系。",
       "done_when": [
         "定义 agent creation contract",
