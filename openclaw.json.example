@@ -1,6 +1,6 @@
 {
   "tools": {
-    "profile": "coding",
+    "profile": "full",
     "agentToAgent": {
       "enabled": false
     }
@@ -52,6 +52,17 @@
       "sandbox": {
         "mode": "non-main",
         "scope": "agent"
+      },
+      "model": {
+        "primary": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "fallbacks": [
+          "openrouter/arcee-ai/trinity-mini:free",
+          "openrouter/qwen/qwen3-coder:free",
+          "openrouter/openai/gpt-oss-120b:free",
+          "openrouter/z-ai/glm-4.5-air:free",
+          "minimax/MiniMax-M2.5-highspeed",
+          "minimax/MiniMax-M2.5"
+        ]
       }
     },
     "list": [
@@ -62,7 +73,7 @@
         "agentDir": "~/.openclaw/agents/orchestrator/agent",
         "tools": {
           "allow": ["read", "sessions_list", "sessions_history", "sessions_send", "sessions_spawn", "session_status"],
-          "deny": ["exec", "write", "edit", "apply_patch", "browser", "canvas"]
+          "deny": ["exec", "write", "edit", "browser", "canvas"]
         }
       },
       {
@@ -71,7 +82,7 @@
         "agentDir": "~/.openclaw/agents/critic/agent",
         "tools": {
           "allow": ["read", "sessions_list", "sessions_history"],
-          "deny": ["exec", "write", "edit", "apply_patch", "browser", "canvas"]
+          "deny": ["exec", "write", "edit", "browser", "canvas"]
         }
       },
       {
@@ -79,7 +90,7 @@
         "workspace": "~/.openclaw/workspace-architect",
         "agentDir": "~/.openclaw/agents/architect/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch", "sessions_list", "sessions_history"],
+          "allow": ["read", "write", "edit", "sessions_list", "sessions_history"],
           "deny": ["browser", "canvas"]
         }
       },
@@ -89,7 +100,7 @@
         "agentDir": "~/.openclaw/agents/ops/agent",
         "tools": {
           "allow": ["read", "exec", "sessions_list", "sessions_history"],
-          "deny": ["write", "edit", "apply_patch", "browser", "canvas"]
+          "deny": ["write", "edit", "browser", "canvas"]
         }
       },
       {
@@ -97,7 +108,7 @@
         "workspace": "~/.openclaw/workspace-skills-smith",
         "agentDir": "~/.openclaw/agents/skills-smith/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch"],
+          "allow": ["read", "write", "edit"],
           "deny": ["exec", "browser", "canvas"]
         }
       },
@@ -106,7 +117,7 @@
         "workspace": "~/.openclaw/workspace-agent-smith",
         "agentDir": "~/.openclaw/agents/agent-smith/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch"],
+          "allow": ["read", "write", "edit"],
           "deny": ["exec", "browser", "canvas"]
         }
       },
@@ -118,11 +129,55 @@
           "mode": "off"
         },
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch", "exec", "sessions_list", "sessions_history"],
+          "allow": ["read", "write", "edit", "exec", "sessions_list", "sessions_history"],
           "deny": ["canvas"]
         }
       }
     ]
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "api": "anthropic-messages",
+        "apiKey": "${MINIMAX_API_KEY}",
+        "models": [
+          {
+            "id": "MiniMax-M2.5",
+            "name": "MiniMax M2.5",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0.3,
+              "output": 1.2,
+              "cacheRead": 0.03,
+              "cacheWrite": 0.12
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "MiniMax-M2.5-highspeed",
+            "name": "MiniMax M2.5 Highspeed",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0.3,
+              "output": 1.2,
+              "cacheRead": 0.03,
+              "cacheWrite": 0.12
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
   },
   "bindings": [],
   "channels": {}

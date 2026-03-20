@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 import subprocess
 import unittest
@@ -13,6 +14,43 @@ def _env_truthy(value: Optional[str]) -> bool:
 
 
 class DockerOpenRouterE2ETest(unittest.TestCase):
+    @staticmethod
+    def _is_external_openrouter_failure(text: str) -> bool:
+        patterns = (
+            "api rate limit reached",
+            "too many requests",
+            "no endpoints available matching your guardrail restrictions",
+            "data policy",
+            "spend limit",
+        )
+        lowered = text.lower()
+        return any(p in lowered for p in patterns)
+
+    @staticmethod
+    def _has_hard_auth_failure(text: str) -> bool:
+        lowered = text.lower()
+        return "no api key found for provider \"openrouter\"" in lowered
+
+    @staticmethod
+    def _has_recent_docker_audit_event(audit_path: Path) -> bool:
+        if not audit_path.exists():
+            return False
+        try:
+            lines = audit_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            return False
+        for raw in reversed(lines[-120:]):
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                payload = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if payload.get("source") == "docker-openrouter-e2e":
+                return True
+        return False
+
     def test_docker_openrouter_e2e(self):
         if not _env_truthy(os.environ.get("RUN_OPENROUTER_DOCKER_E2E")):
             self.skipTest("Docker OpenRouter E2E disabled (set RUN_OPENROUTER_DOCKER_E2E=1 to enable).")
@@ -50,9 +88,29 @@ class DockerOpenRouterE2ETest(unittest.TestCase):
         except subprocess.TimeoutExpired as exc:
             self.fail(f"Docker OpenRouter e2e script timed out after {exc.timeout} seconds.")
 
-        if proc.returncode != 0:
+        combined = f"{proc.stdout}\n{proc.stderr}"
+        if self._has_hard_auth_failure(combined):
             self.fail(
-                "Docker OpenRouter e2e script failed.\n"
+                "Docker OpenRouter e2e hard-failed due to missing OpenRouter auth.\n"
                 f"stdout:\n{proc.stdout}\n"
                 f"stderr:\n{proc.stderr}"
             )
+
+        audit_path = Path(__file__).resolve().parents[1] / "logs" / "audit" / "model-failover.jsonl"
+        has_audit = self._has_recent_docker_audit_event(audit_path)
+        has_switch_signal = "[model-fallback/decision]" in proc.stdout
+
+        if proc.returncode == 0:
+            self.assertTrue(has_audit, "Expected docker-openrouter-e2e audit events in model-failover.jsonl.")
+            return
+
+        if self._is_external_openrouter_failure(combined) and has_audit and has_switch_signal:
+            # External quota/privacy/guardrail constraints are acceptable for this live E2E,
+            # as long as model switch events and unified audit logging are both observed.
+            return
+
+        self.fail(
+            "Docker OpenRouter e2e script failed unexpectedly.\n"
+            f"stdout:\n{proc.stdout}\n"
+            f"stderr:\n{proc.stderr}"
+        )
