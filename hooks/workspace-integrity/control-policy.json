@@ -1,0 +1,24 @@
+{
+  "version": "v1",
+  "managedWorkspaces": [
+    "workspace-orchestrator",
+    "workspace-critic",
+    "workspace-architect",
+    "workspace-ops",
+    "workspace-skills-smith",
+    "workspace-agent-smith",
+    "workspace-claude-code"
+  ],
+  "requiredFiles": [
+    "AGENTS.md",
+    "SOUL.md",
+    "IDENTITY.md",
+    "TOOLS.md",
+    "BOOT.md",
+    "HEARTBEAT.md"
+  ],
+  "requiredDirs": [
+    "memory"
+  ],
+  "logFile": "~/.openclaw/logs/startup-integrity.jsonl"
+}

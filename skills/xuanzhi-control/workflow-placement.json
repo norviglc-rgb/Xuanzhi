@@ -1,0 +1,54 @@
+{
+  "version": "v1",
+  "openclawInternal": {
+    "useFor": [
+      "channel ingress and agent routing",
+      "workspace bootstrap and boot logic",
+      "heartbeat and cron execution",
+      "host tool execution",
+      "filesystem and local machine actions",
+      "credential-scoped actions",
+      "per-agent tool permissions and sandbox boundaries",
+      "startup integrity checks and local audit logs"
+    ],
+    "avoidFor": [
+      "human approval inboxes",
+      "large business record systems",
+      "cross-team dashboard workflow state"
+    ]
+  },
+  "nocobase": {
+    "useFor": [
+      "human approval workflows",
+      "forms and data entry",
+      "durable business process state",
+      "role-based review queues",
+      "cross-role dashboards and admin backoffice",
+      "record-centric lifecycle orchestration"
+    ],
+    "handoffToOpenClaw": [
+      "approved local-machine actions",
+      "agent-triggered execution after approval",
+      "chat delivery or tool execution on the host"
+    ]
+  },
+  "fastgpt": {
+    "useFor": [
+      "RAG-heavy knowledge workflows",
+      "multi-knowledge-base retrieval and merge",
+      "LLM-only classification or prompt orchestration",
+      "API aggregation that does not require host control",
+      "FAQ search and semantic answer generation"
+    ],
+    "avoidFor": [
+      "host command execution",
+      "credential-sensitive machine operations",
+      "approval state as a system of record"
+    ]
+  },
+  "hybridPatterns": [
+    "NocoBase approves then OpenClaw executes",
+    "FastGPT classifies or retrieves then OpenClaw acts",
+    "OpenClaw emits results then NocoBase stores record and status"
+  ]
+}

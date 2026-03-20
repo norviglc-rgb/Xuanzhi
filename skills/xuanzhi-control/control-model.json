@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "hardControls": [
+    "openclaw.json agent tool allow/deny",
+    "openclaw.json sandbox settings",
+    "hooks startup integrity audit",
+    "logs audit trail"
+  ],
+  "softControls": [
+    "workspace AGENTS.md",
+    "workspace BOOT.md",
+    "workspace HEARTBEAT.md",
+    "workspace MEMORY.md"
+  ],
+  "warnings": [
+    "Hooks are not a full tool-call interception engine.",
+    "Do not model business approval state only in markdown.",
+    "Do not put host-side execution workflows into FastGPT."
+  ]
+}

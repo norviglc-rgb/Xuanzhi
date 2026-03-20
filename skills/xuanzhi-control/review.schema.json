@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills/xuanzhi-control/review.schema.json",
+  "title": "Review",
+  "type": "object",
+  "required": ["reviewId", "targetType", "targetRef", "reviewer", "status", "createdAt"],
+  "properties": {
+    "reviewId": { "type": "string" },
+    "targetType": { "type": "string", "enum": ["task", "agent", "skill", "user_instance", "policy_change", "memory_promotion"] },
+    "targetRef": { "type": "string" },
+    "reviewer": { "type": "string", "const": "critic" },
+    "status": { "type": "string", "enum": ["pending", "approved", "rejected", "needs_changes"] },
+    "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "message"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+          "message": { "type": "string" },
+          "suggestedAction": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}
+

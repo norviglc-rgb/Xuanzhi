@@ -1,16 +1,20 @@
 # Claude Code settings
 .claude/*
 
-# External reference mirror (651 files, keep untracked)
-reference/openclaw/
+# Development-only mirror and research materials
+Xuanzhi-Dev/reference/openclaw/
 
-# Generated 运行态
-generated/audit/*.jsonl
-generated/workspaces/**/logs/
-generated/workspaces/**/memory/
-generated/workspaces/**/reports/
-generated/agents/**/sessions/
+# Runtime churn
+agents/*/sessions/*.jsonl
+logs/*.jsonl
+logs/audit/*.jsonl
+workspace-*/logs/
+workspace-*/reports/
 
 # Keep directory structure
-!generated/**/.gitkeep
-!runtime/**/.gitkeep
+!agents/**/.gitkeep
+!credentials/**/.gitkeep
+!cron/**/.gitkeep
+!hooks/**/.gitkeep
+!logs/**/.gitkeep
+!workspace-*/**/.gitkeep
