@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "agents": {
+    "orchestrator": {
+      "allow": ["group:sessions", "group:memory", "group:messaging", "read"],
+      "deny": ["group:runtime", "exec", "deploy", "broad_write"]
+    },
+    "critic": {
+      "allow": ["read", "group:memory", "group:sessions"],
+      "deny": ["exec", "write", "edit", "apply_patch", "deploy"]
+    },
+    "architect": {
+      "allow": ["read", "write", "edit", "apply_patch", "limited_exec"],
+      "deny": ["broad_deploy", "high_risk_ops"]
+    },
+    "ops": {
+      "allow": ["read", "exec", "process_control", "allowlisted_write", "allowlisted_deploy", "user_instance_lifecycle"],
+      "deny": ["non_allowlisted_high_risk_actions"]
+    },
+    "skills-smith": {
+      "allow": ["read", "write", "edit", "skills_write"],
+      "deny": ["deploy", "ops_runtime"]
+    },
+    "agent-smith": {
+      "allow": ["read", "write", "edit", "agent_template_write", "policy_template_write", "schema_template_write", "workflow_template_write"],
+      "deny": ["user_instance_create", "ops_runtime", "deploy"]
+    },
+    "daily-template": {
+      "allow": ["group:memory", "group:messaging", "read"],
+      "deny": ["group:runtime", "exec", "deploy", "broad_write", "ops_actions"]
+    }
+  }
+}

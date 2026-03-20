@@ -8,8 +8,8 @@ Current Release Verdict: `NO-GO`
 
 | id | issue | required fix | owner | status |
 | --- | --- | --- | --- | --- |
-| RG-01 | runtime single-source-of-truth landing incomplete | promote `docs/system` + `policies` + `schemas` + `workflows` + `state` to active runtime and update all references | architect + ops | todo |
-| RG-02 | key workflows lack executable evidence | materialize runnable entries for `materialize-core-agents`, `create-daily-user`, `memory-promote` with replayable state/audit/review chain | ops + agent-smith + critic | todo |
+| RG-01 | runtime single-source-of-truth landing incomplete | promote `docs/system` + `policies` + `schemas` + `workflows` + `state` to active runtime and update all references | architect + ops | done_candidate |
+| RG-02 | key workflows lack executable evidence | materialize runnable entries for `materialize-core-agents`, `create-daily-user`, `memory-promote` with replayable state/audit/review chain | ops + agent-smith + critic | done_candidate |
 
 ## Should Fix Before Release (P1)
 

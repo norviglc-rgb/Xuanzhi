@@ -1,0 +1,11 @@
+{
+    "version":  "v1",
+    "users":  [
+                  {
+                      "userId":  "r4-user-001",
+                      "agentId":  "daily-r4-user-001",
+                      "workspaceId":  "workspace-daily-r4-user-001",
+                      "status":  "pending_review"
+                  }
+              ]
+}

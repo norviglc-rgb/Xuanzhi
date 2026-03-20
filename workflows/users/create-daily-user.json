@@ -1,0 +1,58 @@
+{
+  "version": "v1",
+  "workflowId": "create-daily-user",
+  "owner": "ops",
+  "description": "Create a daily user runtime instance and register into active root state and audit logs.",
+  "trigger": {
+    "type": "manual_or_external_event",
+    "inputs": ["requestId", "userId", "displayName", "persona"]
+  },
+  "preconditions": [
+    "schemas/user-profile.schema.json exists",
+    "state/users/index.json exists",
+    "state/agents/catalog.json exists",
+    "policies/memory-policy.json exists"
+  ],
+  "steps": [
+    {
+      "id": "create_workspace",
+      "action": "mkdir_many",
+      "targets_template": [
+        "workspace-daily-<userId>",
+        "workspace-daily-<userId>/memory",
+        "workspace-daily-<userId>/docs",
+        "workspace-daily-<userId>/state"
+      ]
+    },
+    {
+      "id": "create_agent_runtime",
+      "action": "mkdir_many",
+      "targets_template": [
+        "agents/daily-<userId>/agent",
+        "agents/daily-<userId>/sessions"
+      ]
+    },
+    {
+      "id": "register_user",
+      "action": "upsert_json",
+      "target": "state/users/index.json"
+    },
+    {
+      "id": "register_agent",
+      "action": "upsert_json",
+      "target": "state/agents/catalog.json"
+    },
+    {
+      "id": "write_audit",
+      "action": "append_jsonl",
+      "target": "logs/audit/user-provision.jsonl"
+    },
+    {
+      "id": "submit_for_review",
+      "action": "append_jsonl",
+      "target": "logs/audit/review-gate.jsonl"
+    }
+  ],
+  "successState": "pending_review",
+  "failureState": "failed"
+}

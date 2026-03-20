@@ -1,0 +1,31 @@
+{
+  "version": "v1",
+  "layers": {
+    "daily_memory": {
+      "path_pattern": "memory/YYYY-MM-DD.md",
+      "purpose": ["daily_context", "debug_trace", "incident_notes", "temporary_observations", "handoff_summary"],
+      "mode": "append_only"
+    },
+    "long_term_memory": {
+      "path": "MEMORY.md",
+      "purpose": ["durable_preferences", "persistent_decisions", "stable_constraints", "validated_experience", "long_term_user_profile"],
+      "mode": "curated"
+    }
+  },
+  "write_rules": {
+    "default_target": "daily_memory",
+    "promotion_required_for_long_term": true
+  },
+  "promotion_criteria_any": [
+    "reused_multiple_times",
+    "stable_for_multiple_sessions",
+    "decision_with_long_term_effect",
+    "validated_user_preference",
+    "stable_environment_constraint"
+  ],
+  "forbidden_content": ["secrets", "tokens", "passwords", "raw_sensitive_dump", "unverified_conclusion", "irrelevant_noise"],
+  "review": {
+    "reviewer": "critic",
+    "allow_workflow_promotion": true
+  }
+}

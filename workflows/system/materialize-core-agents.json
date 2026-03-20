@@ -1,0 +1,59 @@
+{
+  "version": "v1",
+  "workflowId": "materialize-core-agents",
+  "owner": "ops",
+  "description": "Materialize core workspaces/agent dirs and register baseline state for system agents in active runtime root.",
+  "trigger": {
+    "type": "manual",
+    "inputs": ["requestId", "agentIds"]
+  },
+  "defaults": {
+    "agentIds": [
+      "orchestrator",
+      "critic",
+      "architect",
+      "ops",
+      "skills-smith",
+      "agent-smith",
+      "claude-code"
+    ]
+  },
+  "preconditions": [
+    "docs/system/ARCHITECTURE.md exists",
+    "docs/system/GOVERNANCE.md exists",
+    "policies/routing-policy.json exists",
+    "policies/tool-policy-matrix.json exists",
+    "state/agents/catalog.json exists"
+  ],
+  "steps": [
+    {
+      "id": "ensure_workspace_dirs",
+      "action": "mkdir_many",
+      "targets_template": [
+        "workspace-<item>",
+        "workspace-<item>/memory",
+        "workspace-<item>/docs"
+      ]
+    },
+    {
+      "id": "ensure_agent_runtime_dirs",
+      "action": "mkdir_many",
+      "targets_template": [
+        "agents/<item>/agent",
+        "agents/<item>/sessions"
+      ]
+    },
+    {
+      "id": "register_state",
+      "action": "upsert_json",
+      "target": "state/agents/catalog.json"
+    },
+    {
+      "id": "write_audit",
+      "action": "append_jsonl",
+      "target": "logs/audit/core-agent-materialization.jsonl"
+    }
+  ],
+  "successState": "pending_review",
+  "failureState": "failed"
+}

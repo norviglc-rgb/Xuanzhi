@@ -1,0 +1,39 @@
+{
+  "version": "v1",
+  "default_entry_agent": "orchestrator",
+  "bindings_strategy": {
+    "daily_user_binding": "explicit_per_user",
+    "fallback": "orchestrator"
+  },
+  "task_routes": [
+    { "type": "chat_or_query", "target": "daily-<userId>" },
+    { "type": "simple_development", "target": "architect" },
+    { "type": "ops_or_deployment", "target": "ops" },
+    { "type": "skill_maintenance", "target": "skills-smith" },
+    { "type": "agent_maintenance", "target": "agent-smith" },
+    { "type": "review_or_signoff", "target": "critic" },
+    { "type": "parallel_research", "target": "subagents" }
+  ],
+  "complexity_upgrade": {
+    "target": "claude-code",
+    "runtime": "acp",
+    "conditions_any": [
+      "multi_directory_or_multi_module",
+      "multi_turn_long_running_coding",
+      "requires_test_build_or_regression",
+      "large_refactor",
+      "requires_thread_bound_context",
+      "architect_explicit_upgrade"
+    ],
+    "handoff_required": [
+      "TASK.json",
+      "PLAN.md",
+      "DECISIONS.md",
+      "ACCEPTANCE.md",
+      "NEXT_STEPS.md"
+    ]
+  },
+  "notes": [
+    "Root active runtime truth tiles are stored under docs/system, policies, schemas, workflows, and state."
+  ]
+}
