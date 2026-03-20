@@ -1,0 +1,56 @@
+{
+  "plan_type": "release_readiness_long_term",
+  "plan_id": "xuanzhi-release-readiness-v1",
+  "status": "active",
+  "last_updated": "2026-03-20",
+  "objective": "从需求到实现做全量可发布验收，完成 Docker 安装 OpenClaw + 直接复制到 ~/.openclaw 的端到端验证，并形成可执行修复清单，达到可发布标准。",
+  "principles": [
+    "需求逐条映射实现，不做跳项",
+    "验证必须可复现、可审计、可回滚",
+    "测试覆盖 agent/workflow/config/template 全链路",
+    "主 agent 做规划与验收，执行优先交给低开销子 agent",
+    "发现缺口立即回流重做，禁止表面通过"
+  ],
+  "milestones": [
+    {
+      "id": "r1",
+      "name": "需求-实现全量追踪矩阵",
+      "status": "completed",
+      "done_when": [
+        "需求文档条目完成实现映射",
+        "每个条目有证据路径",
+        "缺口按严重级别分类"
+      ]
+    },
+    {
+      "id": "r2",
+      "name": "组件全量静态核验",
+      "status": "completed",
+      "done_when": [
+        "agent/workflow/config/template 全部核验",
+        "关键配置一致性通过",
+        "静态缺口形成修复项"
+      ]
+    },
+    {
+      "id": "r3",
+      "name": "Docker 端到端动态验收",
+      "status": "completed",
+      "done_when": [
+        "容器内安装 OpenClaw 成功",
+        "仓库内容复制到 ~/.openclaw 成功",
+        "核心链路实测并留证"
+      ]
+    },
+    {
+      "id": "r4",
+      "name": "修复闭环与发布判定",
+      "status": "active",
+      "done_when": [
+        "修复清单关闭或明确豁免",
+        "形成发布前验收报告",
+        "给出 go/no-go 结论"
+      ]
+    }
+  ]
+}

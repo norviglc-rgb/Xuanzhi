@@ -1,0 +1,14 @@
+{
+  "archived_from": "Xuanzhi-Dev/spec/plans/active-short-term-plan.json",
+  "status": "completed",
+  "archived_on": "2026-03-20",
+  "original_plan_id": "stp-r1-requirements-implementation-trace",
+  "parent_milestone_id": "r1",
+  "artifacts": [
+    "Xuanzhi-Dev/spec/plans/release-requirements-trace-matrix.md",
+    "Xuanzhi-Dev/spec/plans/release-gap-list.md",
+    "Xuanzhi-Dev/spec/plans/r1-verification-note.md",
+    "Xuanzhi-Dev/spec/plans/r1-review-and-rework.md"
+  ],
+  "note": "R1 completed; move to R2/R3 release-readiness execution."
+}

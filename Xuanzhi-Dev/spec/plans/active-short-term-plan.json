@@ -1,17 +1,41 @@
 {
-  "plan_type": "short_term_slot",
-  "status": "idle",
+  "plan_type": "short_term",
+  "plan_id": "stp-r4-release-fix-closure",
+  "parent_milestone_id": "r4",
+  "status": "active",
   "last_updated": "2026-03-20",
-  "rule": "当前没有 active 短期计划；如需继续演进，先创建唯一 active 的维护/硬化短期计划。",
-  "last_completed_plan": {
-    "id": "stp-m7-governance-closure",
-    "archive": "Xuanzhi-Dev/spec/plans/archive/stp-m7-governance-closure.completed.json",
-    "result": "completed"
-  },
-  "next_expected_milestone": {
-    "id": null,
-    "name": "maintenance-and-hardening",
-    "status": "optional_next_phase"
-  },
-  "next_action": "全部既定里程碑已完成；如需继续，先定义维护期目标并创建唯一 active 短期计划。"
+  "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
+  "goal": "基于 r2+r3 发现的缺口执行修复闭环，并形成最终发布 go/no-go 判定。",
+  "steps": [
+    {
+      "id": "s1",
+      "name": "按优先级关闭 P0 缺口并补可重放证据",
+      "status": "in_progress",
+      "artifacts": [
+        "release-fix-checklist.md",
+        "P0 修复证据（待创建）"
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "重跑 Docker E2E（含认证场景）并复核 P1/P2",
+      "status": "pending",
+      "artifacts": [
+        "r3-docker-e2e-report.md（更新版）"
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "形成发布结论（go/no-go）并归档当前短期计划",
+      "status": "pending",
+      "artifacts": [
+        "release-verdict.md（待创建）",
+        "archive/stp-r4-release-fix-closure.completed.json（完成后创建）"
+      ]
+    }
+  ],
+  "next_actions": [
+    "按 release-fix-checklist 先处理 P0（RG-01, RG-02）",
+    "组织子 agent执行修复，主线程做验收与发布判定"
+  ]
 }

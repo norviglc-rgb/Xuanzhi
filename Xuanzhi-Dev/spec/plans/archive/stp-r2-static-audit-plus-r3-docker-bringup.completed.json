@@ -1,0 +1,15 @@
+{
+  "plan_type": "short_term",
+  "plan_id": "stp-r2-static-audit-plus-r3-docker-bringup",
+  "parent_milestone_id": "r2-r3",
+  "status": "completed",
+  "completed_at": "2026-03-20",
+  "summary": "完成组件全量静态核验与 Docker 复制到 ~/.openclaw 的端到端验证，形成缺口清单与发布前修复清单。",
+  "artifacts": [
+    "Xuanzhi-Dev/spec/plans/r2-static-audit-report.md",
+    "Xuanzhi-Dev/spec/plans/r3-docker-setup-proof.md",
+    "Xuanzhi-Dev/spec/plans/r3-docker-e2e-report.md",
+    "Xuanzhi-Dev/spec/plans/release-gap-list.md",
+    "Xuanzhi-Dev/spec/plans/release-fix-checklist.md"
+  ]
+}
