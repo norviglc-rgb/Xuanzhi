@@ -6,6 +6,8 @@ This document defines the default closed-loop workflow for long-running Xuanzhi 
 
 It is the operational harness used by the main agent.
 
+It must preserve output quality even when the active model is lower-capability.
+
 ## Default Mode
 
 - main agent owns milestone planning
@@ -17,6 +19,14 @@ It is the operational harness used by the main agent.
 - main agent reviews, integrates, verifies, and decides rework
 - after milestone review passes, main agent commits the milestone outputs to Git
 - after the commit, main agent reports milestone completion to the user
+
+## Harness Principles (2026 Agent-Harness Style)
+
+- harness is the reliability layer, model is replaceable compute
+- keep control flow minimal; prefer robust atomic tools + explicit verification
+- build to delete: avoid hard-coding brittle logic that blocks future model upgrades
+- treat trajectories as dataset: capture structured execution events for replay and grading
+- optimize for durability under long tasks, not only short benchmark-like success
 
 ## Loop
 
@@ -41,6 +51,7 @@ It is the operational harness used by the main agent.
 19. report milestone completion to the user
 20. only then create the next short-term plan
 21. run the phase transition checklist before continuing
+22. log model-routing and critical execution outcomes to unified audit streams
 
 ## Model Use Rule
 
@@ -76,6 +87,27 @@ If any stage produces weak or incomplete output:
 - do not close the short-term plan
 - add the issue to the rework list
 - continue the loop from the affected step
+
+## Low-Capability Model Resilience Mode
+
+Trigger this mode when quota pressure forces a downgrade to weaker models.
+
+- split tasks into smaller bounded units with strict acceptance criteria
+- enforce two-pass verification:
+  - pass 1: deterministic checks (schema/path/state/tool constraints)
+  - pass 2: critic quality gate against requirements and risks
+- require replayable artifacts before marking any step as complete
+- reduce autonomy radius:
+  - fewer parallel tasks
+  - stronger allowlist constraints
+  - mandatory rollback checkpoint per risky step
+- escalate to human confirmation for ambiguous/noisy outcomes instead of guessing
+
+Exit criteria:
+
+- product tests pass
+- critical audit streams are complete
+- no open P0 blockers in release fix checklist
 
 ## Phase Transition Rule
 

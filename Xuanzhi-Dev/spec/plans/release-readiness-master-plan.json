@@ -9,7 +9,8 @@
     "验证必须可复现、可审计、可回滚",
     "测试覆盖 agent/workflow/config/template 全链路",
     "主 agent 做规划与验收，执行优先交给低开销子 agent",
-    "发现缺口立即回流重做，禁止表面通过"
+    "发现缺口立即回流重做，禁止表面通过",
+    "低能力模型场景必须启用 resilience checks（拆小任务+双重验证+可回放证据）"
   ],
   "milestones": [
     {
@@ -49,9 +50,25 @@
       "done_when": [
         "修复清单关闭或明确豁免",
         "形成发布前验收报告",
-        "给出 go/no-go 结论"
+        "给出 go/no-go 结论",
+        "模型切换审计日志与 Docker 带凭据回归测试可复现"
+      ]
+    },
+    {
+      "id": "r5",
+      "name": "Agent Harness 设计与实现",
+      "status": "pending",
+      "start_condition": "仅在 r4 完成（测试完成+问题修复闭环）后启动",
+      "done_when": [
+        "完成 Agent Harness 现状差距分析与目标架构",
+        "完成 Harness 核心能力实现与迁移方案",
+        "完成 Harness 回归验证并形成上线切换清单"
       ]
     }
+  ],
+  "defer_rules": [
+    "r5 不得抢占 r4 的测试与修复资源",
+    "在 r4 为 active 时，r5 仅允许规划与分解，不允许进入实现阶段"
   ],
   "test_matrix_file": "spec/plans/product-test-matrix.md",
   "ability_coverage": [

@@ -19,9 +19,10 @@
     {
       "id": "s2",
       "name": "重跑 Docker E2E（含认证场景）并复核 P1/P2",
-      "status": "pending",
+      "status": "in_progress",
       "artifacts": [
-        "r3-docker-e2e-report.md（更新版）"
+        "r3-docker-e2e-report.md（更新版）",
+        "logs/audit/model-failover.jsonl"
       ]
     },
     {
@@ -36,7 +37,9 @@
   ],
   "next_actions": [
     "按 release-fix-checklist 先处理 P0（RG-01, RG-02）",
-    "组织子 agent执行修复，主线程做验收与发布判定"
+    "组织子 agent执行修复，主线程做验收与发布判定",
+    "完成 Docker + OpenRouter 凭据回归测试并记录统一审计日志",
+    "并行完成 Agent Harness 分解规划（不进入实现），见 agent-harness-adoption-plan.md"
   ]
   ,
   "test_matrix_file": "spec/plans/product-test-matrix.md",

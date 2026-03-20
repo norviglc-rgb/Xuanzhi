@@ -24,6 +24,7 @@ Use it:
 - confirm required outputs for the completed stage exist
 - confirm verification and review artifacts exist if the stage requires them
 - confirm artifact names match what the plan says
+- confirm replay artifacts exist for complex multi-agent steps
 
 ### 3. `.codex` Sync
 
@@ -58,6 +59,8 @@ Use it:
 - confirm the next plan starts from the latest verified outputs, not stale drafts
 - confirm full-chain validation scope is defined (including previously completed key agent tracks)
 - confirm product-quality checks are defined (not only structural checks)
+- if model capability was downgraded, confirm low-capability resilience mode checks were executed
+- confirm unified audit logs contain model-routing success/failure events for this phase
 
 ## Exit Condition
 

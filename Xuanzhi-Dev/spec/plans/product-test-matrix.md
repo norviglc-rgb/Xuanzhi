@@ -115,3 +115,25 @@
 - 期望输出：guard_status fail 时 skill 不会被激活；success 后能自动执行并写入 `call_trace`.
 - 失败判定：guard_status fail 仍然执行，或 success 状态下未绑定 call trace。
 - 重做策略：清空 trigger cache，重新评估 guard condition，再次执行调用过程。
+
+## 模型切换与低能力韧性
+
+### MODEL-01：模型切换统一审计
+- 输入：`scripts/sync-openrouter-free-models.ps1 -Probe`，可用 OpenRouter key。
+- 步骤：
+  1. 运行 probe，触发 primary/fallback 探测。
+  2. 检查 `logs/audit/model-failover.jsonl`。
+  3. 验证 success/failure 事件是否都落盘，且字段完整。
+- 期望输出：每条事件包含 `requestId/source/target/action/decision/timestamp`，并附带 model/reason/errorCode。
+- 失败判定：事件缺失、字段缺失、或出现敏感信息明文泄露。
+- 重做策略：修复审计写入逻辑并重跑 probe，对比前后事件链。
+
+### MODEL-02：Docker 带凭据回归（弱模型容错）
+- 输入：`RUN_PRODUCT_TESTS_DOCKER_OPENROUTER_E2E=1`，`OPENROUTER_API_KEY`，Docker 可用。
+- 步骤：
+  1. 执行 `run-product-tests.ps1` 触发 docker e2e。
+  2. 观察容器内调用是否可用，失败时是否走 fallback 探测链路。
+  3. 检查统一审计日志是否记录本次 e2e 结果。
+- 期望输出：e2e 可复现执行；即使主模型受限，也能在 fallback 下完成可观测调用或明确失败原因。
+- 失败判定：容器流程不稳定、无审计留痕、失败原因不可定位。
+- 重做策略：固定容器复制/权限步骤、重跑并对照审计事件补齐缺失字段。

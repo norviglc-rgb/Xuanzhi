@@ -4,9 +4,11 @@ param(
   [switch]$Probe
 )
 
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $scriptDir "model-failover-audit.ps1")
 if (-not (Test-Path $ConfigPath)) {
   throw "Config file not found: $ConfigPath"
 }
@@ -42,6 +44,7 @@ if ($selected.Count -eq 0) {
 }
 
 if ($Probe -and $env:OPENROUTER_API_KEY) {
+  $probeRequestId = [guid]::NewGuid().ToString()
   $probeHeaders = @{
     Authorization = "Bearer $($env:OPENROUTER_API_KEY)"
     "Content-Type" = "application/json"
@@ -58,8 +61,24 @@ if ($Probe -and $env:OPENROUTER_API_KEY) {
       $resp = Invoke-RestMethod -Uri "https://openrouter.ai/api/v1/chat/completions" -Method Post -Headers $probeHeaders -Body $probeBody -TimeoutSec 45
       if ($resp.choices.Count -gt 0) {
         $healthy += $model
+        Write-ModelFailoverAuditEvent -RequestId $probeRequestId -Source "openrouter" -Target $model -Action "probe" -Decision "success" -Model $rawModel -Reason "response_with_choices"
+      } else {
+        Write-ModelFailoverAuditEvent -RequestId $probeRequestId -Source "openrouter" -Target $model -Action "probe" -Decision "failure" -Model $rawModel -Reason "empty_choices" -ErrorCode "NO_CHOICES"
       }
     } catch {
+      $errorMessage = $_.Exception.Message
+      $errorCode = "UNKNOWN"
+      if ($_.ErrorDetails -and $_.ErrorDetails.Message) {
+        try {
+          $payload = $_.ErrorDetails.Message | ConvertFrom-Json
+          if ($payload.error -and $payload.error.code) {
+            $errorCode = [string]$payload.error.code
+          }
+        } catch {
+          $errorCode = "UNPARSEABLE_ERROR"
+        }
+      }
+      Write-ModelFailoverAuditEvent -RequestId $probeRequestId -Source "openrouter" -Target $model -Action "probe" -Decision "failure" -Model $rawModel -Reason $errorMessage -ErrorCode $errorCode
       # keep fallback order and skip temporarily unavailable/free-quota exhausted model
     }
   }
