@@ -21,3 +21,6 @@ workspace-*/reports/
 
 # codex settings
 .codex/*
+
+# Python test cache
+tests/__pycache__/

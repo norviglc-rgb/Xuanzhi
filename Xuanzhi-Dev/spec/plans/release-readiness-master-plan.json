@@ -52,5 +52,69 @@
         "给出 go/no-go 结论"
       ]
     }
+  ],
+  "test_matrix_file": "spec/plans/product-test-matrix.md",
+  "ability_coverage": [
+    {
+      "ability": "orchestrator 调度",
+      "description": "验证 orchestrator 能在 agent 协同链路中按优先级与资源限制触发横向 agents、保留失败回滚，保持计划节奏。",
+      "aligned_milestones": [
+        "r2",
+        "r3"
+      ],
+      "matrix_section": "Orchestrator 调度"
+    },
+    {
+      "ability": "skills-smith 生成+评估",
+      "description": "确认 skills-smith 产出候选技能链并评估成功率、风险与状态一致性，形成可交付证据。",
+      "aligned_milestones": [
+        "r1",
+        "r2"
+      ],
+      "matrix_section": "Skills-Smith 生成与评估"
+    },
+    {
+      "ability": "ops 执行与 guard",
+      "description": "对 ops 执行阶段的 guard rails 做链路级覆盖，确保执行日志、回滚策略与状态报告被捕获。",
+      "aligned_milestones": [
+        "r3",
+        "r4"
+      ],
+      "matrix_section": "Ops 执行与 Guard"
+    },
+    {
+      "ability": "critic review gate",
+      "description": "检测 critic gate 在发布判定点对改动与 evidence 进行审计，并阻断不完整的 go/no-go 结论。",
+      "aligned_milestones": [
+        "r4"
+      ],
+      "matrix_section": "Critic Review Gate"
+    },
+    {
+      "ability": "agent 协同链路",
+      "description": "验证 orchestrator、skills-smith、ops、critic 之间的协同链路、上下文传递与状态同步是否稳定。",
+      "aligned_milestones": [
+        "r3",
+        "r4"
+      ],
+      "matrix_section": "Agent 协同链路"
+    },
+    {
+      "ability": "状态一致性",
+      "description": "覆盖 plan 与 agent 状态存储的 read/write 与快照，确保节点间一致性和重试后的可比对 meta-data。",
+      "aligned_milestones": [
+        "r2",
+        "r3"
+      ],
+      "matrix_section": "状态一致性"
+    },
+    {
+      "ability": "skill 自动调用条件",
+      "description": "核验自动调用 skill 的触发条件、前置校验与负载保护机制，避免误触发引发的 cascading failure。",
+      "aligned_milestones": [
+        "r3"
+      ],
+      "matrix_section": "Skill 自动调用条件"
+    }
   ]
 }

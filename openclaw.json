@@ -52,6 +52,15 @@
       "sandbox": {
         "mode": "non-main",
         "scope": "agent"
+      },
+      "model": {
+        "primary": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "fallbacks": [
+          "openrouter/arcee-ai/trinity-mini:free",
+          "openrouter/qwen/qwen3-coder:free",
+          "openrouter/openai/gpt-oss-120b:free",
+          "openrouter/z-ai/glm-4.5-air:free"
+        ]
       }
     },
     "list": [
@@ -61,8 +70,22 @@
         "workspace": "~/.openclaw/workspace-orchestrator",
         "agentDir": "~/.openclaw/agents/orchestrator/agent",
         "tools": {
-          "allow": ["read", "sessions_list", "sessions_history", "sessions_send", "sessions_spawn", "session_status"],
-          "deny": ["exec", "write", "edit", "apply_patch", "browser", "canvas"]
+          "allow": [
+            "read",
+            "sessions_list",
+            "sessions_history",
+            "sessions_send",
+            "sessions_spawn",
+            "session_status"
+          ],
+          "deny": [
+            "exec",
+            "write",
+            "edit",
+            "apply_patch",
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -70,8 +93,19 @@
         "workspace": "~/.openclaw/workspace-critic",
         "agentDir": "~/.openclaw/agents/critic/agent",
         "tools": {
-          "allow": ["read", "sessions_list", "sessions_history"],
-          "deny": ["exec", "write", "edit", "apply_patch", "browser", "canvas"]
+          "allow": [
+            "read",
+            "sessions_list",
+            "sessions_history"
+          ],
+          "deny": [
+            "exec",
+            "write",
+            "edit",
+            "apply_patch",
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -79,8 +113,18 @@
         "workspace": "~/.openclaw/workspace-architect",
         "agentDir": "~/.openclaw/agents/architect/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch", "sessions_list", "sessions_history"],
-          "deny": ["browser", "canvas"]
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "apply_patch",
+            "sessions_list",
+            "sessions_history"
+          ],
+          "deny": [
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -88,8 +132,19 @@
         "workspace": "~/.openclaw/workspace-ops",
         "agentDir": "~/.openclaw/agents/ops/agent",
         "tools": {
-          "allow": ["read", "exec", "sessions_list", "sessions_history"],
-          "deny": ["write", "edit", "apply_patch", "browser", "canvas"]
+          "allow": [
+            "read",
+            "exec",
+            "sessions_list",
+            "sessions_history"
+          ],
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch",
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -97,8 +152,17 @@
         "workspace": "~/.openclaw/workspace-skills-smith",
         "agentDir": "~/.openclaw/agents/skills-smith/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch"],
-          "deny": ["exec", "browser", "canvas"]
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "apply_patch"
+          ],
+          "deny": [
+            "exec",
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -106,8 +170,17 @@
         "workspace": "~/.openclaw/workspace-agent-smith",
         "agentDir": "~/.openclaw/agents/agent-smith/agent",
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch"],
-          "deny": ["exec", "browser", "canvas"]
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "apply_patch"
+          ],
+          "deny": [
+            "exec",
+            "browser",
+            "canvas"
+          ]
         }
       },
       {
@@ -118,8 +191,18 @@
           "mode": "off"
         },
         "tools": {
-          "allow": ["read", "write", "edit", "apply_patch", "exec", "sessions_list", "sessions_history"],
-          "deny": ["canvas"]
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "apply_patch",
+            "exec",
+            "sessions_list",
+            "sessions_history"
+          ],
+          "deny": [
+            "canvas"
+          ]
         }
       }
     ]

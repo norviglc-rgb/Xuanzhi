@@ -38,4 +38,50 @@
     "按 release-fix-checklist 先处理 P0（RG-01, RG-02）",
     "组织子 agent执行修复，主线程做验收与发布判定"
   ]
+  ,
+  "test_matrix_file": "spec/plans/product-test-matrix.md",
+  "ability_priorities": [
+    {
+      "ability": "orchestrator 调度",
+      "current_status": "in_progress",
+      "focus": "重跑 Docker E2E 时确保 orchestrator 正确调度重试 agent，避免抢占保守资源。",
+      "matrix_section": "Orchestrator 调度"
+    },
+    {
+      "ability": "skills-smith 生成+评估",
+      "current_status": "in_progress",
+      "focus": "skills-smith 重新生成修复链，并评估每个候选在当前 release 规则下的成功率。",
+      "matrix_section": "Skills-Smith 生成与评估"
+    },
+    {
+      "ability": "ops 执行与 guard",
+      "current_status": "in_progress",
+      "focus": "ops 按 guard checklist 逐条执行 P0/P1，并把执行日志与回滚点实时归档。",
+      "matrix_section": "Ops 执行与 Guard"
+    },
+    {
+      "ability": "critic review gate",
+      "current_status": "pending",
+      "focus": "准备 Critic Gate 的 evidence 清单与风险评估，作为发布结论的最终屏障。",
+      "matrix_section": "Critic Review Gate"
+    },
+    {
+      "ability": "agent 协同链路",
+      "current_status": "in_progress",
+      "focus": "确认 orchestrator、skills-smith、ops、critic 的上下文同步、标识一致以及失败回滚流程。",
+      "matrix_section": "Agent 协同链路"
+    },
+    {
+      "ability": "状态一致性",
+      "current_status": "in_progress",
+      "focus": "在每次重跑、修复后核对 plan/step 状态与 agent 元数据的读写/快照。",
+      "matrix_section": "状态一致性"
+    },
+    {
+      "ability": "skill 自动调用条件",
+      "current_status": "pending",
+      "focus": "验证所有修复技能的自动触发条件、前置 guard 和负载保护是否仍符合 regulator 规则。",
+      "matrix_section": "Skill 自动调用条件"
+    }
+  ]
 }
