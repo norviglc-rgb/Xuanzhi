@@ -2,7 +2,7 @@
 
 Date: 2026-03-20
 Status: planned_not_started
-Gate: start only after `r4` is completed
+Gate: start only after `r4` and `r5` are completed
 
 ## Objective
 
@@ -11,6 +11,7 @@ Gate: start only after `r4` is completed
 ## Why Deferred
 
 - 当前优先级仍是发布前测试与修复闭环（`r4`）。
+- 且需先完成 `lc@10.0.1.70` 在线生产态验证（`r5`）。
 - 若提前进入 Harness 实现，会分散修复资源并扩大变更面。
 - 因此当前阶段只做分解与准备，不进入实现。
 
@@ -52,6 +53,7 @@ Gate: start only after `r4` is completed
 
 - Entry:
   - `r4` status = completed
+  - `r5` status = completed
   - P0 缺口关闭
   - 发布判定可切换到 go 或明确豁免
 - Exit:

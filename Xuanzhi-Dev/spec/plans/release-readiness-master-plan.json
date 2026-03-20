@@ -56,9 +56,20 @@
     },
     {
       "id": "r5",
+      "name": "lc@10.0.1.70 在线生产态测试",
+      "status": "pending",
+      "start_condition": "仅在 Docker 测试完成且缺陷修复闭环后启动",
+      "done_when": [
+        "按事实清理目标环境污染并完成基线检查",
+        "在 lc@10.0.1.70 跑通在线生产态关键链路",
+        "形成在线生产态测试报告与问题回流清单"
+      ]
+    },
+    {
+      "id": "r6",
       "name": "Agent Harness 设计与实现",
       "status": "pending",
-      "start_condition": "仅在 r4 完成（测试完成+问题修复闭环）后启动",
+      "start_condition": "仅在 r4 与 r5 完成后启动",
       "done_when": [
         "完成 Agent Harness 现状差距分析与目标架构",
         "完成 Harness 核心能力实现与迁移方案",
@@ -68,7 +79,9 @@
   ],
   "defer_rules": [
     "r5 不得抢占 r4 的测试与修复资源",
-    "在 r4 为 active 时，r5 仅允许规划与分解，不允许进入实现阶段"
+    "在 r4 为 active 时，r5 仅允许规划，不允许进入在线环境执行",
+    "r6 不得抢占 r4/r5 的测试与修复资源",
+    "在 r4 或 r5 为 active 时，r6 仅允许规划与分解，不允许进入实现阶段"
   ],
   "test_matrix_file": "spec/plans/product-test-matrix.md",
   "ability_coverage": [
