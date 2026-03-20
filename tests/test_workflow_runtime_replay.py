@@ -16,6 +16,9 @@ SCRIPTS = [
 class WorkflowRuntimeReplayTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.shell = shutil.which("powershell") or shutil.which("pwsh")
+        if not cls.shell:
+            raise unittest.SkipTest("PowerShell runtime not found (pwsh/powershell).")
         cls.temp_dir = tempfile.mkdtemp(prefix="workflow-replay-")
         cls.sandbox = pathlib.Path(cls.temp_dir)
         copy_items = [
@@ -44,7 +47,7 @@ class WorkflowRuntimeReplayTests(unittest.TestCase):
         script_path = self.sandbox / "scripts" / script_name
         result = subprocess.run(
             [
-                "powershell",
+                self.shell,
                 "-NoProfile",
                 "-NonInteractive",
                 "-ExecutionPolicy",

@@ -1,32 +1,52 @@
 {
   "plan_type": "short_term",
-  "plan_id": "stp-r4-release-fix-closure",
+  "plan_id": "stp-r4-clone-only-deploy-and-full-validation",
   "parent_milestone_id": "r4",
   "status": "active",
   "last_updated": "2026-03-20",
   "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
-  "goal": "基于 r2+r3 发现的缺口执行修复闭环，并形成最终发布 go/no-go 判定。",
+  "goal": "在 Docker 中按真实用户方式（git clone 到 ~/.openclaw）完成 OpenClaw 部署配置与全链路深测，闭环修复后再进入远程生产态同等测试。",
   "steps": [
     {
       "id": "s1",
-      "name": "按优先级关闭 P0 缺口并补可重放证据",
+      "name": "冻结并发布详细计划与全量测试清单",
       "status": "in_progress",
       "artifacts": [
-        "release-fix-checklist.md",
-        "P0 修复证据（待创建）"
+        "release-readiness-master-plan.json（更新）",
+        "active-short-term-plan.json（更新）",
+        "docker-full-validation-checklist.md（新增）"
       ]
     },
     {
       "id": "s2",
-      "name": "重跑 Docker E2E（含认证场景）并复核 P1/P2",
+      "name": "Docker clone-only 部署 OpenClaw + OpenRouter 配置",
       "status": "in_progress",
       "artifacts": [
-        "r3-docker-e2e-report.md（更新版）",
-        "logs/audit/model-failover.jsonl"
+        "docker-deploy-evidence.md（待创建）",
+        "容器内 openclaw 配置与连通性证据"
       ]
     },
     {
       "id": "s3",
+      "name": "执行 agent/workflow/module 全量测试并逐模块修复",
+      "status": "in_progress",
+      "artifacts": [
+        "docker-full-validation-checklist.md（执行结果回填）",
+        "release-fix-checklist.md（新增/更新缺陷）",
+        "模块级修复提交记录"
+      ]
+    },
+    {
+      "id": "s4",
+      "name": "Docker 全量通过后进入 lc@10.0.1.70 同等深度测试",
+      "status": "pending",
+      "artifacts": [
+        "remote-prod-state-test-report.md（待创建）",
+        "远程环境清理与复测证据"
+      ]
+    },
+    {
+      "id": "s5",
       "name": "形成发布结论（go/no-go）并归档当前短期计划",
       "status": "pending",
       "artifacts": [
@@ -36,11 +56,11 @@
     }
   ],
   "next_actions": [
-    "按 release-fix-checklist 先处理 P0（RG-01, RG-02）",
-    "组织子 agent执行修复，主线程做验收与发布判定",
-    "完成 Docker + OpenRouter 凭据回归测试并记录统一审计日志",
-    "在 Docker 闭环后进入 lc@10.0.1.70 在线生产态测试（先清理再执行）",
-    "并行完成 Agent Harness 分解规划（不进入实现），见 agent-harness-adoption-plan.md"
+    "先完成 clone-only Docker 部署验证，再进入全量深测",
+    "严格按 docker-full-validation-checklist 对每个 agent/workflow/module 打点留证",
+    "发现问题立即进入 release-fix-checklist 并执行修复-重测闭环",
+    "Docker 全量闭环后，再到 lc@10.0.1.70 执行同等测试",
+    "主线程负责计划与验收，执行优先低成本 agent（必要时升级模型）"
   ]
   ,
   "test_matrix_file": "spec/plans/product-test-matrix.md",

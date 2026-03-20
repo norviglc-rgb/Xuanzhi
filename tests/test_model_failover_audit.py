@@ -14,6 +14,10 @@ def _escape_value(value: str) -> str:
 
 
 class ModelFailoverAuditTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.pwsh = shutil.which("pwsh") or shutil.which("powershell")
+
     def setUp(self):
         self.temp_dir = Path(tempfile.mkdtemp(prefix="audit-test-"))
         self.log_path = self.temp_dir / "model-failover.jsonl"
@@ -23,12 +27,14 @@ class ModelFailoverAuditTests(unittest.TestCase):
             shutil.rmtree(self.temp_dir)
 
     def _write_entry(self, **kwargs):
+        if not self.pwsh:
+            self.skipTest("PowerShell runtime not found (pwsh/powershell).")
         args = []
         for name, value in kwargs.items():
             args.append(f"-{name} '{_escape_value(str(value))}'")
         command = f". '{HELPER_SCRIPT}' ; Write-ModelFailoverAuditEvent {' '.join(args)}"
         subprocess.run(
-            ["pwsh", "-NoProfile", "-NonInteractive", "-Command", command],
+            [self.pwsh, "-NoProfile", "-NonInteractive", "-Command", command],
             capture_output=True,
             text=True,
             check=True,

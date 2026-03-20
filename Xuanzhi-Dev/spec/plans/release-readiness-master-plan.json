@@ -3,11 +3,13 @@
   "plan_id": "xuanzhi-release-readiness-v1",
   "status": "active",
   "last_updated": "2026-03-20",
-  "objective": "从需求到实现做全量可发布验收，完成 Docker 安装 OpenClaw + 直接复制到 ~/.openclaw 的端到端验证，并形成可执行修复清单，达到可发布标准。",
+  "objective": "从需求到实现做全量可发布验收，在 Docker 与远程生产态都按真实用户部署路径（git clone 到 ~/.openclaw）完成 OpenClaw 配置与全链路测试，形成可执行修复清单并达到可发布标准。",
   "principles": [
     "需求逐条映射实现，不做跳项",
     "验证必须可复现、可审计、可回滚",
     "测试覆盖 agent/workflow/config/template 全链路",
+    "Docker 与远程环境都必须执行 clone-only 部署，不使用额外部署脚本",
+    "先完整规划后执行，测试结果优先于文档假设",
     "主 agent 做规划与验收，执行优先交给低开销子 agent",
     "发现缺口立即回流重做，禁止表面通过",
     "低能力模型场景必须启用 resilience checks（拆小任务+双重验证+可回放证据）"
@@ -48,20 +50,28 @@
       "name": "修复闭环与发布判定",
       "status": "active",
       "done_when": [
+        "Docker 中完成 clone-only 部署并配置 OpenRouter 凭据可用",
+        "按 product-test-matrix + docker-full-validation-checklist 完成 agent/workflow/module 全量测试",
+        "所有未达标项进入 release-fix-checklist 并有修复闭环记录",
         "修复清单关闭或明确豁免",
         "形成发布前验收报告",
         "给出 go/no-go 结论",
         "模型切换审计日志与 Docker 带凭据回归测试可复现"
+      ],
+      "execution_strategy": "iterative_module_first",
+      "strategy_notes": [
+        "默认采用测一点改一点（按模块）策略：每完成一个模块就修复并重测，降低累计回归风险。",
+        "当发现跨模块系统性问题时，切换为先全量测完再集中修复。"
       ]
     },
     {
       "id": "r5",
       "name": "lc@10.0.1.70 在线生产态测试",
       "status": "pending",
-      "start_condition": "仅在 Docker 测试完成且缺陷修复闭环后启动",
+      "start_condition": "仅在 Docker clone-only 部署验证完成且缺陷修复闭环后启动",
       "done_when": [
         "按事实清理目标环境污染并完成基线检查",
-        "在 lc@10.0.1.70 跑通在线生产态关键链路",
+        "在 lc@10.0.1.70 按与 Docker 同等深度跑完整测试清单（agent/workflow/module）",
         "形成在线生产态测试报告与问题回流清单"
       ]
     },
@@ -79,7 +89,7 @@
   ],
   "defer_rules": [
     "r5 不得抢占 r4 的测试与修复资源",
-    "在 r4 为 active 时，r5 仅允许规划，不允许进入在线环境执行",
+    "在 r4 为 active 且未完成 Docker clone-only 全量测试前，r5 仅允许规划，不允许进入在线环境执行",
     "r6 不得抢占 r4/r5 的测试与修复资源",
     "在 r4 或 r5 为 active 时，r6 仅允许规划与分解，不允许进入实现阶段"
   ],

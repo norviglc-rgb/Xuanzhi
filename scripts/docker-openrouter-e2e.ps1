@@ -64,6 +64,19 @@ function Write-ModelSwitchEventsFromOutput {
   }
 }
 
+function Parse-AgentJsonOutput {
+  param([Parameter(Mandatory = $true)][string]$Text)
+  $trimmed = $Text.Trim()
+  if (-not $trimmed) {
+    return $null
+  }
+  try {
+    return ($trimmed | ConvertFrom-Json)
+  } catch {
+    return $null
+  }
+}
+
 Push-Location $projectRoot
 try {
   $tempConfig = Join-Path $env:TEMP ("openclaw-docker-openrouter-e2e-$([guid]::NewGuid().ToString()).json")
@@ -127,18 +140,40 @@ try {
   )
 
   try {
-    $previousErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    $agentOutput = & docker @openClawArgs 2>&1
+    $stderrPath = Join-Path $env:TEMP ("openclaw-docker-e2e-stderr-$([guid]::NewGuid().ToString()).log")
+    $agentStdout = & docker @openClawArgs 2> $stderrPath
     $dockerExitCode = $LASTEXITCODE
-    $ErrorActionPreference = $previousErrorActionPreference
-    foreach ($line in $agentOutput) {
+    $agentOutputLines = @($agentStdout | ForEach-Object { [string]$_ })
+    foreach ($line in $agentOutputLines) {
       Write-Host $line
+    }
+    if (Test-Path $stderrPath) {
+      $stderrLines = Get-Content -LiteralPath $stderrPath
+      foreach ($line in $stderrLines) {
+        Write-Host $line
+      }
+      $agentOutputLines += @($stderrLines | ForEach-Object { [string]$_ })
+      Remove-Item $stderrPath -Force
     }
     if ($dockerExitCode -ne 0) {
       throw "docker returned exit code $dockerExitCode"
     }
-    Write-ModelSwitchEventsFromOutput -Lines @($agentOutput | ForEach-Object { [string]$_ }) -RequestId $runRequestId
+
+    $jsonCandidate = ($agentStdout -join "`n")
+    $agentJson = Parse-AgentJsonOutput -Text $jsonCandidate
+    if ($null -eq $agentJson) {
+      throw "agent output is not valid JSON"
+    }
+    $stopReason = [string]$agentJson.meta.stopReason
+    if ($stopReason -eq "error") {
+      $payloadText = ""
+      if ($agentJson.payloads -and $agentJson.payloads.Count -gt 0) {
+        $payloadText = [string]$agentJson.payloads[0].text
+      }
+      throw "agent returned stopReason=error; payload=$payloadText"
+    }
+
+    Write-ModelSwitchEventsFromOutput -Lines $agentOutputLines -RequestId $runRequestId
     Write-Host "OpenRouter call succeeded."
     Write-ModelFailoverAuditEvent -RequestId $runRequestId -Source "docker-openrouter-e2e" -Target $containerName -Action "docker_openrouter_agent_call" -Decision "success" -Reason "openclaw_agent_completed"
   } catch {
