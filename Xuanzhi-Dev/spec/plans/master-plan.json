@@ -291,7 +291,7 @@
     {
       "id": "m6",
       "name": "复杂任务升级链路跑通",
-      "status": "pending",
+      "status": "completed",
       "goal": "orchestrator -> architect -> claude-code 的复杂任务升级链路可验证。",
       "done_when": [
         "复杂度判定成立",

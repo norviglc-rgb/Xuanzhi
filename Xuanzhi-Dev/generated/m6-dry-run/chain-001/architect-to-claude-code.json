@@ -1,0 +1,33 @@
+{
+  "requestId": "m6-20260320-chain-001",
+  "sourceRole": "architect",
+  "targetRole": "claude-code",
+  "taskSummary": "Write the chain-001 execution artifacts into the approved dry-run paths and keep the proof note aligned with the exact handoff contract.",
+  "acceptanceCriteria": [
+    "The two JSON files are valid JSON and contain all minimum fields from the spec.",
+    "requestId is identical across both hops.",
+    "m6-execution-proof.md records the execution steps, route.reason, chain result, and found issues."
+  ],
+  "constraints": [
+    "Edit only the three approved output paths.",
+    "Keep the content minimal, readable, and audit-friendly.",
+    "Do not introduce extra files, extra hops, or unrelated context."
+  ],
+  "artifactsIn": [
+    "Xuanzhi-Dev/generated/m6-dry-run/chain-001/orchestrator-to-architect.json",
+    "Xuanzhi-Dev/spec/plans/m6-chain-baseline-note.md",
+    "Xuanzhi-Dev/spec/plans/m6-handoff-artifacts-spec.md"
+  ],
+  "artifactsOut": [
+    "Xuanzhi-Dev/generated/m6-dry-run/chain-001/orchestrator-to-architect.json",
+    "Xuanzhi-Dev/generated/m6-dry-run/chain-001/architect-to-claude-code.json",
+    "Xuanzhi-Dev/spec/plans/m6-execution-proof.md"
+  ],
+  "routeReason": "The remaining work is repo-local file emission and proof recording, not more design. Claude-code is the right owner because it can write the JSON artifacts directly and keep the proof aligned with the repository truth. Escalating now reduces the risk of design drift, stale wording, and a handoff that never becomes executable.",
+  "riskNotes": [
+    "The proof note could drift from the final JSON fields if it is not written alongside them.",
+    "Timestamps must remain machine-readable and consistent enough for audit.",
+    "Any extra file write would violate the constrained dry-run scope."
+  ],
+  "timestamp": "2026-03-20T18:48:29+08:00"
+}
