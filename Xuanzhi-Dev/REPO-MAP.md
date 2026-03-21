@@ -4,12 +4,14 @@
 
 ```text
 D:\Xuanzhi\
-|- agents/
-|- credentials/
-|- cron/
+|- .claude/
+|- .codex/
 |- hooks/
-|- logs/
+|- policies/
+|- schemas/
 |- skills/
+|- state/
+|- workflows/
 |- workspace-agent-smith/
 |- workspace-architect/
 |- workspace-claude-code/
@@ -19,9 +21,7 @@ D:\Xuanzhi\
 |- workspace-skills-smith/
 |- Xuanzhi-Dev/
 |- openclaw.json
-|- openclaw.json.example
 |- README.md
-|- README-runtime.md
 ```
 
 ## Runtime Vs Development
@@ -31,56 +31,56 @@ Repository root:
 - Active OpenClaw runtime surface
 - Agent workspaces
 - Runtime hooks and skills
-- Agent runtime directories
+- Runtime policy, schema, workflow, and state files
+
+`.codex/`:
+
+- Codex working state
+- Codex development and audit standards
+- Session handoff and worklog
+- Codex-only reference notes such as `docs-system/`
 
 `Xuanzhi-Dev/`:
 
-- `spec/`: requirements, bring-up notes, migration notes
-- `legacy-root/`: candidate system docs, schemas, workflows, templates, and state not yet promoted into runtime root
-- `generated/`: generated examples and audit samples
+- `spec/`: requirements, bring-up notes, migration notes, plans
 - `reference/`: reference material only
+- `REPO-MAP.md`: development-side repository map
 
 ## Current Path Facts
 
 - Current agent workspaces live at `workspace-<agentId>/`
-- Current agent runtime directories live at `agents/<agentId>/agent` and `agents/<agentId>/sessions`
 - `openclaw.json` is the active registry for agent ids, workspace paths, and hard controls
-- Root-level `docs/`, `policies/`, `schemas/`, `state/`, `templates/`, and `workflows/` do not exist yet in the active runtime tree
+- Active runtime policy lives under `policies/`
+- Active runtime schema lives under `schemas/`
+- Active runtime state lives under `state/`
+- Active runtime workflows live under `workflows/`
+- System explanation material previously placed under `docs/system/` has been moved into `.codex/docs-system/` as Codex-side reference, not runtime truth
 
-This means older documents that describe `workspaces/workspace-<agentId>/` or a fully promoted root-level `docs/policies/workflows/state/templates` tree are describing a target or a legacy draft, not the current repository state.
+This means old documents that still describe:
+
+- `agents/<agentId>/agent`
+- `credentials/`
+- `cron/`
+- `logs/`
+- `generated/`
+- `legacy-root/`
+- root-level `docs/system/`
+
+are describing an earlier repository shape or a historical draft, not the current repository state.
 
 ## Module Responsibilities
 
 - `orchestrator`: route tasks and converge outcomes
 - `critic`: review gate, risk checks, and signoff
 - `architect`: shape implementation approach and prepare complex-task handoff
-- `ops`: execute operational actions and run provisioning workflows for agents and users
+- `ops`: execute operational actions and lifecycle operations
 - `skills-smith`: create and maintain skills
-- `agent-smith`: define and evolve agent creation rules, agent scaffolds, schemas, and workflows
+- `agent-smith`: define and evolve agent creation rules, scaffolds, schemas, and workflows
 - `claude-code`: complex coding execution domain
 
-## Template Direction
+## Working Rules
 
-Current repository truth is workspace-first, not template-first.
-
-If templates are promoted into the active runtime later, keep them generic:
-
-- one agent template family for creating agents
-- one daily-user template family for creating isolated user agents
-
-Do not reintroduce a separate `templates/core-agent/` hierarchy unless runtime usage proves it is necessary.
-
-## Migration Notes
-
-The main migration gap is not workspace files. It is the system-level truth that still sits under `Xuanzhi-Dev/legacy-root/`.
-
-Priority migration candidates:
-
-- system docs
-- schemas
-- workflows
-- state seeds
-- provisioning contracts
-
-Before promoting any of them, re-check path assumptions against the current runtime shape in `openclaw.json`.
-
+- Runtime truth belongs at repository root in `openclaw.json`, `policies/`, `schemas/`, `state/`, `workflows/`, `hooks/`, `skills/`, and `workspace-*`
+- Codex working standards and session continuity belong in `.codex/`
+- Development documentation and reference material belong in `Xuanzhi-Dev/`
+- Do not treat `.codex/` or `Xuanzhi-Dev/` as runtime truth unless a root runtime file explicitly points there
