@@ -3,23 +3,35 @@
   "plan_id": "stp-r4-clone-only-deploy-and-full-validation",
   "parent_milestone_id": "r4",
   "status": "active",
-  "last_updated": "2026-03-20",
+  "last_updated": "2026-03-21",
   "rule": "当前这是唯一允许处于 active 的短期计划；完成前不得创建下一个短期计划。",
-  "goal": "在 Docker 中按真实用户方式（git clone 到 ~/.openclaw）完成 OpenClaw 部署配置与全链路深测，闭环修复后再进入远程生产态同等测试。",
+  "goal": "在 Docker 中按真实用户方式（git clone 到 ~/.openclaw）完成 OpenClaw 部署配置与真实消息交互深测，闭环修复后再进入远程生产态同等测试。",
   "steps": [
     {
+      "id": "s0",
+      "name": "冻结功能级测试抽象设计（模块、方案、报告模板）",
+      "status": "completed",
+      "artifacts": [
+        "feature-level-evaluation-framework.md（新增）",
+        "feature-evaluation-module-catalog.md（新增）",
+        "release-readiness-master-plan.json（更新）",
+        "active-short-term-plan.json（更新）"
+      ]
+    },
+    {
       "id": "s1",
-      "name": "冻结并发布详细计划与全量测试清单",
-      "status": "in_progress",
+      "name": "冻结并发布详细计划（含真实用户交互测试矩阵）",
+      "status": "completed",
       "artifacts": [
         "release-readiness-master-plan.json（更新）",
         "active-short-term-plan.json（更新）",
-        "docker-full-validation-checklist.md（新增）"
+        "docker-full-validation-checklist.md（新增）",
+        "r4-real-user-interaction-test-plan.md（新增）"
       ]
     },
     {
       "id": "s2",
-      "name": "Docker clone-only 部署 OpenClaw + OpenRouter 配置",
+      "name": "Docker clone-only 部署 OpenClaw + provider 凭据配置",
       "status": "in_progress",
       "artifacts": [
         "docker-deploy-evidence.md（待创建）",
@@ -28,20 +40,23 @@
     },
     {
       "id": "s3",
-      "name": "执行 agent/workflow/module 全量测试并逐模块修复",
+      "name": "执行真实用户消息交互矩阵（Docker）并逐项修复闭环",
       "status": "in_progress",
       "artifacts": [
         "docker-full-validation-checklist.md（执行结果回填）",
+        "logs/tests/real-user-interaction-docker-report.json（新增）",
+        "r4-real-user-interaction-summary.md（新增）",
         "release-fix-checklist.md（新增/更新缺陷）",
         "模块级修复提交记录"
       ]
     },
     {
       "id": "s4",
-      "name": "Docker 全量通过后进入 lc@10.0.1.70 同等深度测试",
+      "name": "Docker 闭环后进入 lc@10.0.1.70 同等真实交互深度测试",
       "status": "pending",
       "artifacts": [
         "remote-prod-state-test-report.md（待创建）",
+        "logs/tests/real-user-interaction-remote-report.json（待创建）",
         "远程环境清理与复测证据"
       ]
     },
@@ -56,14 +71,18 @@
     }
   ],
   "next_actions": [
-    "先完成 clone-only Docker 部署验证，再进入全量深测",
-    "严格按 docker-full-validation-checklist 对每个 agent/workflow/module 打点留证",
+    "先以 feature-level-evaluation-framework 冻结测试模块和报告方法，再进入大规模功能级验证",
+    "先完成 clone-only Docker 部署验证，再进入真实用户消息交互矩阵",
+    "严格按 r4-real-user-interaction-test-plan 对每个场景打点留证",
     "发现问题立即进入 release-fix-checklist 并执行修复-重测闭环",
     "Docker 全量闭环后，再到 lc@10.0.1.70 执行同等测试",
     "主线程负责计划与验收，执行优先低成本 agent（必要时升级模型）"
   ]
   ,
   "test_matrix_file": "spec/plans/product-test-matrix.md",
+  "real_user_interaction_test_plan_file": "spec/plans/r4-real-user-interaction-test-plan.md",
+  "feature_level_evaluation_framework_file": "spec/plans/feature-level-evaluation-framework.md",
+  "feature_evaluation_module_catalog_file": "spec/plans/feature-evaluation-module-catalog.md",
   "ability_priorities": [
     {
       "ability": "orchestrator 调度",

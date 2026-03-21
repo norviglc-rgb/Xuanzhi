@@ -10,6 +10,9 @@ Current Release Verdict: `NO-GO`
 | --- | --- | --- | --- | --- |
 | RG-01 | runtime single-source-of-truth landing incomplete | promote `docs/system` + `policies` + `schemas` + `workflows` + `state` to active runtime and update all references | architect + ops | done_candidate |
 | RG-02 | key workflows lack executable evidence | materialize runnable entries for `materialize-core-agents`, `create-daily-user`, `memory-promote` with replayable state/audit/review chain | ops + agent-smith + critic | done_candidate |
+| RG-16 | clone-only 真实交互测试凭据链不稳定（当前依赖直配 key + paid model 临时链路） | 将“直配 key + model chain”固化为可复现、可审计、可回放的 clone-only 凭据引导流程，并按官方 token-plan 修正 MiniMax 鉴权路径后重跑 RU-01..RU-10 | ops + orchestrator + critic | in_progress |
+| RG-17 | clone-only 测试与工作区未提交配置不一致，导致容器仍使用旧模型链路 | 固化“测试前配置冻结”流程（提交或显式覆盖容器配置），避免测试证据与实际配置偏离 | ops + orchestrator | in_progress |
+| RG-18 | daily-user 场景在真实交互中返回 unknown agent（RU-09 未可用） | 在 Docker clone-only 路径物化 daily user agent（或更新计划中 daily-user id），并完成 RU-09/RU-15 隔离验证 | ops + agent-smith + critic | done_candidate |
 
 ## Should Fix Before Release (P1)
 

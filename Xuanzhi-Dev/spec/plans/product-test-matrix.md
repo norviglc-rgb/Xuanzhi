@@ -119,7 +119,7 @@
 ## 模型切换与低能力韧性
 
 ### MODEL-01：模型切换统一审计
-- 输入：`scripts/sync-openrouter-free-models.ps1 -Probe`，可用 OpenRouter key。
+- 输入：`Xuanzhi-Dev/testing/scripts/sync-openrouter-free-models.ps1 -Probe`，可用 OpenRouter key。
 - 步骤：
   1. 运行 probe，触发 primary/fallback 探测。
   2. 检查 `logs/audit/model-failover.jsonl`。

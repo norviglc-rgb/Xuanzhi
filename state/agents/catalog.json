@@ -49,13 +49,6 @@
                        "runtime":  "acp",
                        "workspaceId":  "workspace-claude-code",
                        "status":  "active"
-                   },
-                   {
-                       "agentId":  "daily-r4-user-001",
-                       "role":  "daily_user_agent",
-                       "runtime":  "native",
-                       "workspaceId":  "workspace-daily-r4-user-001",
-                       "status":  "pending_review"
                    }
                ]
 }

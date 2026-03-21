@@ -58,7 +58,7 @@ Scope extension:
 - Validate unified audit records for model-switch success/failure.
 
 Results:
-- Docker authenticated E2E: pass (`scripts/docker-openrouter-e2e.ps1` returned 0).
+- Docker authenticated E2E: pass (`Xuanzhi-Dev/testing/scripts/docker-openrouter-e2e.ps1` returned 0).
 - Full regression with Docker gate enabled: pass (`run-product-tests.ps1` + `RUN_PRODUCT_TESTS_DOCKER_OPENROUTER_E2E=1`, 34/34 OK).
 - Unified audit confirms model switch events:
   - `action=model_switch decision=failure` (primary candidate timeout/failure)

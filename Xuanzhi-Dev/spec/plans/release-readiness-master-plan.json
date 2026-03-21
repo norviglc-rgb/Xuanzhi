@@ -2,7 +2,7 @@
   "plan_type": "release_readiness_long_term",
   "plan_id": "xuanzhi-release-readiness-v1",
   "status": "active",
-  "last_updated": "2026-03-20",
+  "last_updated": "2026-03-21",
   "objective": "从需求到实现做全量可发布验收，在 Docker 与远程生产态都按真实用户部署路径（git clone 到 ~/.openclaw）完成 OpenClaw 配置与全链路测试，形成可执行修复清单并达到可发布标准。",
   "principles": [
     "需求逐条映射实现，不做跳项",
@@ -12,7 +12,9 @@
     "先完整规划后执行，测试结果优先于文档假设",
     "主 agent 做规划与验收，执行优先交给低开销子 agent",
     "发现缺口立即回流重做，禁止表面通过",
-    "低能力模型场景必须启用 resilience checks（拆小任务+双重验证+可回放证据）"
+    "低能力模型场景必须启用 resilience checks（拆小任务+双重验证+可回放证据）",
+    "必须包含真实用户消息交互测试，不得仅以脚本探针代替",
+    "必须先完成功能级测试抽象设计，再执行大规模功能验证与报告"
   ],
   "milestones": [
     {
@@ -56,7 +58,9 @@
         "修复清单关闭或明确豁免",
         "形成发布前验收报告",
         "给出 go/no-go 结论",
-        "模型切换审计日志与 Docker 带凭据回归测试可复现"
+        "模型切换审计日志与 Docker 带凭据回归测试可复现",
+        "按 r4-real-user-interaction-test-plan 完成真实用户交互测试（P0 100% 通过，总通过率 >= 90%）",
+        "按 feature-level-evaluation-framework 和 feature-evaluation-module-catalog 完成功能级评估设计与报告框架冻结"
       ],
       "execution_strategy": "iterative_module_first",
       "strategy_notes": [
@@ -94,6 +98,9 @@
     "在 r4 或 r5 为 active 时，r6 仅允许规划与分解，不允许进入实现阶段"
   ],
   "test_matrix_file": "spec/plans/product-test-matrix.md",
+  "real_user_interaction_test_plan_file": "spec/plans/r4-real-user-interaction-test-plan.md",
+  "feature_level_evaluation_framework_file": "spec/plans/feature-level-evaluation-framework.md",
+  "feature_evaluation_module_catalog_file": "spec/plans/feature-evaluation-module-catalog.md",
   "ability_coverage": [
     {
       "ability": "orchestrator 调度",
