@@ -53,7 +53,9 @@
         "workflows/skills/create-skill.json",
         "workflows/skills/apply-skill-review-outcome.json",
         "workflows/users/create-daily-user.json",
-        "workflows/users/apply-daily-user-review-outcome.json"
+        "workflows/users/apply-daily-user-review-outcome.json",
+        "workflows/memory/promote.json",
+        "workflows/memory/apply-memory-promotion-review-outcome.json"
       ]
     },
     {

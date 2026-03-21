@@ -53,6 +53,12 @@
       "route": "critic",
       "close": "ops_or_owner",
       "terminal_states": ["active", "blocked", "pending_review"]
+    },
+    "memory_promotion_lifecycle": {
+      "start": "critic",
+      "route": "critic",
+      "close": "critic",
+      "terminal_states": ["approved", "rejected", "needs_changes", "pending_review"]
     }
   },
   "proactive_validation": {

@@ -1,0 +1,110 @@
+{
+  "version": "v1",
+  "workflowId": "apply-memory-promotion-review-outcome",
+  "owner": "critic",
+  "description": "Apply review outcome for a memory promotion request, record decision/closure, and append memory-promotion decision audit.",
+  "trigger": {
+    "type": "manual_or_review_event",
+    "inputs": ["requestId", "workspaceId", "sourceEntryRef", "reviewId", "reviewStatus", "reviewer", "findings"]
+  },
+  "preconditions": [
+    "schemas/review.schema.json exists",
+    "policies/routing-policy.json closure_routes.memory_promotion_lifecycle exists",
+    "state/audit/review-gate.jsonl exists",
+    "state/audit/memory-promotion.jsonl exists"
+  ],
+  "steps": [
+    {
+      "id": "build_review_outcome_record",
+      "action": "transform_input",
+      "inputs": ["workspaceId", "sourceEntryRef", "reviewId", "reviewStatus", "reviewer", "findings"],
+      "output": "reviewOutcomeRecord",
+      "rules": [
+        "reviewId = <reviewId>",
+        "targetType = memory_promotion",
+        "targetRef = <workspaceId>:<sourceEntryRef>",
+        "reviewer = <reviewer>",
+        "status = <reviewStatus>",
+        "lifecyclePhase = decision",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = critic",
+        "flow.closedBy = apply-memory-promotion-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then revise_candidate_and_resubmit else none",
+        "findings = <findings>",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_review_outcome_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewOutcomeRecord"
+    },
+    {
+      "id": "build_closure_record",
+      "action": "transform_input",
+      "inputs": ["workspaceId", "sourceEntryRef", "reviewId", "reviewStatus"],
+      "output": "closureRecord",
+      "rules": [
+        "reviewId = <reviewId>",
+        "targetType = memory_promotion",
+        "targetRef = <workspaceId>:<sourceEntryRef>",
+        "reviewer = critic",
+        "status = <reviewStatus>",
+        "lifecyclePhase = closure",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = critic",
+        "flow.closedBy = apply-memory-promotion-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then revise_candidate_and_resubmit else none",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_closure_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "closureRecord"
+    },
+    {
+      "id": "write_review_outcome_audit",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewOutcomeRecord"
+    },
+    {
+      "id": "write_closure_audit",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "closureRecord"
+    },
+    {
+      "id": "build_decision_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef", "reviewId", "reviewStatus"],
+      "output": "decisionAuditRecord",
+      "rules": [
+        "event = decision_applied",
+        "requestId = <requestId>",
+        "workspaceId = <workspaceId>",
+        "sourceEntryRef = <sourceEntryRef>",
+        "reviewId = <reviewId>",
+        "status = <reviewStatus>",
+        "owner = critic",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "write_decision_audit_record",
+      "action": "append_jsonl",
+      "target": "state/audit/memory-promotion.jsonl",
+      "input": "decisionAuditRecord"
+    }
+  ],
+  "successState": "review_outcome_applied",
+  "failureState": "failed"
+}

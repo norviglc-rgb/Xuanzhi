@@ -2,21 +2,166 @@
   "version": "v1",
   "workflowId": "memory-promote",
   "owner": "critic",
-  "description": "Promote validated memory from daily notes into MEMORY.md with audit and review trace.",
+  "description": "Promote validated memory from daily notes into MEMORY.md, write staged audit events, and submit pending review for closure.",
   "trigger": {
     "type": "manual_or_heartbeat",
-    "inputs": ["requestId", "workspaceId", "candidateContent", "reason"]
+    "inputs": ["requestId", "workspaceId", "sourceEntryRef", "candidateContent", "reason"]
   },
   "preconditions": [
     "policies/memory-policy.json exists",
+    "policies/routing-policy.json closure_routes.memory_promotion_lifecycle exists",
+    "schemas/review.schema.json exists",
+    "state/audit/memory-promotion.jsonl exists",
+    "state/audit/review-gate.jsonl exists",
     "workspace target exists"
   ],
   "steps": [
-    { "id": "validate_candidate", "action": "check_policy", "policy": "policies/memory-policy.json" },
-    { "id": "append_long_term_memory", "action": "append_markdown_section", "target_template": "workspace-<workspaceId>/MEMORY.md" },
-    { "id": "write_audit_record", "action": "append_jsonl", "target": "state/audit/memory-promotion.jsonl" },
-    { "id": "create_review_record", "action": "append_jsonl", "target": "state/audit/review-gate.jsonl" }
+    {
+      "id": "build_requested_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef", "reason"],
+      "output": "requestedAuditRecord",
+      "rules": [
+        "event = requested",
+        "requestId = <requestId>",
+        "workspaceId = <workspaceId>",
+        "sourceEntryRef = <sourceEntryRef>",
+        "reason = <reason>",
+        "owner = critic",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "write_requested_audit_record",
+      "action": "append_jsonl",
+      "target": "state/audit/memory-promotion.jsonl",
+      "input": "requestedAuditRecord"
+    },
+    {
+      "id": "validate_candidate",
+      "action": "check_policy",
+      "policy": "policies/memory-policy.json"
+    },
+    {
+      "id": "evaluate_promotion_criteria",
+      "action": "evaluate_any",
+      "input": "candidateContent",
+      "criteriaFromPolicy": "policies/memory-policy.json promotion_criteria_any"
+    },
+    {
+      "id": "scan_for_forbidden_content",
+      "action": "scan_for_forbidden_content",
+      "input": "candidateContent",
+      "forbiddenFromPolicy": "policies/memory-policy.json forbidden_content"
+    },
+    {
+      "id": "build_validated_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef"],
+      "output": "validatedAuditRecord",
+      "rules": [
+        "event = validated",
+        "requestId = <requestId>",
+        "workspaceId = <workspaceId>",
+        "sourceEntryRef = <sourceEntryRef>",
+        "owner = critic",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "write_validated_audit_record",
+      "action": "append_jsonl",
+      "target": "state/audit/memory-promotion.jsonl",
+      "input": "validatedAuditRecord"
+    },
+    {
+      "id": "append_long_term_memory",
+      "action": "append_markdown_section",
+      "target_template": "workspace-<workspaceId>/MEMORY.md"
+    },
+    {
+      "id": "build_promoted_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef"],
+      "output": "promotedAuditRecord",
+      "rules": [
+        "event = promoted",
+        "requestId = <requestId>",
+        "workspaceId = <workspaceId>",
+        "sourceEntryRef = <sourceEntryRef>",
+        "owner = critic",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "write_promoted_audit_record",
+      "action": "append_jsonl",
+      "target": "state/audit/memory-promotion.jsonl",
+      "input": "promotedAuditRecord"
+    },
+    {
+      "id": "build_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef", "reason"],
+      "output": "reviewRecord",
+      "rules": [
+        "reviewId = review-memory-promote-<requestId>",
+        "targetType = memory_promotion",
+        "targetRef = <workspaceId>:<sourceEntryRef>",
+        "reviewer = critic",
+        "status = pending",
+        "lifecyclePhase = submitted",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = critic",
+        "flow.closedBy = apply-memory-promotion-review-outcome",
+        "flow.nextStep = wait_critic_review",
+        "findings = [{severity:info, message:memory_promotion_candidate_submitted, suggestedAction:<reason>}]",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewRecord"
+    },
+    {
+      "id": "submit_review_record",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewRecord"
+    },
+    {
+      "id": "build_review_created_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "workspaceId", "sourceEntryRef", "reviewRecord.reviewId"],
+      "output": "reviewCreatedAuditRecord",
+      "rules": [
+        "event = review_created",
+        "requestId = <requestId>",
+        "workspaceId = <workspaceId>",
+        "sourceEntryRef = <sourceEntryRef>",
+        "reviewId = <reviewRecord.reviewId>",
+        "owner = critic",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "write_review_created_audit_record",
+      "action": "append_jsonl",
+      "target": "state/audit/memory-promotion.jsonl",
+      "input": "reviewCreatedAuditRecord"
+    }
   ],
-  "successState": "promoted",
-  "failureState": "rejected"
+  "successState": "pending_review",
+  "failureState": "rejected",
+  "followup": {
+    "onReviewDecision": "workflows/memory/apply-memory-promotion-review-outcome.json"
+  }
 }
