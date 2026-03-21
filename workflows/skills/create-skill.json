@@ -16,6 +16,13 @@
   ],
   "steps": [
     {
+      "id": "check_skill_not_exists",
+      "action": "assert_not_exists",
+      "target": "state/skills/catalog.json",
+      "key": "skillId",
+      "value": "<skillId>"
+    },
+    {
       "id": "delegate_skill_creation_to_skills_smith",
       "action": "delegate_to_agent",
       "targetAgent": "skills-smith",

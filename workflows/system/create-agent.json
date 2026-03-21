@@ -16,6 +16,13 @@
   ],
   "steps": [
     {
+      "id": "check_agent_not_exists",
+      "action": "assert_not_exists",
+      "target": "state/agents/catalog.json",
+      "key": "agentId",
+      "value": "<agentId>"
+    },
+    {
       "id": "delegate_agent_creation_to_agent_smith",
       "action": "delegate_to_agent",
       "targetAgent": "agent-smith",

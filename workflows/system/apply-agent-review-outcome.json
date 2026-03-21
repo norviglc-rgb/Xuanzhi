@@ -15,6 +15,14 @@
   ],
   "steps": [
     {
+      "id": "assert_agent_is_pending_review",
+      "action": "assert_current_status",
+      "target": "state/agents/catalog.json",
+      "key": "agentId",
+      "value": "<agentId>",
+      "requiredStatus": "pending_review"
+    },
+    {
       "id": "build_agent_review_decision_record",
       "action": "transform_input",
       "inputs": ["agentId", "reviewId", "reviewStatus", "reviewer", "findings"],
