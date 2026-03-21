@@ -51,6 +51,22 @@
       "requiredValues": ["status=ready"]
     },
     {
+      "id": "verify_daily_workspace_contract",
+      "action": "check_files_exist",
+      "targetTemplate": "workspace-daily-<userId>",
+      "requiredFiles": [
+        "AGENTS.md",
+        "SOUL.md",
+        "USER.md",
+        "IDENTITY.md",
+        "TOOLS.md",
+        "HEARTBEAT.md",
+        "BOOT.md",
+        "BOOTSTRAP.md",
+        "MEMORY.md"
+      ]
+    },
+    {
       "id": "build_user_profile_record",
       "action": "transform_input",
       "inputs": ["userId", "displayName", "persona", "bindings"],
