@@ -21,9 +21,12 @@
   "preconditions": [
     "docs/system/ARCHITECTURE.md exists",
     "docs/system/GOVERNANCE.md exists",
+    "docs/system/FILE-NAMING.md exists",
     "policies/routing-policy.json exists",
     "policies/tool-policy-matrix.json exists",
-    "state/agents/catalog.json exists"
+    "schemas/review.schema.json exists",
+    "state/audit/core-agent-materialization.jsonl exists",
+    "state/audit/review-gate.jsonl exists"
   ],
   "steps": [
     {
@@ -44,14 +47,76 @@
       ]
     },
     {
+      "id": "build_core_agent_records",
+      "action": "transform_input",
+      "inputs": ["agentIds"],
+      "output": "coreAgentRecords",
+      "rules": [
+        "for each item in agentIds -> create {agentId:<item>, role:if <item> == orchestrator then control_plane else if <item> == critic then review_gate else if <item> == architect then execution_domain else if <item> == ops then execution_domain else if <item> == claude-code then external_coding_domain else expert_domain, runtime:if <item> == claude-code then acp else native, workspaceId:workspace-<item>, status:pending_review}"
+      ]
+    },
+    {
       "id": "register_state",
       "action": "upsert_json",
-      "target": "state/agents/catalog.json"
+      "target": "state/agents/catalog.json",
+      "path": "agents",
+      "input": "coreAgentRecords",
+      "mergeKey": ["agentId"]
+    },
+    {
+      "id": "build_bootstrap_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "agentIds"],
+      "output": "bootstrapReviewRecord",
+      "rules": [
+        "reviewId = review-bootstrap-core-agents-<requestId>",
+        "targetType = policy_change",
+        "targetRef = core-agent-materialization-<requestId>",
+        "reviewer = critic",
+        "status = pending",
+        "lifecyclePhase = submitted",
+        "flow.startedBy = ops",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = ops",
+        "flow.closedBy = materialize-core-agents",
+        "flow.nextStep = wait_critic_review",
+        "findings = [{severity:info, message:core_agents_materialized_and_waiting_review}]",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_bootstrap_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "bootstrapReviewRecord"
+    },
+    {
+      "id": "submit_bootstrap_review",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "bootstrapReviewRecord"
+    },
+    {
+      "id": "build_materialization_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "agentIds"],
+      "output": "materializationAuditRecord",
+      "rules": [
+        "event = core_agent_materialization_submitted",
+        "requestId = <requestId>",
+        "owner = ops",
+        "agentIds = <agentIds>",
+        "status = pending_review",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
     },
     {
       "id": "write_audit",
       "action": "append_jsonl",
-      "target": "state/audit/core-agent-materialization.jsonl"
+      "target": "state/audit/core-agent-materialization.jsonl",
+      "input": "materializationAuditRecord"
     }
   ],
   "successState": "pending_review",
