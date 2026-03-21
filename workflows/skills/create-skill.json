@@ -9,6 +9,7 @@
   },
   "preconditions": [
     "policies/routing-policy.json ownership_routes.create_skill exists",
+    "policies/routing-policy.json ownership_routes.create_skill.target == skills-smith",
     "schemas/review.schema.json exists",
     "state/skills/catalog.json exists",
     "state/audit/review-gate.jsonl exists",
@@ -38,13 +39,6 @@
       "requiredValues": ["status=ready"]
     },
     {
-      "id": "register_skill_pending_review",
-      "action": "upsert_json",
-      "target": "state/skills/catalog.json",
-      "input": "skillPendingRecord",
-      "mergeKey": ["skillId"]
-    },
-    {
       "id": "build_skill_pending_record",
       "action": "transform_input",
       "inputs": ["skillId", "skillCreationReport.skillPath"],
@@ -55,6 +49,13 @@
         "owner = skills-smith",
         "status = pending_review"
       ]
+    },
+    {
+      "id": "register_skill_pending_review",
+      "action": "upsert_json",
+      "target": "state/skills/catalog.json",
+      "input": "skillPendingRecord",
+      "mergeKey": ["skillId"]
     },
     {
       "id": "build_skill_creation_review_record",

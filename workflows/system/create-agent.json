@@ -9,6 +9,7 @@
   },
   "preconditions": [
     "policies/routing-policy.json ownership_routes.create_agent exists",
+    "policies/routing-policy.json ownership_routes.create_agent.target == agent-smith",
     "schemas/review.schema.json exists",
     "state/agents/catalog.json exists",
     "state/audit/review-gate.jsonl exists",
@@ -38,13 +39,6 @@
       "requiredValues": ["status=ready"]
     },
     {
-      "id": "register_agent_pending_review",
-      "action": "upsert_json",
-      "target": "state/agents/catalog.json",
-      "input": "agentPendingRecord",
-      "mergeKey": ["agentId"]
-    },
-    {
       "id": "build_agent_pending_record",
       "action": "transform_input",
       "inputs": ["agentId", "role", "agentCreationReport.workspaceId"],
@@ -55,6 +49,13 @@
         "workspaceId = <agentCreationReport.workspaceId>",
         "status = pending_review"
       ]
+    },
+    {
+      "id": "register_agent_pending_review",
+      "action": "upsert_json",
+      "target": "state/agents/catalog.json",
+      "input": "agentPendingRecord",
+      "mergeKey": ["agentId"]
     },
     {
       "id": "build_agent_creation_review_record",

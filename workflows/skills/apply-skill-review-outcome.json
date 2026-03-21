@@ -62,6 +62,33 @@
       ]
     },
     {
+      "id": "build_skill_closure_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "skillId", "reviewId", "reviewStatus"],
+      "output": "closureRecord",
+      "rules": [
+        "reviewId = <reviewId>",
+        "targetType = skill",
+        "targetRef = <skillId>",
+        "reviewer = critic",
+        "status = <reviewStatus>",
+        "lifecyclePhase = closure",
+        "flow.startedBy = orchestrator",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = skills-smith",
+        "flow.closedBy = apply-skill-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-skill after fixes else none",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_skill_closure_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "closureRecord"
+    },
+    {
       "id": "write_skill_final_status",
       "action": "upsert_json",
       "target": "state/skills/catalog.json",
@@ -73,6 +100,12 @@
       "action": "append_jsonl",
       "target": "state/audit/review-gate.jsonl",
       "input": "reviewDecisionRecord"
+    },
+    {
+      "id": "write_skill_closure_audit",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "closureRecord"
     }
   ],
   "successState": "review_outcome_applied",
