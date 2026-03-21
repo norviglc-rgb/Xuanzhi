@@ -2,16 +2,18 @@
   "version": "v1",
   "workflowId": "create-daily-user",
   "owner": "ops",
-  "description": "Create a daily user runtime instance and register into active root state and audit logs.",
+  "description": "Create a daily user runtime instance, register state, update bindings, and write auditable review records.",
   "trigger": {
     "type": "manual_or_external_event",
-    "inputs": ["requestId", "userId", "displayName", "persona"]
+    "inputs": ["requestId", "userId", "displayName", "persona", "bindings"]
   },
   "preconditions": [
     "schemas/user-profile.schema.json exists",
+    "schemas/review.schema.json exists",
     "state/users/index.json exists",
     "state/agents/catalog.json exists",
-    "policies/memory-policy.json exists"
+    "state/audit/user-provision.jsonl exists",
+    "state/audit/review-gate.jsonl exists"
   ],
   "steps": [
     {
@@ -43,14 +45,19 @@
       "target": "state/agents/catalog.json"
     },
     {
+      "id": "update_bindings",
+      "action": "upsert_json",
+      "target": "openclaw.json"
+    },
+    {
       "id": "write_audit",
       "action": "append_jsonl",
-      "target": "logs/audit/user-provision.jsonl"
+      "target": "state/audit/user-provision.jsonl"
     },
     {
       "id": "submit_for_review",
       "action": "append_jsonl",
-      "target": "logs/audit/review-gate.jsonl"
+      "target": "state/audit/review-gate.jsonl"
     }
   ],
   "successState": "pending_review",
