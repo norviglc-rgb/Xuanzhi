@@ -55,6 +55,15 @@
       "terminal_states": ["active", "blocked", "pending_review"]
     }
   },
+  "proactive_validation": {
+    "workflow": "workflows/system/validate-ownership-and-closure.json",
+    "owner": "critic",
+    "schedule": "daily",
+    "onFailure": {
+      "routeTo": "critic",
+      "status": "needs_changes"
+    }
+  },
   "complexity_upgrade": {
     "target": "claude-code",
     "runtime": "acp",

@@ -5,10 +5,12 @@
   "description": "Proactively validate ownership routing and closure-chain integrity for agent/skill/daily lifecycle workflows.",
   "trigger": {
     "type": "manual_or_scheduled",
-    "inputs": ["requestId"]
+    "inputs": ["requestId", "invokedBy"]
   },
   "preconditions": [
     "policies/routing-policy.json exists",
+    "policies/routing-policy.json proactive_validation exists",
+    "schemas/review.schema.json exists",
     "state/audit/review-gate.jsonl exists"
   ],
   "steps": [
@@ -16,6 +18,7 @@
       "id": "check_ownership_routes_exist",
       "action": "check_json_paths",
       "target": "policies/routing-policy.json",
+      "output": "ownershipCheck",
       "requiredPaths": [
         "ownership_routes.create_agent.target",
         "ownership_routes.create_skill.target",
@@ -27,6 +30,7 @@
     {
       "id": "check_create_apply_workflow_pairs",
       "action": "check_files_exist",
+      "output": "pairCheck",
       "requiredFiles": [
         "workflows/system/create-agent.json",
         "workflows/system/apply-agent-review-outcome.json",
@@ -39,6 +43,7 @@
     {
       "id": "check_state_gates_in_apply_workflows",
       "action": "check_text_patterns",
+      "output": "gateCheck",
       "targets": [
         "workflows/system/apply-agent-review-outcome.json",
         "workflows/skills/apply-skill-review-outcome.json",
@@ -50,22 +55,35 @@
       ]
     },
     {
+      "id": "build_validation_summary",
+      "action": "summarize_checks",
+      "inputs": ["ownershipCheck", "pairCheck", "gateCheck"],
+      "output": "validationSummary",
+      "rules": [
+        "hasBlockingIssues = any_check_failed",
+        "severity = if hasBlockingIssues then critical else info",
+        "status = if hasBlockingIssues then needs_changes else approved",
+        "summary = if hasBlockingIssues then ownership_or_closure_drift_detected else ownership_and_closure_valid"
+      ]
+    },
+    {
       "id": "build_validation_review_record",
       "action": "transform_input",
-      "inputs": ["requestId"],
+      "inputs": ["requestId", "invokedBy", "validationSummary"],
       "output": "validationReviewRecord",
       "rules": [
         "reviewId = review-ownership-closure-<requestId>",
         "targetType = policy_change",
         "targetRef = ownership_and_closure_rules",
         "reviewer = critic",
-        "status = approved",
+        "status = <validationSummary.status>",
         "lifecyclePhase = closure",
         "flow.startedBy = critic",
         "flow.routedBy = orchestrator",
         "flow.handledBy = critic",
         "flow.closedBy = validate-ownership-and-closure",
-        "flow.nextStep = none",
+        "flow.nextStep = if <validationSummary.status> == needs_changes then fix_workflows_and_rerun_validation else none",
+        "findings = [{severity:<validationSummary.severity>, message:<validationSummary.summary>}]",
         "createdAt = now",
         "updatedAt = now"
       ]
