@@ -52,7 +52,7 @@
       "start": "agent-smith_or_skills-smith",
       "route": "critic",
       "close": "ops_or_owner",
-      "terminal_states": ["active", "blocked", "rejected"]
+      "terminal_states": ["active", "blocked", "pending_review"]
     }
   },
   "complexity_upgrade": {

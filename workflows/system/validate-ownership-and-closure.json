@@ -1,0 +1,88 @@
+{
+  "version": "v1",
+  "workflowId": "validate-ownership-and-closure",
+  "owner": "critic",
+  "description": "Proactively validate ownership routing and closure-chain integrity for agent/skill/daily lifecycle workflows.",
+  "trigger": {
+    "type": "manual_or_scheduled",
+    "inputs": ["requestId"]
+  },
+  "preconditions": [
+    "policies/routing-policy.json exists",
+    "state/audit/review-gate.jsonl exists"
+  ],
+  "steps": [
+    {
+      "id": "check_ownership_routes_exist",
+      "action": "check_json_paths",
+      "target": "policies/routing-policy.json",
+      "requiredPaths": [
+        "ownership_routes.create_agent.target",
+        "ownership_routes.create_skill.target",
+        "ownership_routes.review_outcome_apply.target",
+        "closure_routes.daily_user_lifecycle",
+        "closure_routes.agent_or_skill_creation"
+      ]
+    },
+    {
+      "id": "check_create_apply_workflow_pairs",
+      "action": "check_files_exist",
+      "requiredFiles": [
+        "workflows/system/create-agent.json",
+        "workflows/system/apply-agent-review-outcome.json",
+        "workflows/skills/create-skill.json",
+        "workflows/skills/apply-skill-review-outcome.json",
+        "workflows/users/create-daily-user.json",
+        "workflows/users/apply-daily-user-review-outcome.json"
+      ]
+    },
+    {
+      "id": "check_state_gates_in_apply_workflows",
+      "action": "check_text_patterns",
+      "targets": [
+        "workflows/system/apply-agent-review-outcome.json",
+        "workflows/skills/apply-skill-review-outcome.json",
+        "workflows/users/apply-daily-user-review-outcome.json"
+      ],
+      "requiredPatterns": [
+        "assert_current_status",
+        "requiredStatus"
+      ]
+    },
+    {
+      "id": "build_validation_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId"],
+      "output": "validationReviewRecord",
+      "rules": [
+        "reviewId = review-ownership-closure-<requestId>",
+        "targetType = policy_change",
+        "targetRef = ownership_and_closure_rules",
+        "reviewer = critic",
+        "status = approved",
+        "lifecyclePhase = closure",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = critic",
+        "flow.closedBy = validate-ownership-and-closure",
+        "flow.nextStep = none",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_validation_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "validationReviewRecord"
+    },
+    {
+      "id": "write_validation_audit",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "validationReviewRecord"
+    }
+  ],
+  "successState": "validated",
+  "failureState": "failed"
+}
