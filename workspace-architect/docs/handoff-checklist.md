@@ -7,5 +7,7 @@
 - ACCEPTANCE.md exists
 - NEXT_STEPS.md exists
 - route.runtime = acp
+- route.targetAgent = claude-code
 - upgrade reasons recorded
+- route.reason not empty
 - risks and limits explicitly noted

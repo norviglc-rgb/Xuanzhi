@@ -26,7 +26,8 @@
         "ownership_routes.create_skill.target",
         "ownership_routes.review_outcome_apply.target",
         "closure_routes.daily_user_lifecycle",
-        "closure_routes.agent_or_skill_creation"
+        "closure_routes.agent_or_skill_creation",
+        "closure_routes.complex_development_handoff"
       ]
     },
     {
@@ -71,6 +72,24 @@
       ]
     },
     {
+      "id": "check_complex_upgrade_contract",
+      "action": "check_text_patterns",
+      "output": "complexUpgradeCheck",
+      "targets": [
+        "policies/routing-policy.json"
+      ],
+      "requiredPatterns": [
+        "\"complexity_upgrade\"",
+        "\"target\": \"claude-code\"",
+        "\"runtime\": \"acp\"",
+        "\"TASK.json\"",
+        "\"PLAN.md\"",
+        "\"DECISIONS.md\"",
+        "\"ACCEPTANCE.md\"",
+        "\"NEXT_STEPS.md\""
+      ]
+    },
+    {
       "id": "check_state_gates_in_apply_workflows",
       "action": "check_text_patterns",
       "output": "gateCheck",
@@ -87,7 +106,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",

@@ -59,6 +59,12 @@
       "route": "critic",
       "close": "critic",
       "terminal_states": ["approved", "rejected", "needs_changes", "pending_review"]
+    },
+    "complex_development_handoff": {
+      "start": "architect",
+      "route": "claude-code",
+      "close": "critic",
+      "terminal_states": ["pending_review", "approved", "rejected", "needs_changes"]
     }
   },
   "proactive_validation": {
