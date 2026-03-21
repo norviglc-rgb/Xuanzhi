@@ -131,7 +131,7 @@
       "path": "tasks",
       "input": "remediationTask",
       "mergeKey": ["taskId"],
-      "when": "validationSummary.status == needs_changes"
+      "when": "validationSummary.status == needs_changes && policies.routing_policy.proactive_validation.emit_runtime_task_on_failure == true"
     },
     {
       "id": "write_validation_audit",

@@ -59,6 +59,7 @@
     "workflow": "workflows/system/validate-ownership-and-closure.json",
     "owner": "critic",
     "schedule": "daily",
+    "emit_runtime_task_on_failure": false,
     "onFailure": {
       "routeTo": "critic",
       "status": "needs_changes"
