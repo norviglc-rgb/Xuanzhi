@@ -46,25 +46,25 @@
       "start": "ops",
       "route": "critic",
       "close": "ops",
-      "terminal_states": ["active", "disabled", "pending_review"]
+      "terminal_states": ["active", "disabled"]
     },
     "agent_or_skill_creation": {
       "start": "agent-smith_or_skills-smith",
       "route": "critic",
       "close": "ops_or_owner",
-      "terminal_states": ["active", "blocked", "pending_review"]
+      "terminal_states": ["active", "blocked"]
     },
     "memory_promotion_lifecycle": {
       "start": "critic",
       "route": "critic",
       "close": "critic",
-      "terminal_states": ["approved", "rejected", "needs_changes", "pending_review"]
+      "terminal_states": ["approved", "rejected", "needs_changes"]
     },
     "complex_development_handoff": {
       "start": "architect",
       "route": "claude-code",
       "close": "critic",
-      "terminal_states": ["pending_review", "approved", "rejected", "needs_changes"]
+      "terminal_states": ["approved", "rejected", "needs_changes"]
     }
   },
   "proactive_validation": {

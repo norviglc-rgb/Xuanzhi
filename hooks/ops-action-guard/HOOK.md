@@ -7,5 +7,6 @@ metadata: { "openclaw": { "emoji": "guard", "events": ["gateway:startup"] } }
 # Ops Action Guard
 
 Verifies that the ops policy file exists and records the current guard state at startup.
+It also validates that `allowlist.json` is parseable and contains non-empty `rules`.
 
 Important: this hook audits. The actual hard boundary lives in `openclaw.json` agent tool permissions and sandbox settings.

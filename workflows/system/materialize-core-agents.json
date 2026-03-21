@@ -78,8 +78,8 @@
         "flow.startedBy = ops",
         "flow.routedBy = orchestrator",
         "flow.handledBy = ops",
-        "flow.closedBy = materialize-core-agents",
-        "flow.nextStep = wait_critic_review",
+        "flow.closedBy = apply-core-agent-materialization-review-outcome",
+        "flow.nextStep = wait_critic_review_then_apply_core_agent_materialization_review_outcome",
         "findings = [{severity:info, message:core_agents_materialized_and_waiting_review}]",
         "createdAt = now",
         "updatedAt = now"
@@ -120,5 +120,8 @@
     }
   ],
   "successState": "pending_review",
-  "failureState": "failed"
+  "failureState": "failed",
+  "followup": {
+    "onReviewDecision": "workflows/system/apply-core-agent-materialization-review-outcome.json"
+  }
 }

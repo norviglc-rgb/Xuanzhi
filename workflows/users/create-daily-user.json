@@ -94,9 +94,25 @@
       "mergeKey": ["userId"]
     },
     {
+      "id": "build_daily_agent_record",
+      "action": "transform_input",
+      "inputs": ["userId"],
+      "output": "dailyAgentRecord",
+      "rules": [
+        "agentId = daily-<userId>",
+        "role = daily_user_domain",
+        "runtime = native",
+        "workspaceId = workspace-daily-<userId>",
+        "status = pending_review"
+      ]
+    },
+    {
       "id": "register_agent",
       "action": "upsert_json",
-      "target": "state/agents/catalog.json"
+      "target": "state/agents/catalog.json",
+      "path": "agents",
+      "input": "dailyAgentRecord",
+      "mergeKey": ["agentId"]
     },
     {
       "id": "build_binding_entries",
@@ -117,9 +133,27 @@
       "mergeKey": ["userId", "agentId", "match.accountId", "match.channelId"]
     },
     {
+      "id": "build_user_provision_audit_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "userId", "dailyAgentRecord.agentId", "dailyAgentRecord.workspaceId"],
+      "output": "userProvisionAuditRecord",
+      "rules": [
+        "event = user_provision_submitted",
+        "requestId = <requestId>",
+        "userId = <userId>",
+        "agentId = <dailyAgentRecord.agentId>",
+        "workspaceId = <dailyAgentRecord.workspaceId>",
+        "owner = ops",
+        "status = pending_review",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
       "id": "write_audit",
       "action": "append_jsonl",
-      "target": "state/audit/user-provision.jsonl"
+      "target": "state/audit/user-provision.jsonl",
+      "input": "userProvisionAuditRecord"
     },
     {
       "id": "build_review_record",

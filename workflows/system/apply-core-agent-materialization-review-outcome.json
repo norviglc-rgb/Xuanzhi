@@ -1,44 +1,35 @@
 {
   "version": "v1",
-  "workflowId": "apply-daily-user-review-outcome",
+  "workflowId": "apply-core-agent-materialization-review-outcome",
   "owner": "ops",
-  "description": "Apply critic review outcome for a pending daily user, close the handoff loop, and write final status back to state/users.",
+  "description": "Apply critic review outcome for core-agent materialization and close pending_review status for the involved core agents.",
   "trigger": {
     "type": "manual_or_review_event",
-    "inputs": ["requestId", "userId", "reviewId", "reviewStatus", "reviewer", "findings"]
+    "inputs": ["requestId", "agentIds", "reviewId", "reviewStatus", "reviewer", "findings"]
   },
   "preconditions": [
     "schemas/review.schema.json exists",
-    "policies/routing-policy.json closure_routes.daily_user_lifecycle exists",
-    "state/users/index.json exists",
+    "state/agents/catalog.json exists",
     "state/audit/review-gate.jsonl exists"
   ],
   "steps": [
     {
-      "id": "assert_user_is_pending_review",
-      "action": "assert_current_status",
-      "target": "state/users/index.json",
-      "key": "userId",
-      "value": "<userId>",
-      "requiredStatus": "pending_review"
-    },
-    {
-      "id": "build_review_outcome_record",
+      "id": "build_core_materialization_review_outcome_record",
       "action": "transform_input",
-      "inputs": ["requestId", "userId", "reviewId", "reviewStatus", "reviewer", "findings"],
+      "inputs": ["requestId", "reviewId", "reviewStatus", "reviewer", "findings"],
       "output": "reviewOutcomeRecord",
       "rules": [
         "reviewId = <reviewId>",
-        "targetType = user_instance",
-        "targetRef = daily-<userId>",
+        "targetType = policy_change",
+        "targetRef = core-agent-materialization-<requestId>",
         "reviewer = <reviewer>",
         "status = <reviewStatus>",
         "lifecyclePhase = decision",
         "flow.startedBy = ops",
         "flow.routedBy = orchestrator",
         "flow.handledBy = ops",
-        "flow.closedBy = apply-daily-user-review-outcome",
-        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-daily-user after fixes else none",
+        "flow.closedBy = apply-core-agent-materialization-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun materialize-core-agents after fixes else none",
         "findings = <findings>",
         "createdAt = now",
         "updatedAt = now"
@@ -51,33 +42,39 @@
       "input": "reviewOutcomeRecord"
     },
     {
-      "id": "build_user_final_status_patch",
+      "id": "build_core_agent_final_status_patches",
       "action": "transform_input",
-      "inputs": ["userId", "reviewStatus", "reviewId"],
-      "output": "userFinalStatusPatch",
+      "inputs": ["agentIds", "reviewStatus", "reviewId"],
+      "output": "coreAgentFinalStatusPatches",
       "rules": [
-        "userId = <userId>",
-        "status = if <reviewStatus> == approved then active else if <reviewStatus> == rejected then disabled else pending_review",
-        "reviewId = <reviewId>"
+        "for each item in agentIds -> create {agentId:<item>, status:if <reviewStatus> == approved then active else if <reviewStatus> == rejected then blocked else pending_review, reviewId:<reviewId>}"
       ]
+    },
+    {
+      "id": "write_core_agent_final_statuses",
+      "action": "upsert_json",
+      "target": "state/agents/catalog.json",
+      "path": "agents",
+      "input": "coreAgentFinalStatusPatches",
+      "mergeKey": ["agentId"]
     },
     {
       "id": "build_closure_record",
       "action": "transform_input",
-      "inputs": ["requestId", "userId", "reviewId", "reviewStatus"],
+      "inputs": ["requestId", "reviewId", "reviewStatus"],
       "output": "closureRecord",
       "rules": [
         "reviewId = <reviewId>",
-        "targetType = user_instance",
-        "targetRef = daily-<userId>",
+        "targetType = policy_change",
+        "targetRef = core-agent-materialization-<requestId>",
         "reviewer = critic",
         "status = <reviewStatus>",
         "lifecyclePhase = closure",
         "flow.startedBy = ops",
         "flow.routedBy = orchestrator",
         "flow.handledBy = ops",
-        "flow.closedBy = apply-daily-user-review-outcome",
-        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-daily-user after fixes else none",
+        "flow.closedBy = apply-core-agent-materialization-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun materialize-core-agents after fixes else none",
         "createdAt = now",
         "updatedAt = now"
       ]
@@ -87,13 +84,6 @@
       "action": "check_schema",
       "schema": "schemas/review.schema.json",
       "input": "closureRecord"
-    },
-    {
-      "id": "write_user_final_status",
-      "action": "upsert_json",
-      "target": "state/users/index.json",
-      "input": "userFinalStatusPatch",
-      "mergeKey": ["userId"]
     },
     {
       "id": "write_review_outcome_audit",

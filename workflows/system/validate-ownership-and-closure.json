@@ -51,6 +51,8 @@
       "requiredFiles": [
         "workflows/system/create-agent.json",
         "workflows/system/apply-agent-review-outcome.json",
+        "workflows/system/materialize-core-agents.json",
+        "workflows/system/apply-core-agent-materialization-review-outcome.json",
         "workflows/skills/create-skill.json",
         "workflows/skills/apply-skill-review-outcome.json",
         "workflows/users/create-daily-user.json",
