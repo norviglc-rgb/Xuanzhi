@@ -11,6 +11,8 @@
     "policies/routing-policy.json exists",
     "policies/routing-policy.json proactive_validation exists",
     "schemas/review.schema.json exists",
+    "schemas/task.schema.json exists",
+    "state/router/tasks.json exists",
     "state/audit/review-gate.jsonl exists"
   ],
   "steps": [
@@ -93,6 +95,43 @@
       "action": "check_schema",
       "schema": "schemas/review.schema.json",
       "input": "validationReviewRecord"
+    },
+    {
+      "id": "build_remediation_task",
+      "action": "transform_input",
+      "inputs": ["requestId", "validationSummary", "validationReviewRecord.reviewId"],
+      "output": "remediationTask",
+      "rules": [
+        "taskId = task-ownership-closure-remediate-<requestId>",
+        "title = Fix ownership/closure drift from proactive validation",
+        "type = review_or_signoff",
+        "source.kind = workflow",
+        "source.ref = validate-ownership-and-closure",
+        "owner = critic",
+        "status = new",
+        "complexity = normal",
+        "route.targetAgent = critic",
+        "route.runtime = native",
+        "route.reason = [proactive_validation_failed, ownership_or_closure_drift_detected]",
+        "artifacts = [policies/routing-policy.json, workflows/system/validate-ownership-and-closure.json, state/audit/review-gate.jsonl, <validationReviewRecord.reviewId>]",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_remediation_task",
+      "action": "check_schema",
+      "schema": "schemas/task.schema.json",
+      "input": "remediationTask"
+    },
+    {
+      "id": "write_remediation_task",
+      "action": "upsert_json",
+      "target": "state/router/tasks.json",
+      "path": "tasks",
+      "input": "remediationTask",
+      "mergeKey": ["taskId"],
+      "when": "validationSummary.status == needs_changes"
     },
     {
       "id": "write_validation_audit",
