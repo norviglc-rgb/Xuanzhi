@@ -1,0 +1,91 @@
+{
+  "version": "v1",
+  "workflowId": "create-agent",
+  "owner": "ops",
+  "description": "Create a new system agent through agent-smith ownership, then submit review and pending state.",
+  "trigger": {
+    "type": "manual_or_request_event",
+    "inputs": ["requestId", "agentId", "role", "capabilities", "constraints"]
+  },
+  "preconditions": [
+    "policies/routing-policy.json ownership_routes.create_agent exists",
+    "schemas/review.schema.json exists",
+    "state/agents/catalog.json exists",
+    "state/audit/review-gate.jsonl exists",
+    "workspace-agent-smith exists"
+  ],
+  "steps": [
+    {
+      "id": "delegate_agent_creation_to_agent_smith",
+      "action": "delegate_to_agent",
+      "targetAgent": "agent-smith",
+      "task": "create_agent_scaffold",
+      "inputs": ["requestId", "agentId", "role", "capabilities", "constraints"],
+      "outputs": ["agentCreationReport"]
+    },
+    {
+      "id": "verify_agent_creation_report",
+      "action": "check_required_fields",
+      "input": "agentCreationReport",
+      "requiredFields": ["agentId", "workspaceId", "status", "artifacts"],
+      "requiredValues": ["status=ready"]
+    },
+    {
+      "id": "register_agent_pending_review",
+      "action": "upsert_json",
+      "target": "state/agents/catalog.json",
+      "input": "agentPendingRecord",
+      "mergeKey": ["agentId"]
+    },
+    {
+      "id": "build_agent_pending_record",
+      "action": "transform_input",
+      "inputs": ["agentId", "role", "agentCreationReport.workspaceId"],
+      "output": "agentPendingRecord",
+      "rules": [
+        "agentId = <agentId>",
+        "role = <role>",
+        "workspaceId = <agentCreationReport.workspaceId>",
+        "status = pending_review"
+      ]
+    },
+    {
+      "id": "build_agent_creation_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "agentId"],
+      "output": "reviewRecord",
+      "rules": [
+        "reviewId = review-<requestId>-<agentId>",
+        "targetType = agent",
+        "targetRef = <agentId>",
+        "reviewer = critic",
+        "status = pending",
+        "lifecyclePhase = submitted",
+        "flow.startedBy = orchestrator",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = agent-smith",
+        "flow.closedBy = apply-agent-review-outcome",
+        "flow.nextStep = wait_critic_review",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_agent_creation_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewRecord"
+    },
+    {
+      "id": "submit_agent_creation_for_review",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewRecord"
+    }
+  ],
+  "successState": "pending_review",
+  "failureState": "failed",
+  "followup": {
+    "onReviewDecision": "workflows/system/apply-agent-review-outcome.json"
+  }
+}

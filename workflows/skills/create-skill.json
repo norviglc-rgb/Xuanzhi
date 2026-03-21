@@ -1,0 +1,91 @@
+{
+  "version": "v1",
+  "workflowId": "create-skill",
+  "owner": "ops",
+  "description": "Create a new skill through skills-smith ownership, then submit review and pending state.",
+  "trigger": {
+    "type": "manual_or_request_event",
+    "inputs": ["requestId", "skillId", "purpose", "placement", "interfaces"]
+  },
+  "preconditions": [
+    "policies/routing-policy.json ownership_routes.create_skill exists",
+    "schemas/review.schema.json exists",
+    "state/skills/catalog.json exists",
+    "state/audit/review-gate.jsonl exists",
+    "workspace-skills-smith exists"
+  ],
+  "steps": [
+    {
+      "id": "delegate_skill_creation_to_skills_smith",
+      "action": "delegate_to_agent",
+      "targetAgent": "skills-smith",
+      "task": "create_skill_package",
+      "inputs": ["requestId", "skillId", "purpose", "placement", "interfaces"],
+      "outputs": ["skillCreationReport"]
+    },
+    {
+      "id": "verify_skill_creation_report",
+      "action": "check_required_fields",
+      "input": "skillCreationReport",
+      "requiredFields": ["skillId", "skillPath", "status", "artifacts"],
+      "requiredValues": ["status=ready"]
+    },
+    {
+      "id": "register_skill_pending_review",
+      "action": "upsert_json",
+      "target": "state/skills/catalog.json",
+      "input": "skillPendingRecord",
+      "mergeKey": ["skillId"]
+    },
+    {
+      "id": "build_skill_pending_record",
+      "action": "transform_input",
+      "inputs": ["skillId", "skillCreationReport.skillPath"],
+      "output": "skillPendingRecord",
+      "rules": [
+        "skillId = <skillId>",
+        "path = <skillCreationReport.skillPath>",
+        "owner = skills-smith",
+        "status = pending_review"
+      ]
+    },
+    {
+      "id": "build_skill_creation_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "skillId"],
+      "output": "reviewRecord",
+      "rules": [
+        "reviewId = review-<requestId>-<skillId>",
+        "targetType = skill",
+        "targetRef = <skillId>",
+        "reviewer = critic",
+        "status = pending",
+        "lifecyclePhase = submitted",
+        "flow.startedBy = orchestrator",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = skills-smith",
+        "flow.closedBy = apply-skill-review-outcome",
+        "flow.nextStep = wait_critic_review",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_skill_creation_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewRecord"
+    },
+    {
+      "id": "submit_skill_creation_for_review",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewRecord"
+    }
+  ],
+  "successState": "pending_review",
+  "failureState": "failed",
+  "followup": {
+    "onReviewDecision": "workflows/skills/apply-skill-review-outcome.json"
+  }
+}

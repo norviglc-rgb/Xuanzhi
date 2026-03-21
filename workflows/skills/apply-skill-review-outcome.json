@@ -1,0 +1,72 @@
+{
+  "version": "v1",
+  "workflowId": "apply-skill-review-outcome",
+  "owner": "ops",
+  "description": "Apply critic review outcome for a pending skill and write final status into state/skills.",
+  "trigger": {
+    "type": "manual_or_review_event",
+    "inputs": ["requestId", "skillId", "reviewId", "reviewStatus", "reviewer", "findings"]
+  },
+  "preconditions": [
+    "schemas/review.schema.json exists",
+    "policies/routing-policy.json closure_routes.agent_or_skill_creation exists",
+    "state/skills/catalog.json exists",
+    "state/audit/review-gate.jsonl exists"
+  ],
+  "steps": [
+    {
+      "id": "build_skill_review_decision_record",
+      "action": "transform_input",
+      "inputs": ["skillId", "reviewId", "reviewStatus", "reviewer", "findings"],
+      "output": "reviewDecisionRecord",
+      "rules": [
+        "reviewId = <reviewId>",
+        "targetType = skill",
+        "targetRef = <skillId>",
+        "reviewer = <reviewer>",
+        "status = <reviewStatus>",
+        "lifecyclePhase = decision",
+        "flow.startedBy = orchestrator",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = skills-smith",
+        "flow.closedBy = apply-skill-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-skill after fixes else none",
+        "findings = <findings>",
+        "createdAt = now",
+        "updatedAt = now"
+      ]
+    },
+    {
+      "id": "validate_skill_review_decision_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewDecisionRecord"
+    },
+    {
+      "id": "build_skill_final_status_patch",
+      "action": "transform_input",
+      "inputs": ["skillId", "reviewStatus", "reviewId"],
+      "output": "skillFinalStatusPatch",
+      "rules": [
+        "skillId = <skillId>",
+        "status = if <reviewStatus> == approved then active else if <reviewStatus> == rejected then blocked else pending_review",
+        "reviewId = <reviewId>"
+      ]
+    },
+    {
+      "id": "write_skill_final_status",
+      "action": "upsert_json",
+      "target": "state/skills/catalog.json",
+      "input": "skillFinalStatusPatch",
+      "mergeKey": ["skillId"]
+    },
+    {
+      "id": "write_skill_review_decision_audit",
+      "action": "append_jsonl",
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewDecisionRecord"
+    }
+  ],
+  "successState": "review_outcome_applied",
+  "failureState": "failed"
+}
