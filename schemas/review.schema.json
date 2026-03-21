@@ -14,6 +14,18 @@
     "reviewer": { "type": "string", "const": "critic" },
     "status": { "type": "string", "enum": ["pending", "approved", "rejected", "needs_changes"] },
     "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+    "lifecyclePhase": { "type": "string", "enum": ["submitted", "decision", "closure"] },
+    "flow": {
+      "type": "object",
+      "properties": {
+        "startedBy": { "type": "string" },
+        "routedBy": { "type": "string" },
+        "handledBy": { "type": "string" },
+        "closedBy": { "type": "string" },
+        "nextStep": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
     "findings": {
       "type": "array",
       "items": {

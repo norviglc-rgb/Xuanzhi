@@ -9,6 +9,7 @@
   },
   "preconditions": [
     "schemas/review.schema.json exists",
+    "policies/routing-policy.json closure_routes.daily_user_lifecycle exists",
     "state/users/index.json exists",
     "state/audit/review-gate.jsonl exists"
   ],
@@ -24,7 +25,15 @@
         "targetRef = daily-<userId>",
         "reviewer = <reviewer>",
         "status = <reviewStatus>",
-        "findings = <findings>"
+        "lifecyclePhase = decision",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = ops",
+        "flow.closedBy = apply-daily-user-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-daily-user after fixes else none",
+        "findings = <findings>",
+        "createdAt = now",
+        "updatedAt = now"
       ]
     },
     {
@@ -50,16 +59,26 @@
       "inputs": ["requestId", "userId", "reviewId", "reviewStatus"],
       "output": "closureRecord",
       "rules": [
-        "event = daily_user_review_closure",
-        "requestId = <requestId>",
-        "userId = <userId>",
         "reviewId = <reviewId>",
-        "startedBy = critic",
-        "handledBy = ops",
-        "closedBy = apply-daily-user-review-outcome",
-        "finalStatus = if <reviewStatus> == approved then active else if <reviewStatus> == rejected then disabled else pending_review",
-        "nextStep = if <reviewStatus> == needs_changes then rerun create-daily-user after fixes else none"
+        "targetType = user_instance",
+        "targetRef = daily-<userId>",
+        "reviewer = critic",
+        "status = <reviewStatus>",
+        "lifecyclePhase = closure",
+        "flow.startedBy = critic",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = ops",
+        "flow.closedBy = apply-daily-user-review-outcome",
+        "flow.nextStep = if <reviewStatus> == needs_changes then rerun create-daily-user after fixes else none",
+        "createdAt = now",
+        "updatedAt = now"
       ]
+    },
+    {
+      "id": "validate_closure_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "closureRecord"
     },
     {
       "id": "write_user_final_status",

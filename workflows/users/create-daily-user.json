@@ -10,6 +10,8 @@
   "preconditions": [
     "schemas/user-profile.schema.json exists",
     "schemas/review.schema.json exists",
+    "policies/routing-policy.json ownership_routes.create_daily_user_runtime exists",
+    "policies/routing-policy.json ownership_routes.create_agent exists",
     "state/users/index.json exists",
     "state/agents/catalog.json exists",
     "state/audit/user-provision.jsonl exists",
