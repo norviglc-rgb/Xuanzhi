@@ -12,7 +12,7 @@
     { "type": "skill_maintenance", "target": "skills-smith" },
     { "type": "agent_maintenance", "target": "agent-smith" },
     { "type": "review_or_signoff", "target": "critic" },
-    { "type": "parallel_research", "target": "subagents" }
+    { "type": "parallel_research", "target": "orchestrator" }
   ],
   "ownership_routes": {
     "create_agent": {
@@ -91,6 +91,7 @@
     ]
   },
   "notes": [
-    "Root active runtime truth tiles are stored under docs/system, policies, schemas, workflows, and state."
+    "Root active runtime truth tiles are stored under docs/system, policies, schemas, workflows, and state.",
+    "parallel_research currently falls back to orchestrator until subagents runtime is explicitly enabled and registered."
   ]
 }

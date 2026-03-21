@@ -12,14 +12,14 @@ Active runtime knowledge now lives at the repository root under `docs/system`, `
 - skills-smith: skill templates and maintenance
 - agent-smith: agent templates and maintenance
 - claude-code: ACP execution domain for complex development
-- subagents: parallel background workers
+- subagents (planned): parallel background workers when runtime support is explicitly enabled
 
 ## Principles
 1. One agent, one workspace, one agentDir, one session scope.
 2. Orchestrator routes without owning lifecycle operations.
 3. Daily agents are instantiated per user and move through the workflows stored under `workflows/`.
 4. Complex development runs through Claude Code and the `claude-code` ACP runtime.
-5. Subagents assist; they never replace ACP or core agent authority.
+5. Subagents are currently planned-only and must not be treated as active runtime truth until enabled and registered.
 6. Critic reviews; it does not produce the main output but drives approval for state transitions.
 7. Execution is decoupled from skills, tools, and external software by anchoring truth in JSON/Markdown under the root directories.
 8. File- and JSON-based sources under `docs/system`, `policies`, `schemas`, `workflows`, and `state` are the canonical truth for the runtime.

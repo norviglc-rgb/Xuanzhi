@@ -59,6 +59,18 @@
       ]
     },
     {
+      "id": "check_parallel_research_route_reachable",
+      "action": "check_text_patterns",
+      "output": "routeReachabilityCheck",
+      "targets": [
+        "policies/routing-policy.json"
+      ],
+      "requiredPatterns": [
+        "\"parallel_research\"",
+        "\"target\": \"orchestrator\""
+      ]
+    },
+    {
       "id": "check_state_gates_in_apply_workflows",
       "action": "check_text_patterns",
       "output": "gateCheck",
@@ -75,7 +87,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",

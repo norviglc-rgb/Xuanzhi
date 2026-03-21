@@ -28,5 +28,5 @@
 - `skill_maintenance` -> `skills-smith`
 - `agent_maintenance` -> `agent-smith`
 - `review_or_signoff` -> `critic`
-- `parallel_research` -> `subagents`
+- `parallel_research` -> `orchestrator` (fallback while subagents runtime is not enabled)
 - `complex_development` -> `claude-code` via ACP and the `workflows/memory-promote` pathway when promotion is needed
