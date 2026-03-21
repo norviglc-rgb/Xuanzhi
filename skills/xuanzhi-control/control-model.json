@@ -4,7 +4,7 @@
     "openclaw.json agent tool allow/deny",
     "openclaw.json sandbox settings",
     "hooks startup integrity audit",
-    "logs audit trail"
+    "state/audit trail"
   ],
   "softControls": [
     "workspace AGENTS.md",

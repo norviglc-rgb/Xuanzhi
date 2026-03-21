@@ -15,6 +15,14 @@
   ],
   "steps": [
     {
+      "id": "assert_user_is_pending_review",
+      "action": "assert_current_status",
+      "target": "state/users/index.json",
+      "key": "userId",
+      "value": "<userId>",
+      "requiredStatus": "pending_review"
+    },
+    {
       "id": "build_review_outcome_record",
       "action": "transform_input",
       "inputs": ["requestId", "userId", "reviewId", "reviewStatus", "reviewer", "findings"],

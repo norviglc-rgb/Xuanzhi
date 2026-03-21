@@ -131,7 +131,15 @@
         "targetType = user_instance",
         "targetRef = daily-<userId>",
         "reviewer = critic",
-        "status = pending"
+        "status = pending",
+        "lifecyclePhase = submitted",
+        "flow.startedBy = ops",
+        "flow.routedBy = orchestrator",
+        "flow.handledBy = ops",
+        "flow.closedBy = apply-daily-user-review-outcome",
+        "flow.nextStep = wait_critic_review",
+        "createdAt = now",
+        "updatedAt = now"
       ]
     },
     {

@@ -14,6 +14,63 @@
     { "type": "review_or_signoff", "target": "critic" },
     { "type": "parallel_research", "target": "subagents" }
   ],
+  "ownership_routes": {
+    "create_agent": {
+      "target": "agent-smith",
+      "required": true,
+      "note": "Any new agent scaffolding/template/materialization design must be handled by agent-smith."
+    },
+    "create_skill": {
+      "target": "skills-smith",
+      "required": true,
+      "note": "Any new skill creation/placement/governance decision must be handled by skills-smith."
+    },
+    "create_daily_user_runtime": {
+      "target": "ops",
+      "required": true,
+      "note": "Runtime provisioning and state/audit updates are owned by ops."
+    },
+    "review_gate_decision": {
+      "target": "critic",
+      "required": true,
+      "note": "Review verdicts are owned by critic."
+    },
+    "review_outcome_apply": {
+      "target": "ops",
+      "required": true,
+      "note": "Applying review verdict to runtime state is owned by ops."
+    }
+  },
+  "closure_routes": {
+    "daily_user_lifecycle": {
+      "start": "ops",
+      "route": "critic",
+      "close": "ops",
+      "terminal_states": ["active", "disabled", "pending_review"]
+    },
+    "agent_or_skill_creation": {
+      "start": "agent-smith_or_skills-smith",
+      "route": "critic",
+      "close": "ops_or_owner",
+      "terminal_states": ["active", "blocked", "pending_review"]
+    },
+    "memory_promotion_lifecycle": {
+      "start": "critic",
+      "route": "critic",
+      "close": "critic",
+      "terminal_states": ["approved", "rejected", "needs_changes", "pending_review"]
+    }
+  },
+  "proactive_validation": {
+    "workflow": "workflows/system/validate-ownership-and-closure.json",
+    "owner": "critic",
+    "schedule": "daily",
+    "emit_runtime_task_on_failure": false,
+    "onFailure": {
+      "routeTo": "critic",
+      "status": "needs_changes"
+    }
+  },
   "complexity_upgrade": {
     "target": "claude-code",
     "runtime": "acp",
@@ -32,5 +89,8 @@
       "ACCEPTANCE.md",
       "NEXT_STEPS.md"
     ]
-  }
+  },
+  "notes": [
+    "Root active runtime truth tiles are stored under docs/system, policies, schemas, workflows, and state."
+  ]
 }
