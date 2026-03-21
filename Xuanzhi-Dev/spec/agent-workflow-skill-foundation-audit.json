@@ -7,8 +7,7 @@
     "范围说明": [
       "已按你的要求，暂时冻结长期计划与短期计划，不继续沿用原里程碑推进。",
       "本文件只做基础盘点、约束识别、落实核对与深度测试设计。",
-      "判断依据优先级：需求文档 > active runtime 根目录文件 > openclaw.json > hooks/policies/schemas/workflows/state > workspace 根文件 > reference/openclaw 模板。",
-      "补充说明：`daily-r4-user-001` 已在本次会话中被手工补齐为测试专用 daily 样本，用于后续验证 daily 用户实例的文件化落地、身份落实和隔离边界。"
+      "判断依据优先级：需求文档 > active runtime 根目录文件 > openclaw.json > hooks/policies/schemas/workflows/state > workspace 根文件 > reference/openclaw 模板。"
     ],
     "主要参照文件": [
       "Xuanzhi-Dev/spec/requirements/open_claw多agent系统v1需求规格.md",
@@ -34,7 +33,7 @@
     ]
   },
   "总判断": {
-    "一句话结论": "当前仓库已经具备多 agent 运行骨架，但离需求文档描述的“功能齐全且约束真正落地”还有明显距离；虽然 `daily-r4-user-001` 已被手工补成测试样本，但 workflow 仍不能自动生成等价结果，模板文件也仍未真正落地，review schema 缺失、bindings 未实现、若干关键约束仍停留在说明层。",
+    "一句话结论": "当前仓库已经具备多 agent 运行骨架，但离需求文档描述的“功能齐全且约束真正落地”还有明显距离；workflow 仍不能稳定产出完整 daily 实例，模板文件也仍未真正落地，review schema 缺失、bindings 未实现、若干关键约束仍停留在说明层。",
     "整体成熟度判断": {
       "agent骨架": "中",
       "workflow骨架": "中",
@@ -43,8 +42,8 @@
       "真实可运行深度": "低到中"
     },
     "最重要的硬缺口": [
-      "所有现有 workspace 都没有 USER.md，而需求文档要求每个 workspace 至少包含 USER.md。",
-      "`daily-r4-user-001` 现在已经被手工补成测试样本，但这暴露出 create-daily-user workflow 本身还不能自动产出同等结果。",
+      "所有现有 workspace 都缺少完备、稳定的 USER.md 落地；对 daily agent 来说尤为关键。",
+      "create-daily-user workflow 仍不能稳定自动产出完整、可用、可审计的 daily 实例。",
       "schemas/review.schema.json 缺失，但需求文档把它列为系统级必须文件，skill 目录里虽有 review.schema.json，但 active runtime 根目录没有对应 schema。",
       "openclaw.json 的 bindings 为空，create-daily-user 工作流也没有 update_bindings 步骤，和需求中的“用户消息先由 bindings 映射到目标 Agent”不一致。",
       "workspace-integrity hook 只检查 6 个文件和 memory 目录，不检查 USER.md、BOOTSTRAP.md、MEMORY.md、skills/hooks/docs 等，无法证明 workspace 真正符合需求标准。",
@@ -109,13 +108,9 @@
         "ops",
         "skills-smith",
         "agent-smith",
-        "claude-code",
-        "daily-r4-user-001"
+        "claude-code"
       ],
-      "补充状态": [
-        "`daily-r4-user-001` 已在本次会话中手工补齐 AGENTS/SOUL/USER/IDENTITY/TOOLS/HEARTBEAT/BOOT/BOOTSTRAP/MEMORY/profile.json/local-state.json，现可作为测试专用 daily 样本。",
-        "这次手工补齐不等于 workflow 已达标；它只是为后续验证提供了一个可用实例。"
-      ],
+      "补充状态": [],
       "已存在Workflow": [
         "workflows/system/materialize-core-agents.json",
         "workflows/users/create-daily-user.json",
@@ -211,8 +206,8 @@
       {
         "编号": "GAP-05",
         "类别": "Daily 实例化闭环不完整",
-        "现象": "当前 `daily-r4-user-001` 已被手工补齐成测试样本，但 create-daily-user workflow 仍未证明自己能自动生成同等结果，也未更新 bindings。",
-        "影响": "说明 daily 实例化链目前依赖人工补洞，尚未实现需求中的自动、可审计、可复用闭环。"
+        "现象": "create-daily-user workflow 仍未证明自己能自动生成完整 daily 实例，也未更新 bindings。",
+        "影响": "说明 daily 实例化链目前仍未实现自动、可审计、可复用闭环。"
       },
       {
         "编号": "GAP-06",
@@ -267,7 +262,7 @@
       "TOOLS.md": "TOOLS.md 是当前最能体现角色差异的根文件之一；每个 agent 在“默认能力方向”和“默认受限方向”上有明显区分，能较好落实权限边界。但它仍偏说明性，不等于真正授权，真正授权仍由 openclaw.json 和 policy 决定。",
       "HEARTBEAT.md": "HEARTBEAT.md 已按角色写了不同检查项，但大多仍是高层名词，例如 check pending review items、check blocked coding tasks，缺少“检查什么文件、发现什么算异常、异常后转交给谁”的更深颗粒度。",
       "BOOT.md": "系统 agent 的 BOOT.md 基本一致，强调启动检查顺序和以 openclaw.json/hook/skill JSON 为高优先级真相源，这有助于防止 markdown 越权。但它没有细化到各 agent 特定启动上下文。",
-      "USER.md": "这是当前最明显的缺口。除手工补齐的 `daily-r4-user-001` 外，其余 workspace 没有 USER.md；如果严格按照需求文档“每个 workspace 至少包含 USER.md”，当前仍不达标。daily 测试样本已补齐，证明 USER.md 对单用户 agent 是必要的。",
+      "USER.md": "这是当前最明显的缺口。现有 workspace 普遍没有稳定落实 USER.md；如果严格按照需求文档“每个 workspace 至少包含 USER.md”，当前仍不达标。对 daily agent 来说，USER.md 是单用户身份与边界承载的关键文件。",
       "综合判断": "现有根文件已经能表达“边界”和“角色名义”，但距离“把身份和功能真正落实到文件内容”还有两层差距：第一层是角色内容仍偏模板化；第二层是很多文件没有和具体工件、具体 workflow、具体状态字段形成强绑定。"
     },
     "按agent文件内容落实摘要": {
@@ -277,8 +272,7 @@
       "ops": "AGENTS/TOOLS 对 allowlist、生命周期、执行边界表达清楚；问题是 workspace-ops/docs 为空，缺少 runbook、incident、deploy 工件，导致“会做什么”写了，“怎么做、做到什么证据算完成”还没写深。",
       "skills-smith": "AGENTS/TOOLS 能表达技能治理职责；但 SOUL/IDENTITY 过于通用，且只有一个实际 skill，导致“技能设计者”身份落实还不够饱满。",
       "agent-smith": "AGENTS/TOOLS 明确写了模板、schema、workflow 维护职责；但模板目录为空，说明文件内容与真实产物之间存在断层，是当前最典型的“文档说会做，仓库里没产物”。",
-      "claude-code": "AGENTS/TOOLS 已落实复杂开发执行域身份；但缺少 handoff 接收区、执行结果模板、失败分类工件，内容落实还未深入执行面。",
-      "daily-r4-user-001": "本次会话已手工补齐 AGENTS/SOUL/USER/IDENTITY/TOOLS/HEARTBEAT/BOOT/BOOTSTRAP/MEMORY/profile.json/local-state.json，当前是唯一一个能较完整检查“daily 文件内容是否落实单用户身份”的实例。"
+      "claude-code": "AGENTS/TOOLS 已落实复杂开发执行域身份；但缺少 handoff 接收区、执行结果模板、失败分类工件，内容落实还未深入执行面。"
     },
     "agents": [
       {
@@ -428,7 +422,7 @@
             ],
             "缺口": [
               "没有根目录 review schema",
-              "daily-r4-user-001 实例本身就不完整，说明验收链没有真正挡住缺陷"
+              "daily 实例若本身不完整，说明验收链没有真正挡住缺陷"
             ]
           },
           {
@@ -1034,124 +1028,6 @@
             ]
           }
         ]
-      },
-      {
-        "agentId": "daily-r4-user-001",
-        "需求定位": "单用户 daily agent，负责日常聊天、查询、轻量协助、偏好与历史上下文维护，且不能跨用户串扰。",
-        "注册状态": "已注册，且已在本次会话中手工补齐为测试专用 daily 样本；status 仍为 pending_review。",
-        "核心起作用文件": {
-          "硬约束": [
-            "openclaw.json 中 daily-r4-user-001 的只读工具限制",
-            "schemas/user-profile.schema.json",
-            "state/users/index.json",
-            "state/agents/catalog.json"
-          ],
-          "软约束": [
-            "workspace-daily-r4-user-001/AGENTS.md",
-            "workspace-daily-r4-user-001/SOUL.md",
-            "workspace-daily-r4-user-001/USER.md",
-            "workspace-daily-r4-user-001/IDENTITY.md",
-            "workspace-daily-r4-user-001/TOOLS.md",
-            "workspace-daily-r4-user-001/HEARTBEAT.md",
-            "workspace-daily-r4-user-001/BOOT.md",
-            "workspace-daily-r4-user-001/BOOTSTRAP.md",
-            "workspace-daily-r4-user-001/MEMORY.md",
-            "workspace-daily-r4-user-001/profile.json",
-            "workspace-daily-r4-user-001/state/local-state.json"
-          ]
-        },
-        "与reference/openclaw对照": {
-          "已对齐": [
-            "现在已具备 AGENTS/SOUL/USER/IDENTITY/TOOLS/HEARTBEAT/BOOT/BOOTSTRAP/MEMORY",
-            "已有 profile.json、本地 state 和 daily memory 初始记录"
-          ],
-          "未对齐": [
-            "bindings 仍为空，尚未形成真实用户入口绑定",
-            "这是手工补齐的测试样本，不是 create-daily-user workflow 自动生成的结果"
-          ]
-        },
-        "应实现功能": [
-          {
-            "功能": "服务单一用户的日常聊天与查询",
-            "落实判断": "已具备基础内容承载，但仍待运行验证",
-            "证据": [
-              "openclaw.json 中已注册该 agent",
-              "AGENTS.md、SOUL.md、USER.md 已明确其单用户定位和 daily 角色边界"
-            ],
-            "缺口": [
-              "尚未通过真实对话验证其是否稳定表现为 daily 用户助手而非系统 agent"
-            ]
-          },
-          {
-            "功能": "维护该用户长期偏好与上下文",
-            "落实判断": "基础落实",
-            "证据": [
-              "MEMORY.md 已写入稳定偏好和边界",
-              "profile.json 已定义 persona、preferences、bindings",
-              "memory/2026-03-21.md 已建立初始记录"
-            ],
-            "缺口": [
-              "还缺少通过实际多轮对话验证写入和升格逻辑的证据"
-            ]
-          },
-          {
-            "功能": "不跨用户共享记忆",
-            "落实判断": "文件层已落实，运行层未充分证明",
-            "证据": [
-              "AGENTS.md、USER.md、IDENTITY.md、MEMORY.md、profile.json 都明确写了单用户和禁止跨用户记忆",
-              "TOOLS.md 明确禁止跨用户读写"
-            ],
-            "缺口": [
-              "仍需要至少第二个 daily 用户实例做交叉验证"
-            ]
-          }
-        ],
-        "预期功能表现": [
-          "daily 实例应具备自己的 USER.md、MEMORY.md、profile.json 和受限工具边界。",
-          "它应该表现出单用户个性化，而不是像系统 agent 一样泛化回答。",
-          "任何跨用户读取或共享长期记忆都应被禁止。"
-        ],
-        "深度测试用例": [
-          {
-            "编号": "DAILY-TC-01",
-            "目标": "验证 daily 用户实例是否完整物化",
-            "步骤": [
-              "检查 workspace-daily-r4-user-001 是否具备全部最小根文件和 profile.json。",
-              "检查这些文件内容是否引用单一 userId。",
-              "检查 state/users 与 state/agents 是否一致。"
-            ],
-            "预期": [
-              "缺少任何关键文件都应判定实例化不完整。",
-              "workspaceId、agentId、userId 必须一一对应。"
-            ]
-          },
-          {
-            "编号": "DAILY-TC-02",
-            "目标": "验证 daily 的个性化与非系统化行为",
-            "步骤": [
-              "给 daily 用户发出连续三轮偏好相关问题。",
-              "观察是否使用 USER.md/profile/MEMORY 中的用户特征回答。",
-              "再给一个明显属于系统治理的问题，观察是否转交而不是装作会做。"
-            ],
-            "预期": [
-              "应体现个性化和单用户上下文。",
-              "对系统治理问题应升级，不应越界。"
-            ]
-          },
-          {
-            "编号": "DAILY-TC-03",
-            "目标": "验证多用户隔离",
-            "步骤": [
-              "创建第二个 daily 用户实例。",
-              "分别写入两个用户的长期偏好。",
-              "交叉提问并检查是否泄露对方长期信息。"
-            ],
-            "预期": [
-              "两个 daily 之间不得串扰 MEMORY/profile。",
-              "若有串扰，应直接判定需求失败。"
-            ]
-          }
-        ]
       }
     ],
     "workflows": [
@@ -1232,14 +1108,14 @@
         ],
         "当前判断": "弱落实",
         "证据": [
-          "workflow 文件存在，且已创建出 r4-user-001 的 state 记录"
+          "workflow 文件存在，已具备基本的用户创建与 state 更新骨架。"
         ],
         "缺口": [
           "未更新 bindings",
           "未发现 profile.json 生成步骤",
           "未体现模板渲染根文件",
           "未体现 Git 提交",
-          "实际 daily workspace 也证明结果不完整"
+          "未证明结果能稳定形成完整可用的 daily workspace"
         ],
         "预期功能表现": [
           "生成的 daily 实例必须可直接被 daily 用户使用，而不是只登记索引。",
