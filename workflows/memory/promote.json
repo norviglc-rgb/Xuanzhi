@@ -14,8 +14,8 @@
   "steps": [
     { "id": "validate_candidate", "action": "check_policy", "policy": "policies/memory-policy.json" },
     { "id": "append_long_term_memory", "action": "append_markdown_section", "target_template": "workspace-<workspaceId>/MEMORY.md" },
-    { "id": "write_audit_record", "action": "append_jsonl", "target": "logs/audit/memory-promotion.jsonl" },
-    { "id": "create_review_record", "action": "append_jsonl", "target": "logs/audit/review-gate.jsonl" }
+    { "id": "write_audit_record", "action": "append_jsonl", "target": "state/audit/memory-promotion.jsonl" },
+    { "id": "create_review_record", "action": "append_jsonl", "target": "state/audit/review-gate.jsonl" }
   ],
   "successState": "promoted",
   "failureState": "rejected"

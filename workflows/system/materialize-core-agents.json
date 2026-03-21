@@ -51,7 +51,7 @@
     {
       "id": "write_audit",
       "action": "append_jsonl",
-      "target": "logs/audit/core-agent-materialization.jsonl"
+      "target": "state/audit/core-agent-materialization.jsonl"
     }
   ],
   "successState": "pending_review",

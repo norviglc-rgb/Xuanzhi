@@ -2,7 +2,7 @@
   "version": "v1",
   "workflowId": "create-daily-user",
   "owner": "ops",
-  "description": "Create a daily user runtime instance, register state, update bindings, and write auditable review records.",
+  "description": "Create a daily user runtime instance, validate profile, update bindings, write audit, create review record, and set user status to pending_review.",
   "trigger": {
     "type": "manual_or_external_event",
     "inputs": ["requestId", "userId", "displayName", "persona", "bindings"]
@@ -13,7 +13,8 @@
     "state/users/index.json exists",
     "state/agents/catalog.json exists",
     "state/audit/user-provision.jsonl exists",
-    "state/audit/review-gate.jsonl exists"
+    "state/audit/review-gate.jsonl exists",
+    "workspace-agent-smith exists"
   ],
   "steps": [
     {
@@ -35,9 +36,44 @@
       ]
     },
     {
+      "id": "request_agent_smith_materialization",
+      "action": "delegate_to_agent",
+      "targetAgent": "agent-smith",
+      "task": "materialize_daily_agent_assets",
+      "inputs": ["userId", "displayName", "persona"],
+      "outputs": ["materializationReport"]
+    },
+    {
+      "id": "verify_materialization_report",
+      "action": "check_required_fields",
+      "input": "materializationReport",
+      "requiredFields": ["workspaceId", "agentId", "status", "artifacts"],
+      "requiredValues": ["status=ready"]
+    },
+    {
+      "id": "build_user_profile_record",
+      "action": "transform_input",
+      "inputs": ["userId", "displayName", "persona", "bindings"],
+      "output": "userProfileRecord",
+      "rules": [
+        "dailyAgentId = daily-<userId>",
+        "workspaceId = workspace-daily-<userId>",
+        "capabilityProfile = daily_light",
+        "status = pending_review"
+      ]
+    },
+    {
+      "id": "validate_user_profile",
+      "action": "check_schema",
+      "schema": "schemas/user-profile.schema.json",
+      "input": "userProfileRecord"
+    },
+    {
       "id": "register_user",
       "action": "upsert_json",
-      "target": "state/users/index.json"
+      "target": "state/users/index.json",
+      "input": "userProfileRecord",
+      "mergeKey": ["userId"]
     },
     {
       "id": "register_agent",
@@ -45,9 +81,22 @@
       "target": "state/agents/catalog.json"
     },
     {
+      "id": "build_binding_entries",
+      "action": "transform_input",
+      "input": "bindings",
+      "output": "bindingEntries",
+      "rules": [
+        "for each accountId in bindings.accountIds -> create {userId, agentId: daily-<userId>, match:{accountId}}",
+        "for each channelId in bindings.channelIds -> create {userId, agentId: daily-<userId>, match:{channelId}}"
+      ]
+    },
+    {
       "id": "update_bindings",
       "action": "upsert_json",
-      "target": "openclaw.json"
+      "target": "openclaw.json",
+      "path": "bindings",
+      "input": "bindingEntries",
+      "mergeKey": ["userId", "agentId", "match.accountId", "match.channelId"]
     },
     {
       "id": "write_audit",
@@ -55,11 +104,53 @@
       "target": "state/audit/user-provision.jsonl"
     },
     {
+      "id": "build_review_record",
+      "action": "transform_input",
+      "inputs": ["requestId", "userId"],
+      "output": "reviewRecord",
+      "rules": [
+        "reviewId = review-<requestId>-<userId>",
+        "targetType = user_instance",
+        "targetRef = daily-<userId>",
+        "reviewer = critic",
+        "status = pending"
+      ]
+    },
+    {
+      "id": "validate_review_record",
+      "action": "check_schema",
+      "schema": "schemas/review.schema.json",
+      "input": "reviewRecord"
+    },
+    {
       "id": "submit_for_review",
       "action": "append_jsonl",
-      "target": "state/audit/review-gate.jsonl"
+      "target": "state/audit/review-gate.jsonl",
+      "input": "reviewRecord"
+    },
+    {
+      "id": "build_user_pending_review_patch",
+      "action": "transform_input",
+      "inputs": ["userId", "reviewRecord.reviewId"],
+      "output": "userPendingReviewPatch",
+      "rules": [
+        "userId = <userId>",
+        "status = pending_review",
+        "reviewId = <reviewRecord.reviewId>"
+      ]
+    },
+    {
+      "id": "write_user_pending_review_state",
+      "action": "upsert_json",
+      "target": "state/users/index.json",
+      "input": "userPendingReviewPatch",
+      "mergeKey": ["userId"]
     }
   ],
   "successState": "pending_review",
   "failureState": "failed"
+  ,
+  "followup": {
+    "onReviewDecision": "workflows/users/apply-daily-user-review-outcome.json"
+  }
 }

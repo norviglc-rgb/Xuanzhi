@@ -1,0 +1,1 @@
+{"timestamp":"2026-03-21T19:40:00Z","event":"audit_stream_migrated","stream":"memory-promotion","owner":"critic","reason":"Move audit sink from logs/audit/memory-promotion.jsonl to state/audit/memory-promotion.jsonl to keep memory promotion trace in runtime state.","relatedWorkflow":"workflows/memory/promote.json"}

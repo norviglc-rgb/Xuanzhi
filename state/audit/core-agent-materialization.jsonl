@@ -1,0 +1,1 @@
+{"timestamp":"2026-03-21T19:40:00Z","event":"audit_stream_migrated","stream":"core-agent-materialization","owner":"ops","reason":"Move audit sink from logs/audit/core-agent-materialization.jsonl to state/audit/core-agent-materialization.jsonl as canonical runtime location.","relatedWorkflow":"workflows/system/materialize-core-agents.json"}

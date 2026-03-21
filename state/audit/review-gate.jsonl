@@ -1,0 +1,1 @@
+{"timestamp":"2026-03-21T19:40:00Z","event":"audit_stream_migrated","stream":"review-gate","owner":"critic","reason":"Move review audit sink from logs/audit/review-gate.jsonl to state/audit/review-gate.jsonl for unified runtime audit trail.","relatedWorkflows":["workflows/users/create-daily-user.json","workflows/memory/promote.json"]}

@@ -12,10 +12,13 @@
   "requiredFiles": [
     "AGENTS.md",
     "SOUL.md",
+    "USER.md",
     "IDENTITY.md",
     "TOOLS.md",
     "BOOT.md",
-    "HEARTBEAT.md"
+    "HEARTBEAT.md",
+    "BOOTSTRAP.md",
+    "MEMORY.md"
   ],
   "requiredDirs": [
     "memory"

@@ -1,0 +1,1 @@
+{"timestamp":"2026-03-21T19:40:00Z","event":"audit_stream_migrated","stream":"user-provision","owner":"ops","reason":"Move audit sink from logs/audit/user-provision.jsonl to state/audit/user-provision.jsonl as runtime source of truth.","relatedWorkflow":"workflows/users/create-daily-user.json"}
