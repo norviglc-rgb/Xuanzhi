@@ -90,7 +90,19 @@
       "closure"
     ]
   },
+  "statusControl": {
+    "sourceOfTruth": ".codex/native-tasklist.json",
+    "syncPolicy": "Audit status must mirror native-tasklist guard/task state at session checkpoints.",
+    "sessionCheckpointEvents": [
+      "before_implementation",
+      "after_guard_validation",
+      "before_closeout"
+    ],
+    "hardRule": "Do not mark completed in audit if corresponding native-tasklist task remains in_progress/blocked."
+  },
   "executionState": {
+    "syncedFromTasklistAt": "2026-03-23T03:35:00+08:00",
+    "statusSource": ".codex/native-tasklist.json",
     "currentFocus": [
       "NEXT-E2E-CREATE-DAILY-USER"
     ],
@@ -207,6 +219,28 @@
         "terminalState": "completed"
       },
       "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CODEX-FOUNDATION-GATE-EXPANSION",
+      "title": "expand foundation validator to create/apply chains and routing mirror drift checks",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P0",
+      "status": "completed",
+      "definitionOfDone": "Foundation validator enforces workflow-owner registration, skill contract/review paths, create/apply chain contracts, and routing mirror alignment.",
+      "verificationPlan": [
+        "Run validate-agent-workflow-skill-foundation.ps1 -AsJson and expect violations=0.",
+        "Run validate-native-tasklist.ps1 -AsJson and expect pass.",
+        "Run validate-execution-guardrails.ps1 -AsJson and expect pass."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
     }
   ],
   "completedMilestones": [
@@ -236,7 +270,10 @@
     "NEXT-POLICY-ACTION-MAPPING",
     "NEXT-AGENT-SKILLS-SMITH",
     "NEXT-AGENT-CLAUDE-CODE",
-    "NEXT-E2E-CLAUDE-RETURN"
+    "NEXT-E2E-CLAUDE-RETURN",
+    "NEXT-GUARD-FOUNDATION-001",
+    "NEXT-GUARD-FOUNDATION-ALL-CHAINS",
+    "NEXT-GUARD-ROUTING-MIRROR-DRIFT"
   ],
   "runtimeBoundaryAudit": {
     "lastScanAt": "2026-03-23",
