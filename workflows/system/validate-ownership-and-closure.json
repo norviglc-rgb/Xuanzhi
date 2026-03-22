@@ -63,6 +63,15 @@
       ]
     },
     {
+      "id": "check_skill_validation_assets",
+      "action": "check_files_exist",
+      "output": "skillValidationAssetCheck",
+      "requiredFiles": [
+        "workspace-skills-smith/docs/skill-package-checklist.md",
+        "scripts/validate-skill-package.ps1"
+      ]
+    },
+    {
       "id": "check_parallel_research_route_reachable",
       "action": "check_text_patterns",
       "output": "routeReachabilityCheck",
@@ -141,7 +150,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "criticTemplateCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "skillValidationAssetCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "criticTemplateCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",

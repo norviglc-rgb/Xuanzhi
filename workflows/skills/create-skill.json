@@ -39,6 +39,14 @@
       "requiredValues": ["status=ready"]
     },
     {
+      "id": "verify_skill_package_contract",
+      "action": "check_files_exist",
+      "targetTemplate": "<skillCreationReport.skillPath>",
+      "requiredFiles": [
+        "SKILL.md"
+      ]
+    },
+    {
       "id": "build_skill_pending_record",
       "action": "transform_input",
       "inputs": ["skillId", "skillCreationReport.skillPath"],
