@@ -1,0 +1,29 @@
+{
+  "taskId": "task-sample-claude-return-001",
+  "title": "Sample complex development return package validation",
+  "type": "complex_development",
+  "source": {
+    "kind": "manual",
+    "ref": "sample-validation"
+  },
+  "owner": "claude-code",
+  "status": "in_progress",
+  "complexity": "complex",
+  "route": {
+    "targetAgent": "claude-code",
+    "runtime": "acp",
+    "reason": [
+      "multi_directory_or_multi_module",
+      "requires_test_build_or_regression"
+    ]
+  },
+  "artifacts": [
+    "TASK.json",
+    "PLAN.md",
+    "DECISIONS.md",
+    "ACCEPTANCE.md",
+    "NEXT_STEPS.md"
+  ],
+  "createdAt": "2026-03-22T22:40:00+08:00",
+  "updatedAt": "2026-03-22T22:40:00+08:00"
+}
