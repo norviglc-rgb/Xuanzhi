@@ -9,7 +9,7 @@
 ## User instance creation
 - daily-<userId> generated correctly
 - workspaceId matches userId
-- profile.json valid against schema
+- user profile record in state/users/index.json valid against schema
 - bindings updated
 - daily_light permissions intact
 - no cross-user memory leakage

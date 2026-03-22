@@ -1,18 +1,26 @@
 {
-  "schema": "review-decision-template/v1",
-  "scope": "<scope>",
-  "decision": "<pass|fail|rework>",
-  "reason": "<reason>",
-  "reviewer": "<reviewer>",
-  "timestamp": "<YYYY-MM-DDThh:mm:ss+08:00>",
-  "reworkItems": [
+  "schema": "schemas/review.schema.json",
+  "reviewId": "<review-id>",
+  "targetType": "<task|agent|skill|user_instance|policy_change|memory_promotion>",
+  "targetRef": "<target-ref>",
+  "reviewer": "critic",
+  "status": "<pending|approved|rejected|needs_changes>",
+  "riskLevel": "<low|medium|high>",
+  "lifecyclePhase": "<submitted|decision|closure>",
+  "flow": {
+    "startedBy": "<started-by>",
+    "routedBy": "<routed-by>",
+    "handledBy": "<handled-by>",
+    "closedBy": "<closed-by>",
+    "nextStep": "<next-step>"
+  },
+  "findings": [
     {
-      "id": "<rework-item-id>",
-      "item": "<rework item>",
-      "owner": "<owner>",
-      "due": "<YYYY-MM-DD>",
-      "status": "<open|blocked|done>"
+      "severity": "<info|warning|critical>",
+      "message": "<finding-message>",
+      "suggestedAction": "<optional-suggested-action>"
     }
   ],
-  "nextAction": "<next action>"
+  "createdAt": "<YYYY-MM-DDThh:mm:ss+08:00>",
+  "updatedAt": "<YYYY-MM-DDThh:mm:ss+08:00>"
 }
