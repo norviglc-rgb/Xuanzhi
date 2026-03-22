@@ -12,7 +12,7 @@ Validate the claude-code return package contract on a complete sample bundle.
 - EXECUTION_REPORT.md
 
 ## Verification
-- Ran `scripts/validate-claude-return-package.ps1` on this package.
+- Ran `Xuanzhi-Dev/testing/scripts/validate-claude-return-package.ps1` on this package.
 - Expected result: `PASSED: True`.
 
 ## Unresolved Risks

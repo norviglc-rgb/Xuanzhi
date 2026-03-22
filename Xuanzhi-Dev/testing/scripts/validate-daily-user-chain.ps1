@@ -7,7 +7,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+function Resolve-RepoRoot([string]$startPath) {
+    $cursor = (Resolve-Path $startPath).Path
+    while ($true) {
+        if (Test-Path (Join-Path $cursor "openclaw.json")) {
+            return $cursor
+        }
+        $parent = Split-Path -Path $cursor -Parent
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $cursor) {
+            throw "Cannot locate repository root from start path: $startPath"
+        }
+        $cursor = $parent
+    }
+}
+
+$root = Resolve-RepoRoot -startPath $PSScriptRoot
 
 $usersPath = Join-Path $root "state/users/index.json"
 $agentsPath = Join-Path $root "state/agents/catalog.json"

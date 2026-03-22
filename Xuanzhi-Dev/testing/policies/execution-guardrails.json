@@ -1,0 +1,55 @@
+{
+  "version": "v1",
+  "intent": "enforce_codex_execution_boundaries",
+  "change_boundaries": {
+    "forbid_new_repo_root_files": true,
+    "allow_new_repo_root_files": [],
+    "test_related_must_live_under": "Xuanzhi-Dev/testing/",
+    "test_related_path_markers": [
+      "test",
+      "tests",
+      "testing",
+      "spec",
+      "specs",
+      "fixture",
+      "fixtures",
+      "artifact",
+      "artifacts"
+    ],
+    "test_related_file_markers": [
+      ".spec.",
+      ".test."
+    ],
+    "forbid_empty_new_files": true
+  },
+  "reporting_guardrails": {
+    "required_sections": [
+      "\u529f\u80fd\u5f71\u54cd",
+      "\u9a8c\u8bc1\u8bc1\u636e",
+      "\u672a\u5b8c\u6210\u9879"
+    ],
+    "forbidden_terms": [
+      "\u5192\u70df\u6d4b\u8bd5",
+      "smoke test",
+      "smoke-only"
+    ]
+  },
+  "verification_guardrails": {
+    "forbidden_completion_if_only_smoke": true,
+    "smoke_markers": [
+      "\u5192\u70df\u6d4b\u8bd5",
+      "smoke test",
+      "smoke-only",
+      "quick smoke"
+    ],
+    "required_real_verification_markers": [
+      "PASSED: True",
+      "PASSED: False",
+      "exit code",
+      "\u5b9e\u9645\u6267\u884c",
+      "\u5b9e\u6d4b",
+      "\u5df2\u8fd0\u884c",
+      "\u771f\u5b9e\u56de\u653e"
+    ]
+  }
+}

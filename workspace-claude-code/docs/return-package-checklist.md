@@ -19,5 +19,5 @@
 
 ## Audit and handoff quality
 - result summary is traceable to concrete file changes
-- failed checks are explicit (do not hide failed tests)
+- failed checks are explicit (do not hide failed validations)
 - risk items are explicit and actionable

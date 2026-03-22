@@ -67,8 +67,7 @@
       "action": "check_files_exist",
       "output": "skillValidationAssetCheck",
       "requiredFiles": [
-        "workspace-skills-smith/docs/skill-package-checklist.md",
-        "scripts/validate-skill-package.ps1"
+        "workspace-skills-smith/docs/skill-package-checklist.md"
       ]
     },
     {
@@ -76,8 +75,7 @@
       "action": "check_files_exist",
       "output": "claudeReturnAssetCheck",
       "requiredFiles": [
-        "workspace-claude-code/docs/return-package-checklist.md",
-        "scripts/validate-claude-return-package.ps1"
+        "workspace-claude-code/docs/return-package-checklist.md"
       ]
     },
     {
