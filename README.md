@@ -52,3 +52,11 @@ Current runtime truth lives at the repository root in the files and folders list
 - `agent-smith` should define how agents are created and what files they need.
 - `ops` should execute agent creation and user creation workflows in runtime.
 - Prefer fewer moving parts over speculative structure. If a path or module is not running today, document it as planned or legacy, not as current truth.
+
+## Runtime Root Sync
+
+To reduce drift between this repository and the local runtime root (`~/.openclaw`), use:
+
+- Dry-run preview: `powershell -ExecutionPolicy Bypass -File scripts/sync-runtime-root.ps1`
+- Apply sync: `powershell -ExecutionPolicy Bypass -File scripts/sync-runtime-root.ps1 -Apply`
+- Include `agents/` state too: add `-IncludeAgentsState`
