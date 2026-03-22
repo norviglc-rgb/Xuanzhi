@@ -82,6 +82,16 @@
       "scope": "xuanzhi_runtime",
       "owner": "agent-smith",
       "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
+    },
+    {
+      "id": "NEXT-CODEX-FOUNDATION-GATE-EXPANSION",
+      "kind": "workitem",
+      "title": "foundation validator full-chain expansion for create/apply and mirror-drift checks",
+      "status": "completed",
+      "blocking": false,
+      "scope": "codex_only",
+      "owner": "codex",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
     }
   ],
   "lastUpdated": "2026-03-23"
