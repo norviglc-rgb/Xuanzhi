@@ -93,6 +93,20 @@
       ]
     },
     {
+      "id": "check_critic_template_alignment",
+      "action": "check_text_patterns",
+      "output": "criticTemplateCheck",
+      "targets": [
+        "workspace-critic/docs/review-decision-template.json",
+        "workspace-critic/docs/review-checklist.md"
+      ],
+      "requiredPatterns": [
+        "\"schema\": \"schemas/review.schema.json\"",
+        "\"status\": \"<pending|approved|rejected|needs_changes>\"",
+        "state/users/index.json valid against schema"
+      ]
+    },
+    {
       "id": "check_complex_upgrade_contract",
       "action": "check_text_patterns",
       "output": "complexUpgradeCheck",
@@ -127,7 +141,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "criticTemplateCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",
