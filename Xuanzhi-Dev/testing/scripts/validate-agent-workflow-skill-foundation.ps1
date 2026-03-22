@@ -35,6 +35,8 @@ function Read-Json([string]$path) {
 
 $routingPath = Join-Path $RepoRoot "policies/routing-policy.json"
 $createDailyPath = Join-Path $RepoRoot "workflows/users/create-daily-user.json"
+$createAgentPath = Join-Path $RepoRoot "workflows/system/create-agent.json"
+$applyAgentReviewPath = Join-Path $RepoRoot "workflows/system/apply-agent-review-outcome.json"
 $createSkillPath = Join-Path $RepoRoot "workflows/skills/create-skill.json"
 $applySkillReviewPath = Join-Path $RepoRoot "workflows/skills/apply-skill-review-outcome.json"
 $skillsCatalogPath = Join-Path $RepoRoot "state/skills/catalog.json"
@@ -46,6 +48,8 @@ $agentSmithWorkspace = Join-Path $RepoRoot "workspace-agent-smith"
 
 $routing = Read-Json $routingPath
 $createDaily = Read-Json $createDailyPath
+$createAgent = Read-Json $createAgentPath
+$applyAgentReview = Read-Json $applyAgentReviewPath
 $createSkill = Read-Json $createSkillPath
 $skillsCatalog = Read-Json $skillsCatalogPath
 $agentsCatalog = Read-Json $agentsCatalogPath
@@ -59,8 +63,131 @@ if ([string]$routing.ownership_routes.create_daily_user_runtime.target -ne "agen
 if ([string]$routing.closure_routes.daily_user_lifecycle.start -ne "agent-smith") {
     $violations += "closure_route_daily_user_lifecycle_start_not_agent_smith"
 }
+if ([string]$routing.ownership_routes.create_agent.target -ne "agent-smith") {
+    $violations += "ownership_route_create_agent_target_not_agent_smith"
+}
+if ([string]$routing.ownership_routes.review_outcome_apply.target -ne "ops") {
+    $violations += "ownership_route_review_outcome_apply_target_not_ops"
+}
 if ([string]$createDaily.owner -ne "agent-smith") {
     $violations += "workflow_create_daily_user_owner_not_agent_smith"
+}
+
+# Enforce full-chain contracts for create-agent/apply-agent-review-outcome.
+if ([string]$createAgent.workflowId -ne "create-agent") {
+    $violations += "workflow_create_agent_id_mismatch"
+}
+if ([string]$createAgent.owner -ne "ops") {
+    $violations += "workflow_create_agent_owner_not_ops"
+}
+
+$createAgentDelegate = @($createAgent.steps | Where-Object { [string]$_.id -eq "delegate_agent_creation_to_agent_smith" }) | Select-Object -First 1
+if ($null -eq $createAgentDelegate) {
+    $violations += "workflow_create_agent_missing_delegate_step"
+} else {
+    if ([string]$createAgentDelegate.action -ne "delegate_to_agent") {
+        $violations += "workflow_create_agent_delegate_action_mismatch"
+    }
+    if ([string]$createAgentDelegate.targetAgent -ne "agent-smith") {
+        $violations += "workflow_create_agent_delegate_target_not_agent_smith"
+    }
+    if ([string]$createAgentDelegate.task -ne "create_agent_scaffold") {
+        $violations += "workflow_create_agent_delegate_task_mismatch"
+    }
+}
+
+$createAgentVerify = @($createAgent.steps | Where-Object { [string]$_.id -eq "verify_agent_creation_report" }) | Select-Object -First 1
+if ($null -eq $createAgentVerify) {
+    $violations += "workflow_create_agent_missing_verify_report_step"
+} else {
+    $requiredFields = @($createAgentVerify.requiredFields)
+    foreach ($required in @("agentId", "workspaceId", "status", "artifacts")) {
+        if ($requiredFields -notcontains $required) {
+            $violations += "workflow_create_agent_verify_report_missing_required_field:$required"
+        }
+    }
+}
+
+$createAgentReviewRules = (@($createAgent.steps | Where-Object { [string]$_.id -eq "build_agent_creation_review_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $createAgentReviewRules.Contains("targetType = agent")) {
+    $violations += "workflow_create_agent_review_target_type_not_agent"
+}
+if (-not $createAgentReviewRules.Contains("flow.handledBy = agent-smith")) {
+    $violations += "workflow_create_agent_review_handledby_not_agent_smith"
+}
+if (-not $createAgentReviewRules.Contains("flow.closedBy = apply-agent-review-outcome")) {
+    $violations += "workflow_create_agent_review_closedby_mismatch"
+}
+
+$createAgentSubmit = @($createAgent.steps | Where-Object { [string]$_.id -eq "submit_agent_creation_for_review" }) | Select-Object -First 1
+if ($null -eq $createAgentSubmit -or [string]$createAgentSubmit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_create_agent_submit_target_not_review_gate_audit"
+}
+
+if ([string]$createAgent.followup.onReviewDecision -ne "workflows/system/apply-agent-review-outcome.json") {
+    $violations += "workflow_create_agent_followup_mismatch"
+}
+
+if ([string]$applyAgentReview.workflowId -ne "apply-agent-review-outcome") {
+    $violations += "workflow_apply_agent_review_id_mismatch"
+}
+if ([string]$applyAgentReview.owner -ne "ops") {
+    $violations += "workflow_apply_agent_review_owner_not_ops"
+}
+
+$applyAssert = @($applyAgentReview.steps | Where-Object { [string]$_.id -eq "assert_agent_is_pending_review" }) | Select-Object -First 1
+if ($null -eq $applyAssert) {
+    $violations += "workflow_apply_agent_review_missing_assert_pending_step"
+} else {
+    if ([string]$applyAssert.action -ne "assert_current_status") {
+        $violations += "workflow_apply_agent_review_assert_action_mismatch"
+    }
+    if ([string]$applyAssert.requiredStatus -ne "pending_review") {
+        $violations += "workflow_apply_agent_review_assert_required_status_mismatch"
+    }
+}
+
+$applyDecisionRules = (@($applyAgentReview.steps | Where-Object { [string]$_.id -eq "build_agent_review_decision_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applyDecisionRules.Contains("targetType = agent")) {
+    $violations += "workflow_apply_agent_review_decision_target_type_not_agent"
+}
+if (-not $applyDecisionRules.Contains("lifecyclePhase = decision")) {
+    $violations += "workflow_apply_agent_review_decision_phase_mismatch"
+}
+if (-not $applyDecisionRules.Contains("flow.handledBy = agent-smith")) {
+    $violations += "workflow_apply_agent_review_decision_handledby_not_agent_smith"
+}
+if (-not $applyDecisionRules.Contains("flow.closedBy = apply-agent-review-outcome")) {
+    $violations += "workflow_apply_agent_review_decision_closedby_mismatch"
+}
+
+$applyClosureRules = (@($applyAgentReview.steps | Where-Object { [string]$_.id -eq "build_agent_closure_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applyClosureRules.Contains("targetType = agent")) {
+    $violations += "workflow_apply_agent_review_closure_target_type_not_agent"
+}
+if (-not $applyClosureRules.Contains("lifecyclePhase = closure")) {
+    $violations += "workflow_apply_agent_review_closure_phase_mismatch"
+}
+if (-not $applyClosureRules.Contains("flow.handledBy = agent-smith")) {
+    $violations += "workflow_apply_agent_review_closure_handledby_not_agent_smith"
+}
+if (-not $applyClosureRules.Contains("flow.closedBy = apply-agent-review-outcome")) {
+    $violations += "workflow_apply_agent_review_closure_closedby_mismatch"
+}
+
+$applyWriteFinal = @($applyAgentReview.steps | Where-Object { [string]$_.id -eq "write_agent_final_status" }) | Select-Object -First 1
+if ($null -eq $applyWriteFinal -or [string]$applyWriteFinal.target -ne "state/agents/catalog.json") {
+    $violations += "workflow_apply_agent_review_write_final_target_mismatch"
+}
+
+$applyDecisionAudit = @($applyAgentReview.steps | Where-Object { [string]$_.id -eq "write_agent_review_decision_audit" }) | Select-Object -First 1
+if ($null -eq $applyDecisionAudit -or [string]$applyDecisionAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_agent_review_decision_audit_target_mismatch"
+}
+
+$applyClosureAudit = @($applyAgentReview.steps | Where-Object { [string]$_.id -eq "write_agent_closure_audit" }) | Select-Object -First 1
+if ($null -eq $applyClosureAudit -or [string]$applyClosureAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_agent_review_closure_audit_target_mismatch"
 }
 
 $materializationStep = @($createDaily.steps | Where-Object { [string]$_.id -eq "run_materialization_skill" }) | Select-Object -First 1
@@ -258,6 +385,8 @@ $result = [ordered]@{
     repoRoot = $RepoRoot
     checks = [ordered]@{
         routingPolicy = $routingPath
+        createAgentWorkflow = $createAgentPath
+        applyAgentReviewWorkflow = $applyAgentReviewPath
         createDailyWorkflow = $createDailyPath
         createSkillWorkflow = $createSkillPath
         applySkillReviewWorkflow = $applySkillReviewPath
