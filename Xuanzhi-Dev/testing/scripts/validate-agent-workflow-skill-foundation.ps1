@@ -34,6 +34,7 @@ function Read-Json([string]$path) {
 }
 
 $routingPath = Join-Path $RepoRoot "policies/routing-policy.json"
+$routingMirrorPath = Join-Path $RepoRoot "skills/xuanzhi-control/routing-policy.json"
 $createDailyPath = Join-Path $RepoRoot "workflows/users/create-daily-user.json"
 $createAgentPath = Join-Path $RepoRoot "workflows/system/create-agent.json"
 $applyAgentReviewPath = Join-Path $RepoRoot "workflows/system/apply-agent-review-outcome.json"
@@ -48,6 +49,7 @@ $skillMdPath = Join-Path $skillDir "SKILL.md"
 $agentSmithWorkspace = Join-Path $RepoRoot "workspace-agent-smith"
 
 $routing = Read-Json $routingPath
+$routingMirror = Read-Json $routingMirrorPath
 $createDaily = Read-Json $createDailyPath
 $createAgent = Read-Json $createAgentPath
 $applyAgentReview = Read-Json $applyAgentReviewPath
@@ -71,6 +73,25 @@ if ([string]$routing.ownership_routes.create_agent.target -ne "agent-smith") {
 }
 if ([string]$routing.ownership_routes.review_outcome_apply.target -ne "ops") {
     $violations += "ownership_route_review_outcome_apply_target_not_ops"
+}
+
+# Root routing policy and xuanzhi-control mirror must stay aligned on critical fields.
+$routingMirrorPairs = @(
+    [ordered]@{ name = "ownership.create_agent.target"; root = [string]$routing.ownership_routes.create_agent.target; mirror = [string]$routingMirror.ownership_routes.create_agent.target },
+    [ordered]@{ name = "ownership.create_skill.target"; root = [string]$routing.ownership_routes.create_skill.target; mirror = [string]$routingMirror.ownership_routes.create_skill.target },
+    [ordered]@{ name = "ownership.create_daily_user_runtime.target"; root = [string]$routing.ownership_routes.create_daily_user_runtime.target; mirror = [string]$routingMirror.ownership_routes.create_daily_user_runtime.target },
+    [ordered]@{ name = "ownership.review_outcome_apply.target"; root = [string]$routing.ownership_routes.review_outcome_apply.target; mirror = [string]$routingMirror.ownership_routes.review_outcome_apply.target },
+    [ordered]@{ name = "closure.daily_user_lifecycle.start"; root = [string]$routing.closure_routes.daily_user_lifecycle.start; mirror = [string]$routingMirror.closure_routes.daily_user_lifecycle.start },
+    [ordered]@{ name = "closure.daily_user_lifecycle.close"; root = [string]$routing.closure_routes.daily_user_lifecycle.close; mirror = [string]$routingMirror.closure_routes.daily_user_lifecycle.close }
+)
+foreach ($item in $routingMirrorPairs) {
+    if ([string]::IsNullOrWhiteSpace([string]$item.root) -or [string]::IsNullOrWhiteSpace([string]$item.mirror)) {
+        $violations += "routing_mirror_missing_key:$([string]$item.name)"
+        continue
+    }
+    if ([string]$item.root -ne [string]$item.mirror) {
+        $violations += "routing_mirror_mismatch:$([string]$item.name):root=$([string]$item.root):mirror=$([string]$item.mirror)"
+    }
 }
 if ([string]$createDaily.owner -ne "agent-smith") {
     $violations += "workflow_create_daily_user_owner_not_agent_smith"
@@ -588,6 +609,7 @@ $result = [ordered]@{
     repoRoot = $RepoRoot
     checks = [ordered]@{
         routingPolicy = $routingPath
+        routingPolicyMirror = $routingMirrorPath
         createAgentWorkflow = $createAgentPath
         applyAgentReviewWorkflow = $applyAgentReviewPath
         createDailyWorkflow = $createDailyPath
