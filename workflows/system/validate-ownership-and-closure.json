@@ -72,6 +72,15 @@
       ]
     },
     {
+      "id": "check_claude_return_validation_assets",
+      "action": "check_files_exist",
+      "output": "claudeReturnAssetCheck",
+      "requiredFiles": [
+        "workspace-claude-code/docs/return-package-checklist.md",
+        "scripts/validate-claude-return-package.ps1"
+      ]
+    },
+    {
       "id": "check_parallel_research_route_reachable",
       "action": "check_text_patterns",
       "output": "routeReachabilityCheck",
@@ -150,7 +159,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "skillValidationAssetCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "criticTemplateCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "skillValidationAssetCheck", "claudeReturnAssetCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "criticTemplateCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",
