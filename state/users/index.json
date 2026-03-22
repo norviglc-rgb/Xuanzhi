@@ -1,4 +1,39 @@
 {
     "version":  "v1",
-    "users":  []
+    "users":  [
+                   {
+                       "userId":  "example-user",
+                       "displayName":  "Example User",
+                       "persona":  {
+                                       "style":  "professional_concise",
+                                       "boundaries":  [
+                                                          "default_no_exec",
+                                                          "default_no_ops_actions",
+                                                          "default_no_cross_user_memory"
+                                                      ],
+                                       "customNotes":  [
+                                                           "prefer concise answers",
+                                                           "store stable preferences only after repeated evidence"
+                                                       ]
+                                   },
+                       "dailyAgentId":  "daily-example-user",
+                       "workspaceId":  "workspace-daily-example-user",
+                       "capabilityProfile":  "daily_light",
+                       "bindings":  {
+                                        "accountIds":  [
+                                                           "example-account"
+                                                       ],
+                                        "channelIds":  [
+                                                        ]
+                                    },
+                       "preferences":  {
+                                           "language":  "zh-CN",
+                                           "tone":  "professional",
+                                           "memorySensitivity":  "strict"
+                                       },
+                       "status":  "pending_review",
+                       "createdAt":  "2026-03-22T17:35:30Z",
+                       "updatedAt":  "2026-03-22T17:35:30Z"
+                   }
+               ]
 }

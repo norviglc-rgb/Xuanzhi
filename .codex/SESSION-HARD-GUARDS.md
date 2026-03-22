@@ -8,6 +8,7 @@ Before any implementation in a new session (including very long-context sessions
 ```powershell
 powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1
 powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1
+powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1
 ```
 
 If the command fails, stop implementation and fix violations first.
@@ -27,6 +28,13 @@ If the command fails, stop implementation and fix violations first.
 - `功能影响`
 - `验证证据`
 - `未完成项`
+
+4. Foundation Guard
+- Production ownership and foundation contracts must stay machine-readable and aligned:
+- `policies/routing-policy.json` ownership/closure routes
+- `workflows/users/create-daily-user.json` owner + invoke_skill contract
+- `skills/agent-smith-daily-user-materialization/*` package contract
+- `state/skills/catalog.json` registration
 
 ## Scope Boundary
 - Codex execution constraints may only live in `.codex` and `Xuanzhi-Dev`.

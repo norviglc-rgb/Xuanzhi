@@ -1,0 +1,34 @@
+{
+  "version": "v1",
+  "skillId": "agent-smith-daily-user-materialization",
+  "name": "Agent-Smith Daily User Materialization",
+  "owner": "agent-smith",
+  "status": "active",
+  "entrypoint": "materialize_daily_user_runtime",
+  "inputs": ["requestId", "userId", "displayName", "persona", "bindings"],
+  "outputs": ["materializationReport"],
+  "requiredCapabilities": ["read", "write", "edit"],
+  "contracts": {
+    "reportRequiredFields": ["workspaceId", "agentId", "status", "artifacts"],
+    "successStatus": "ready",
+    "workspaceContractFiles": [
+      "AGENTS.md",
+      "SOUL.md",
+      "USER.md",
+      "IDENTITY.md",
+      "TOOLS.md",
+      "HEARTBEAT.md",
+      "BOOT.md",
+      "BOOTSTRAP.md",
+      "MEMORY.md"
+    ]
+  },
+  "reviewPath": {
+    "submitWorkflow": "workflows/skills/create-skill.json",
+    "applyWorkflow": "workflows/skills/apply-skill-review-outcome.json"
+  },
+  "notes": [
+    "Used by workflows/users/create-daily-user.json",
+    "Owns daily-user materialization under agent-smith role boundaries"
+  ]
+}

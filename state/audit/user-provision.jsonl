@@ -1,1 +1,6 @@
 {"timestamp":"2026-03-21T19:40:00Z","event":"audit_stream_migrated","stream":"user-provision","owner":"ops","reason":"Move audit sink from logs/audit/user-provision.jsonl to state/audit/user-provision.jsonl as runtime source of truth.","relatedWorkflow":"workflows/users/create-daily-user.json"}
+{"timestamp":"2026-03-22T17:35:30Z","event":"user_provision_requested","userId":"example-user","requestedBy":"ops","status":"accepted"}
+{"timestamp":"2026-03-22T17:35:35Z","event":"user_workspace_materialized","userId":"example-user","workspaceId":"workspace-daily-example-user","status":"success"}
+{"timestamp":"2026-03-22T17:35:38Z","event":"user_agent_registered","userId":"example-user","agentId":"daily-example-user","status":"success"}
+{"timestamp":"2026-03-22T17:35:42Z","event":"user_binding_updated","userId":"example-user","status":"success"}
+{"timestamp":"2026-03-22T17:35:45Z","event":"user_provision_submitted_for_review","userId":"example-user","reviewer":"critic","status":"pending_review"}

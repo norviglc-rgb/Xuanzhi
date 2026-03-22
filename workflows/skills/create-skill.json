@@ -43,7 +43,8 @@
       "action": "check_files_exist",
       "targetTemplate": "<skillCreationReport.skillPath>",
       "requiredFiles": [
-        "SKILL.md"
+        "SKILL.md",
+        "skill.json"
       ]
     },
     {
@@ -54,6 +55,9 @@
       "rules": [
         "skillId = <skillId>",
         "path = <skillCreationReport.skillPath>",
+        "contractPath = <skillCreationReport.skillPath>/skill.json",
+        "reviewPath.submitWorkflow = workflows/skills/create-skill.json",
+        "reviewPath.applyWorkflow = workflows/skills/apply-skill-review-outcome.json",
         "owner = skills-smith",
         "status = pending_review"
       ]

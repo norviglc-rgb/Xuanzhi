@@ -26,9 +26,9 @@
       "note": "Any new skill creation/placement/governance decision must be handled by skills-smith."
     },
     "create_daily_user_runtime": {
-      "target": "ops",
+      "target": "agent-smith",
       "required": true,
-      "note": "Runtime provisioning and state/audit updates are owned by ops."
+      "note": "Daily-user agent/workspace materialization and provisioning updates are owned by agent-smith."
     },
     "review_gate_decision": {
       "target": "critic",
@@ -43,7 +43,7 @@
   },
   "closure_routes": {
     "daily_user_lifecycle": {
-      "start": "ops",
+      "start": "agent-smith",
       "route": "critic",
       "close": "ops",
       "terminal_states": ["active", "disabled"]

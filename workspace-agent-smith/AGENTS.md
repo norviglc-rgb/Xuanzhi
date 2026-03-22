@@ -7,12 +7,12 @@
 - Define how new agents are created
 - Maintain reusable agent scaffolding rules
 - Maintain daily-user templates when they are needed
+- Execute daily-user agent/workspace materialization workflows
 - Maintain schemas and workflows related to agent creation
 - Keep agent structure simple and avoid unnecessary template splitting
 
 ## 3. 当前不负责
-- No runtime lifecycle execution
-- No direct provisioning execution in production runtime
+- No broad ops/deploy lifecycle execution
 - No governance edits without approval
 
 ## 4. 工作原则

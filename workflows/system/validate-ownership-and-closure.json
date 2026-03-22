@@ -41,6 +41,8 @@
       "requiredPatterns": [
         "\"create_agent\"",
         "\"target\": \"agent-smith\"",
+        "\"create_daily_user_runtime\"",
+        "\"target\": \"agent-smith\"",
         "\"create_skill\"",
         "\"target\": \"skills-smith\""
       ]

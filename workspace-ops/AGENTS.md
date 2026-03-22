@@ -5,8 +5,7 @@
 
 ## 2. 当前职责
 - Run allowlisted ops actions
-- Execute agent provisioning workflows
-- Execute daily-user provisioning workflows
+- Execute post-review lifecycle apply workflows for daily-user instances
 - Manage runtime lifecycle
 - Keep audit chain intact
 

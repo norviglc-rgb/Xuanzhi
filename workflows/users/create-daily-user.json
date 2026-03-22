@@ -1,8 +1,8 @@
 {
   "version": "v1",
   "workflowId": "create-daily-user",
-  "owner": "ops",
-  "description": "Create a daily user runtime instance, validate profile, update bindings, write audit, create review record, and set user status to pending_review.",
+  "owner": "agent-smith",
+  "description": "Materialize a daily user agent/workspace via agent-smith skill, then write runtime state, audit, and pending-review records.",
   "trigger": {
     "type": "manual_or_external_event",
     "inputs": ["requestId", "userId", "displayName", "persona", "bindings"]
@@ -11,7 +11,9 @@
     "schemas/user-profile.schema.json exists",
     "schemas/review.schema.json exists",
     "policies/routing-policy.json ownership_routes.create_daily_user_runtime exists",
+    "policies/routing-policy.json ownership_routes.create_daily_user_runtime.target == agent-smith",
     "policies/routing-policy.json ownership_routes.create_agent exists",
+    "state/skills/catalog.json contains skillId=agent-smith-daily-user-materialization",
     "state/users/index.json exists",
     "state/agents/catalog.json exists",
     "state/audit/user-provision.jsonl exists",
@@ -38,11 +40,12 @@
       ]
     },
     {
-      "id": "request_agent_smith_materialization",
-      "action": "delegate_to_agent",
+      "id": "run_materialization_skill",
+      "action": "invoke_skill",
       "targetAgent": "agent-smith",
-      "task": "materialize_daily_agent_assets",
-      "inputs": ["userId", "displayName", "persona"],
+      "skillId": "agent-smith-daily-user-materialization",
+      "operation": "materialize_daily_user_runtime",
+      "inputs": ["requestId", "userId", "displayName", "persona", "bindings"],
       "outputs": ["materializationReport"]
     },
     {
@@ -143,7 +146,7 @@
         "userId = <userId>",
         "agentId = <dailyAgentRecord.agentId>",
         "workspaceId = <dailyAgentRecord.workspaceId>",
-        "owner = ops",
+        "owner = agent-smith",
         "status = pending_review",
         "createdAt = now",
         "updatedAt = now"
@@ -167,9 +170,9 @@
         "reviewer = critic",
         "status = pending",
         "lifecyclePhase = submitted",
-        "flow.startedBy = ops",
+        "flow.startedBy = agent-smith",
         "flow.routedBy = orchestrator",
-        "flow.handledBy = ops",
+        "flow.handledBy = agent-smith",
         "flow.closedBy = apply-daily-user-review-outcome",
         "flow.nextStep = wait_critic_review",
         "createdAt = now",

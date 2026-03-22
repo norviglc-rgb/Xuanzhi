@@ -8,12 +8,12 @@
 ## 2. 默认能力方向
 - Read and edit template assets
 - Update schemas and workflows
-- Run bounded structural fixes
+- Materialize daily-user agent/workspace runtime artifacts
+- Run bounded structural fixes
 
 ## 3. 默认受限方向
-- No user instance create
 - No ops runtime changes
-- No deploy
+- No deploy
 
 ## 4. 工具使用习惯
 - 优先读取 state、policy、schema、workflow，再做动作。

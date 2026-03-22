@@ -7,7 +7,8 @@
     "alwaysRunBeforeAnyTask": [
       "GUARD-PATH-001",
       "GUARD-VERIFY-001",
-      "GUARD-REPORT-001"
+      "GUARD-REPORT-001",
+      "GUARD-FOUNDATION-001"
     ],
     "rule": "Any blocking guard failure stops implementation and final closeout."
   },
@@ -58,14 +59,29 @@
       ]
     },
     {
+      "id": "GUARD-FOUNDATION-001",
+      "kind": "guard",
+      "title": "Production foundation guard (agent/workflow/skill alignment)",
+      "status": "in_progress",
+      "blocking": true,
+      "scope": "codex_only",
+      "owner": "codex",
+      "checks": [
+        {
+          "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1 -AsJson",
+          "passWhen": "violations=0"
+        }
+      ]
+    },
+    {
       "id": "NEXT-E2E-CREATE-DAILY-USER",
       "kind": "workitem",
       "title": "create-daily-user real replay and state-closure verification",
       "status": "in_progress",
       "blocking": false,
       "scope": "xuanzhi_runtime",
-      "owner": "ops",
-      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001"]
+      "owner": "agent-smith",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
     }
   ],
   "lastUpdated": "2026-03-23"

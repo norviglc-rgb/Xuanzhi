@@ -249,6 +249,14 @@
       }
     }
   },
-  "bindings": [],
+  "bindings": [
+    {
+      "userId": "example-user",
+      "agentId": "daily-example-user",
+      "match": {
+        "accountId": "example-account"
+      }
+    }
+  ],
   "channels": {}
 }

@@ -7,10 +7,33 @@
       "owner": "skills-smith",
       "version": "1.0.0",
       "status": "active",
+      "path": "skills/xuanzhi-control",
+      "contractPath": "skills/xuanzhi-control/skill.json",
+      "reviewPath": {
+        "submitWorkflow": "workflows/skills/create-skill.json",
+        "applyWorkflow": "workflows/skills/apply-skill-review-outcome.json"
+      },
       "inputSchema": "schemas/task.schema.json",
       "outputSchema": null,
       "requiredCapabilities": ["read"],
       "notes": "runtime control skill baseline"
+    },
+    {
+      "skillId": "agent-smith-daily-user-materialization",
+      "name": "Agent-Smith Daily User Materialization",
+      "owner": "agent-smith",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "skills/agent-smith-daily-user-materialization",
+      "contractPath": "skills/agent-smith-daily-user-materialization/skill.json",
+      "reviewPath": {
+        "submitWorkflow": "workflows/skills/create-skill.json",
+        "applyWorkflow": "workflows/skills/apply-skill-review-outcome.json"
+      },
+      "inputSchema": "schemas/user-profile.schema.json",
+      "outputSchema": null,
+      "requiredCapabilities": ["read", "write", "edit"],
+      "notes": "daily-user runtime materialization contract used by create-daily-user workflow"
     }
   ]
 }

@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "skillId": "xuanzhi-control",
+  "name": "Xuanzhi Control",
+  "owner": "skills-smith",
+  "status": "active",
+  "entrypoint": "policy_and_workflow_placement_guidance",
+  "inputs": ["task", "context"],
+  "outputs": ["placement_decision", "governance_constraints"],
+  "requiredCapabilities": ["read"],
+  "contracts": {
+    "policySources": [
+      "policies/routing-policy.json",
+      "policies/tool-policy-matrix.json",
+      "policies/memory-policy.json"
+    ],
+    "schemaSources": [
+      "schemas/review.schema.json"
+    ]
+  },
+  "reviewPath": {
+    "submitWorkflow": "workflows/skills/create-skill.json",
+    "applyWorkflow": "workflows/skills/apply-skill-review-outcome.json"
+  },
+  "notes": [
+    "Governance mirror skill for workflow placement and routing decisions"
+  ]
+}

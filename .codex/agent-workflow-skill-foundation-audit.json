@@ -22,6 +22,7 @@
     "enforcementOrder": [
       "validate-native-tasklist.ps1",
       "validate-execution-guardrails.ps1",
+      "validate-agent-workflow-skill-foundation.ps1",
       "implementation",
       "real verification",
       "report with required sections"
@@ -53,6 +54,14 @@
         "rule": "Closeout report must include 功能影响 + 验证证据 + 未完成项.",
         "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -ReportPath <REPORT_PATH> -AsJson",
         "passCondition": "reportMissingSections=0"
+      },
+      {
+        "id": "GUARD-FOUNDATION-001",
+        "name": "Production foundation guard",
+        "blocking": true,
+        "rule": "Daily-user production ownership and agent/workflow/skill contracts must stay aligned and machine-readable.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1 -AsJson",
+        "passCondition": "violations=0"
       }
     ]
   },
@@ -111,14 +120,15 @@
     {
       "id": "NEXT-E2E-CREATE-DAILY-USER",
       "title": "create-daily-user real replay and closure validation",
-      "owner": "ops",
+      "owner": "agent-smith",
       "scope": "xuanzhi_runtime",
       "priority": "P0",
       "status": "in_progress",
       "dependsOn": [
         "GUARD-PATH-001",
         "GUARD-VERIFY-001",
-        "GUARD-REPORT-001"
+        "GUARD-REPORT-001",
+        "GUARD-FOUNDATION-001"
       ],
       "definitionOfDone": "Daily user creation path writes complete state, bindings, review, and audit chain with traceable closure.",
       "verificationPlan": [
@@ -127,9 +137,9 @@
         "Confirm pending_review to terminal state closure path is reachable."
       ],
       "closure": {
-        "startedBy": "ops",
+        "startedBy": "agent-smith",
         "routedBy": "orchestrator",
-        "handledBy": "ops",
+        "handledBy": "agent-smith",
         "closedBy": "apply-daily-user-review-outcome",
         "terminalState": "active_or_disabled_or_pending_review_with_explicit_reason"
       },
@@ -237,6 +247,13 @@
   },
   "archive": {
     "preRefactorSnapshot": ".codex/archive/agent-workflow-skill-foundation-audit.2026-03-23.pre-refactor.json",
-    "reason": "Full-file refactor to native machine-readable structure while preserving historical narrative."
+    "reason": "Full-file refactor to native machine-readable structure while preserving historical narrative.",
+    "compressionNote": "The current file is an execution-focused index, not a full narrative report.",
+    "lineCountComparison": {
+      "current": 242,
+      "archive": 2037
+    },
+    "narrativeSourceOfTruth": ".codex/archive/agent-workflow-skill-foundation-audit.2026-03-23.pre-refactor.json",
+    "indexRole": "Keep active guards/tasks/blockers machine-readable and small for fast session boot."
   }
 }
