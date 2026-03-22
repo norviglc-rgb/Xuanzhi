@@ -1,5 +1,6 @@
 {
   "version": "v1",
+  "opsActionMapping": "policies/ops-action-map.json",
   "agents": {
     "orchestrator": {
       "allow": ["group:sessions", "group:memory", "group:messaging", "read"],

@@ -1,0 +1,32 @@
+{
+  "version": "v1",
+  "description": "Machine-readable mapping between tool-policy abstract capabilities, allowlist actions, and workflow execution verbs for ops.",
+  "owner": "ops",
+  "sourceOfTruth": {
+    "toolPolicy": "policies/tool-policy-matrix.json",
+    "allowlist": "hooks/ops-action-guard/allowlist.json",
+    "workflows": "workflows/**/*.json"
+  },
+  "abstractCapabilityToAllowlistActions": {
+    "exec": ["deploy", "restart_service", "install_package"],
+    "process_control": ["restart_service"],
+    "allowlisted_write": ["manage_generic_agent_instance", "manage_daily_user_instance"],
+    "allowlisted_deploy": ["deploy", "restart_service", "install_package"],
+    "user_instance_lifecycle": ["manage_daily_user_instance"]
+  },
+  "workflowVerbToAbstractCapabilities": {
+    "mkdir_many": ["allowlisted_write"],
+    "upsert_json": ["allowlisted_write"],
+    "append_jsonl": ["allowlisted_write"],
+    "delegate_to_agent": ["exec"],
+    "check_schema": ["read"],
+    "check_policy": ["read"],
+    "assert_current_status": ["read"],
+    "check_files_exist": ["read"]
+  },
+  "validationRules": [
+    "Every workflow action verb used by ops-owned workflows must map to at least one abstract capability.",
+    "Every ops abstract capability used in tool-policy must map to allowlist actions or explicit read-only semantics.",
+    "When an abstract capability maps to allowlist actions, allowlist must contain at least one enabled rule for that action."
+  ]
+}

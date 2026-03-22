@@ -9,6 +9,7 @@
   },
   "preconditions": [
     "policies/routing-policy.json exists",
+    "policies/ops-action-map.json exists",
     "policies/routing-policy.json proactive_validation exists",
     "schemas/review.schema.json exists",
     "schemas/task.schema.json exists",
@@ -74,6 +75,24 @@
       ]
     },
     {
+      "id": "check_ops_action_mapping_baseline",
+      "action": "check_text_patterns",
+      "output": "opsActionMapCheck",
+      "targets": [
+        "policies/ops-action-map.json",
+        "policies/tool-policy-matrix.json",
+        "hooks/ops-action-guard/allowlist.json"
+      ],
+      "requiredPatterns": [
+        "\"abstractCapabilityToAllowlistActions\"",
+        "\"allowlisted_write\"",
+        "\"allowlisted_deploy\"",
+        "\"manage_daily_user_instance\"",
+        "\"deploy\"",
+        "\"opsActionMapping\": \"policies/ops-action-map.json\""
+      ]
+    },
+    {
       "id": "check_complex_upgrade_contract",
       "action": "check_text_patterns",
       "output": "complexUpgradeCheck",
@@ -108,7 +127,7 @@
     {
       "id": "build_validation_summary",
       "action": "summarize_checks",
-      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "gateCheck"],
+      "inputs": ["ownershipCheck", "smithTargetCheck", "pairCheck", "routeReachabilityCheck", "complexUpgradeCheck", "opsActionMapCheck", "gateCheck"],
       "output": "validationSummary",
       "rules": [
         "hasBlockingIssues = any_check_failed",
