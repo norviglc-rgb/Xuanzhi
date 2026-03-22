@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": ".codex/native-tasklist.schema.json",
+  "type": "object",
+  "required": ["version", "owner", "tasks", "priorityPolicy"],
+  "properties": {
+    "version": { "type": "string" },
+    "owner": { "type": "string" },
+    "intent": { "type": "string" },
+    "statusEnum": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "priorityPolicy": {
+      "type": "object",
+      "required": ["alwaysRunBeforeAnyTask", "rule"],
+      "properties": {
+        "alwaysRunBeforeAnyTask": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rule": { "type": "string" }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "title", "status", "blocking", "scope", "owner"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["guard", "workitem"] },
+          "title": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "in_progress", "blocked", "completed"] },
+          "blocking": { "type": "boolean" },
+          "scope": { "type": "string" },
+          "owner": { "type": "string" },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["command", "passWhen"],
+              "properties": {
+                "command": { "type": "string" },
+                "passWhen": { "type": "string" }
+              }
+            }
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "lastUpdated": { "type": "string" }
+  }
+}

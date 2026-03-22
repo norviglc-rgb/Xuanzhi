@@ -1,0 +1,242 @@
+{
+  "version": "v2",
+  "documentType": "codex_native_execution_audit_and_todolist",
+  "lastUpdated": "2026-03-23",
+  "owner": "codex",
+  "language": "zh-CN",
+  "purpose": "Single machine-readable source for Codex execution guardrails, task status, blockers, and closure ownership.",
+  "scopeBoundary": {
+    "runtimeDefinition": "Everything under repository root except .claude, .codex, Xuanzhi-Dev",
+    "excludedNonRuntimeRoots": [
+      ".claude",
+      ".codex",
+      "Xuanzhi-Dev"
+    ],
+    "hardRule": "Codex-only constraints must stay in .codex or Xuanzhi-Dev and must not be written into runtime system layers."
+  },
+  "nativeSupport": {
+    "tasklistPath": ".codex/native-tasklist.json",
+    "tasklistSchemaPath": ".codex/native-tasklist.schema.json",
+    "tasklistValidator": "Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1",
+    "sessionHardGuardsDoc": ".codex/SESSION-HARD-GUARDS.md",
+    "enforcementOrder": [
+      "validate-native-tasklist.ps1",
+      "validate-execution-guardrails.ps1",
+      "implementation",
+      "real verification",
+      "report with required sections"
+    ]
+  },
+  "hardGuards": {
+    "status": "active",
+    "guards": [
+      {
+        "id": "GUARD-PATH-001",
+        "name": "Path guard before write",
+        "blocking": true,
+        "rule": "Root new file write, test path out of Xuanzhi-Dev/testing, or empty new file is a hard failure.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -AsJson",
+        "passCondition": "newRepoRootFiles=0 && testFilesOutsideTestingRoot=0 && emptyNewFiles=0"
+      },
+      {
+        "id": "GUARD-VERIFY-001",
+        "name": "Verification guard",
+        "blocking": true,
+        "rule": "Smoke-only evidence cannot mark a task completed.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -ReportPath <REPORT_PATH> -AsJson",
+        "passCondition": "if smoke marker exists then real execution evidence marker must exist"
+      },
+      {
+        "id": "GUARD-REPORT-001",
+        "name": "Report guard",
+        "blocking": true,
+        "rule": "Closeout report must include 功能影响 + 验证证据 + 未完成项.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -ReportPath <REPORT_PATH> -AsJson",
+        "passCondition": "reportMissingSections=0"
+      }
+    ]
+  },
+  "taskModel": {
+    "statusEnum": [
+      "pending",
+      "in_progress",
+      "blocked",
+      "completed",
+      "dropped"
+    ],
+    "priorityEnum": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "requiredFields": [
+      "id",
+      "title",
+      "owner",
+      "scope",
+      "priority",
+      "status",
+      "definitionOfDone",
+      "verificationPlan",
+      "closure"
+    ]
+  },
+  "executionState": {
+    "currentFocus": [
+      "NEXT-E2E-CREATE-DAILY-USER"
+    ],
+    "nextQueue": [],
+    "blockers": [
+      {
+        "id": "BLK-CRITIC-001",
+        "severity": "medium",
+        "topic": "critic decision template enum mismatch",
+        "status": "blocked",
+        "impact": "Review payload can fail schema validation and break automated closure.",
+        "owner": "critic",
+        "nextAction": "Align template status enum to approved/rejected/needs_changes or add explicit mapping."
+      },
+      {
+        "id": "BLK-CRITIC-002",
+        "severity": "medium",
+        "topic": "profile check path ambiguity",
+        "status": "blocked",
+        "impact": "Review outputs can diverge because profile source of truth is unclear.",
+        "owner": "critic",
+        "nextAction": "Use state/users/index.json.userProfileRecord as the single review target or add explicit profile.json contract."
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "NEXT-E2E-CREATE-DAILY-USER",
+      "title": "create-daily-user real replay and closure validation",
+      "owner": "ops",
+      "scope": "xuanzhi_runtime",
+      "priority": "P0",
+      "status": "in_progress",
+      "dependsOn": [
+        "GUARD-PATH-001",
+        "GUARD-VERIFY-001",
+        "GUARD-REPORT-001"
+      ],
+      "definitionOfDone": "Daily user creation path writes complete state, bindings, review, and audit chain with traceable closure.",
+      "verificationPlan": [
+        "Run create-daily-user request sample.",
+        "Validate state/users, state/agents, openclaw bindings, review-gate, user-provision artifacts end-to-end.",
+        "Confirm pending_review to terminal state closure path is reachable."
+      ],
+      "closure": {
+        "startedBy": "ops",
+        "routedBy": "orchestrator",
+        "handledBy": "ops",
+        "closedBy": "apply-daily-user-review-outcome",
+        "terminalState": "active_or_disabled_or_pending_review_with_explicit_reason"
+      },
+      "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CODEX-EXECUTION-GUARDRAILS",
+      "title": "codex execution hard guardrails",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P0",
+      "status": "completed",
+      "definitionOfDone": "Three hard guards are machine-readable and executable before/after implementation.",
+      "verificationPlan": [
+        "Run validate-execution-guardrails.ps1 without report and expect pass.",
+        "Run validate-execution-guardrails.ps1 with report sample and check missing-section detection."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CODEX-NATIVE-TASKLIST-HARDENING",
+      "title": "native tasklist schema + validator",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P0",
+      "status": "completed",
+      "definitionOfDone": "Native tasklist has schema, validator, and session bootstrap integration.",
+      "verificationPlan": [
+        "Run validate-native-tasklist.ps1 and expect pass.",
+        "Validate .codex/native-tasklist.json and .codex/native-tasklist.schema.json parse success."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-RUNTIME-EMPTY-DIR-CLEANUP",
+      "title": "cleanup runtime empty placeholder directories",
+      "owner": "codex",
+      "scope": "xuanzhi_runtime",
+      "priority": "P1",
+      "status": "completed",
+      "definitionOfDone": "Delete non-required empty runtime directories while preserving structural required empty dirs.",
+      "verificationPlan": [
+        "Run cleanup-empty-runtime-dirs.ps1 -Apply and confirm deletedCount > 0.",
+        "Run cleanup-empty-runtime-dirs.ps1 dry-run and confirm deletable list is empty."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
+    }
+  ],
+  "completedMilestones": [
+    "P0-01",
+    "P0-02",
+    "P0-03",
+    "P0-04",
+    "P0-05",
+    "P0-06",
+    "P1-01",
+    "P1-02",
+    "P1-03",
+    "P1-04",
+    "P1-05",
+    "P1-06",
+    "P1-07",
+    "NEXT-AGENT-CRITIC",
+    "NEXT-AGENT-AGENT-SMITH",
+    "NEXT-WF-MATERIALIZE",
+    "NEXT-WF-MEMORY-PROMOTE",
+    "NEXT-SKILL-XUANZHI-CONTROL",
+    "NEXT-AGENT-ORCHESTRATOR",
+    "NEXT-E2E-MEMORY-PROMOTE",
+    "NEXT-AGENT-ARCHITECT",
+    "NEXT-AGENT-OPS",
+    "NEXT-RUNTIME-ROOT-UNIFICATION",
+    "NEXT-POLICY-ACTION-MAPPING",
+    "NEXT-AGENT-SKILLS-SMITH",
+    "NEXT-AGENT-CLAUDE-CODE",
+    "NEXT-E2E-CLAUDE-RETURN"
+  ],
+  "runtimeBoundaryAudit": {
+    "lastScanAt": "2026-03-23",
+    "scanRule": "Scan runtime scope only (exclude .claude/.codex/Xuanzhi-Dev) for dev-script coupling and codex-only contamination.",
+    "result": "pass",
+    "findings": [],
+    "note": "Runtime references to Xuanzhi-Dev testing scripts were removed from workflow checks."
+  },
+  "archive": {
+    "preRefactorSnapshot": ".codex/archive/agent-workflow-skill-foundation-audit.2026-03-23.pre-refactor.json",
+    "reason": "Full-file refactor to native machine-readable structure while preserving historical narrative."
+  }
+}

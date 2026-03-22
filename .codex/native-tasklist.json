@@ -1,0 +1,72 @@
+{
+  "version": "v2",
+  "owner": "codex",
+  "intent": "persistent_session_guardrails_and_execution_queue",
+  "statusEnum": ["pending", "in_progress", "blocked", "completed"],
+  "priorityPolicy": {
+    "alwaysRunBeforeAnyTask": [
+      "GUARD-PATH-001",
+      "GUARD-VERIFY-001",
+      "GUARD-REPORT-001"
+    ],
+    "rule": "Any blocking guard failure stops implementation and final closeout."
+  },
+  "tasks": [
+    {
+      "id": "GUARD-PATH-001",
+      "kind": "guard",
+      "title": "Path guard before write",
+      "status": "in_progress",
+      "blocking": true,
+      "scope": "codex_only",
+      "owner": "codex",
+      "checks": [
+        {
+          "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -AsJson",
+          "passWhen": "newRepoRootFiles=0 && testFilesOutsideTestingRoot=0 && emptyNewFiles=0"
+        }
+      ]
+    },
+    {
+      "id": "GUARD-VERIFY-001",
+      "kind": "guard",
+      "title": "Verification guard (no smoke-only closure)",
+      "status": "in_progress",
+      "blocking": true,
+      "scope": "codex_only",
+      "owner": "codex",
+      "checks": [
+        {
+          "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -ReportPath <REPORT_PATH> -AsJson",
+          "passWhen": "if smoke marker exists then real verification evidence marker must exist"
+        }
+      ]
+    },
+    {
+      "id": "GUARD-REPORT-001",
+      "kind": "guard",
+      "title": "Report guard (three required sections)",
+      "status": "in_progress",
+      "blocking": true,
+      "scope": "codex_only",
+      "owner": "codex",
+      "checks": [
+        {
+          "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1 -ReportPath <REPORT_PATH> -AsJson",
+          "passWhen": "reportMissingSections=0 and contains required sections"
+        }
+      ]
+    },
+    {
+      "id": "NEXT-E2E-CREATE-DAILY-USER",
+      "kind": "workitem",
+      "title": "create-daily-user real replay and state-closure verification",
+      "status": "in_progress",
+      "blocking": false,
+      "scope": "xuanzhi_runtime",
+      "owner": "ops",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001"]
+    }
+  ],
+  "lastUpdated": "2026-03-23"
+}

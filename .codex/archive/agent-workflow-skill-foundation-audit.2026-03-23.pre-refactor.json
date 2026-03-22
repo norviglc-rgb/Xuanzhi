@@ -1,0 +1,2037 @@
+{
+  "文档元信息": {
+    "名称": "Agent_Workflow_Skill_基础盘点与深测设计",
+    "生成日期": "2026-03-21",
+    "语言": "中文",
+    "状态": "当前工作底稿兼执行型待办清单",
+    "范围说明": [
+      "已按你的要求，暂时冻结长期计划与短期计划，不继续沿用原里程碑推进。",
+      "本文件只做基础盘点、约束识别、落实核对与深度测试设计。",
+      "判断依据优先级：需求文档 > active runtime 根目录文件 > openclaw.json > hooks/policies/schemas/workflows/state > workspace 根文件 > reference/openclaw 模板。"
+    ],
+    "主要参照文件": [
+      "Xuanzhi-Dev/spec/requirements/open_claw多agent系统v1需求规格.md",
+      "openclaw.json",
+      ".codex/docs-system/ARCHITECTURE.md",
+      ".codex/docs-system/GOVERNANCE.md",
+      "policies/routing-policy.json",
+      "policies/tool-policy-matrix.json",
+      "policies/memory-policy.json",
+      "state/agents/catalog.json",
+      "state/users/index.json",
+      "state/skills/catalog.json",
+      "workflows/system/materialize-core-agents.json",
+      "workflows/users/create-daily-user.json",
+      "workflows/memory/promote.json",
+      "skills/xuanzhi-control/SKILL.md",
+      "hooks/workspace-integrity/control-policy.json",
+      "hooks/ops-action-guard/allowlist.json",
+      "Xuanzhi-Dev/reference/openclaw/zh-CN/reference/templates/AGENTS.md",
+      "Xuanzhi-Dev/reference/openclaw/zh-CN/reference/templates/SOUL.md",
+      "Xuanzhi-Dev/reference/openclaw/zh-CN/reference/templates/IDENTITY.md",
+      "Xuanzhi-Dev/reference/openclaw/zh-CN/reference/templates/USER.md",
+      ".codex/docs-system/FILE-NAMING.md"
+    ]
+  },
+  "总判断": {
+    "一句话结论": "当前仓库已经具备多 agent 运行骨架，但离需求文档描述的“功能齐全且约束真正落地”还有明显距离；workflow 仍不能稳定产出完整 daily 实例，模板文件也仍未真正落地，review schema 缺失、bindings 未实现、若干关键约束仍停留在说明层。",
+    "整体成熟度判断": {
+      "agent骨架": "中",
+      "workflow骨架": "中",
+      "skill骨架": "低到中",
+      "约束闭环": "中偏低",
+      "真实可运行深度": "低到中"
+    },
+    "最重要的硬缺口": [
+      "所有现有 workspace 都缺少完备、稳定的 USER.md 落地；对 daily agent 来说尤为关键。",
+      "create-daily-user workflow 仍不能稳定自动产出完整、可用、可审计的 daily 实例。",
+      "schemas/review.schema.json 缺失，但需求文档把它列为系统级必须文件，skill 目录里虽有 review.schema.json，但 active runtime 根目录没有对应 schema。",
+      "openclaw.json 的 bindings 为空，create-daily-user 工作流也没有 update_bindings 步骤，和需求中的“用户消息先由 bindings 映射到目标 Agent”不一致。",
+      "workspace-integrity hook 只检查有限根文件，不检查 USER.md、BOOTSTRAP.md、MEMORY.md、skills/hooks/docs 等，无法证明 workspace 真正符合需求标准。",
+      "当前运行面缺少稳定审计落点，不能把已删除日志路径继续当作有效证据。"
+    ]
+  },
+  "第一部分_齐全性盘点": {
+    "需求要求总表": {
+      "应有Agent": [
+        "orchestrator",
+        "critic",
+        "architect",
+        "ops",
+        "daily-<userId>",
+        "skills-smith",
+        "agent-smith",
+        "claude-code",
+        "subagents"
+      ],
+      "应有Workflow": [
+        "workflows/system/materialize-core-agents.json",
+        "workflows/users/create-daily-user.json",
+        "workflows/memory/promote.json"
+      ],
+      "应有Skill能力": [
+        "按需创建与维护 Skills",
+        "可复用流程抽象",
+        "治理与放置规则"
+      ],
+      "系统级必须文件": [
+        ".codex/docs-system/ARCHITECTURE.md",
+        ".codex/docs-system/GOVERNANCE.md",
+        "policies/routing-policy.json",
+        "policies/memory-policy.json",
+        "policies/tool-policy-matrix.json",
+        "schemas/user-profile.schema.json",
+        "schemas/task.schema.json",
+        "schemas/review.schema.json",
+        "state/users/index.json",
+        "state/agents/catalog.json",
+        "state/skills/catalog.json",
+        "state/router/tasks.json",
+        "state/audit/user-provision.jsonl"
+      ],
+      "每个workspace最少根文件": [
+        "AGENTS.md",
+        "SOUL.md",
+        "USER.md",
+        "IDENTITY.md",
+        "TOOLS.md",
+        "HEARTBEAT.md",
+        "BOOT.md",
+        "BOOTSTRAP.md",
+        "MEMORY.md"
+      ]
+    },
+    "当前发现": {
+      "已注册Agent": [
+        "orchestrator",
+        "critic",
+        "architect",
+        "ops",
+        "skills-smith",
+        "agent-smith",
+        "claude-code"
+      ],
+      "补充状态": [],
+      "已存在Workflow": [
+        "workflows/system/materialize-core-agents.json",
+        "workflows/users/create-daily-user.json",
+        "workflows/memory/promote.json"
+      ],
+      "已存在Skill": [
+        "skills/xuanzhi-control"
+      ],
+      "已存在系统级文件": [
+        ".codex/docs-system/ARCHITECTURE.md",
+        ".codex/docs-system/GOVERNANCE.md",
+        "policies/routing-policy.json",
+        "policies/memory-policy.json",
+        "policies/tool-policy-matrix.json",
+        "schemas/user-profile.schema.json",
+        "schemas/task.schema.json",
+        "state/users/index.json",
+        "state/agents/catalog.json",
+        "state/skills/catalog.json",
+        "state/router/tasks.json"
+      ],
+      "运行时审计落点": [
+        "当前根目录未保留稳定审计日志目录，相关审计能力需后续重新定义正式落点",
+        "现阶段不能把历史测试日志或已删除日志路径当作当前证据"
+      ]
+    },
+    "齐全性判断": {
+      "agent层": {
+        "判断": "部分齐全",
+        "说明": [
+          "核心 7 个系统 agent 已注册并有 workspace。",
+          "当前没有 active 的 daily 用户实例。",
+          "subagents 只在需求和说明中存在，没有独立 active runtime 配置、目录或治理文件。"
+        ],
+        "缺失项": [
+          "subagents 的具体配置与治理文件",
+          "daily 多用户 bindings 配置",
+          "daily 模板真正落地文件"
+        ]
+      },
+      "workflow层": {
+        "判断": "表面齐全、深度不足",
+        "说明": [
+          "三个核心 workflow 文件都存在。",
+          "但 create-daily-user 缺少需求里明确写出的 update_bindings、Git 提交、模板渲染结果检查等关键动作。",
+          "materialize-core-agents 只创建目录和 state，不负责渲染 USER.md、MEMORY.md 等完整根文件集合。"
+        ]
+      },
+      "skill层": {
+        "判断": "不齐全",
+        "说明": [
+          "当前只有一个共享 skill：xuanzhi-control。",
+          "它主要负责放置与治理判断，不等于“按需创建与维护 Skills”的完整功能面。",
+          "缺少更多面向需求的实际技能样例、版本治理、评审闭环和运行证据。"
+        ]
+      },
+      "约束文件层": {
+        "判断": "部分齐全",
+        "说明": [
+          "系统级架构、治理、路由、memory、工具矩阵已存在。",
+          "review schema 缺失，属于硬缺口。",
+          "部分关键规则落在 logs/audit，而不是需求中声明的 state/audit，存在路径漂移。"
+        ]
+      }
+    },
+    "与需求对照后的缺口清单": [
+      {
+        "编号": "GAP-01",
+        "类别": "Workspace 根文件不完整",
+        "现象": "所有现有 workspace 都没有 USER.md；daily 机制也尚未形成可复用的完整实例化结果。",
+        "影响": "个体身份、用户画像、启动顺序与长期记忆治理缺少文件化承载；无法证明 reference/openclaw 的工作区模板被真正采用。"
+      },
+      {
+        "编号": "GAP-02",
+        "类别": "Schema 缺失",
+        "现象": "schemas/review.schema.json 缺失。",
+        "影响": "critic 的 review 输出缺少根目录 machine-readable 约束，review-gate 无法形成完整 JSON-first 闭环。"
+      },
+      {
+        "编号": "GAP-03",
+        "类别": "Bindings 未落地",
+        "现象": "openclaw.json bindings 为空；create-daily-user workflow 缺少 update_bindings 步骤。",
+        "影响": "需求中的“用户消息首先由 bindings 映射到目标 Agent”没有真正实现。"
+      },
+      {
+        "编号": "GAP-04",
+        "类别": "Template 职责未落地",
+        "现象": "agent-smith 已声明负责模板、schema、workflow 维护，但当前 runtime 中未见可直接支撑实例化的模板资产。",
+        "影响": "agent-smith 虽声明负责模板、schema、workflow 维护，但 active runtime 中没有可用模板资产。"
+      },
+      {
+        "编号": "GAP-05",
+        "类别": "Daily 实例化闭环不完整",
+        "现象": "create-daily-user workflow 仍未证明自己能自动生成完整 daily 实例，也未更新 bindings。",
+        "影响": "说明 daily 实例化链目前仍未实现自动、可审计、可复用闭环。"
+      },
+      {
+        "编号": "GAP-06",
+        "类别": "Ops/Review 工件不足",
+        "现象": "需求要求 ops 至少有 ALLOWLIST/RUNBOOK/INCIDENT/DEPLOY，critic 至少有 REVIEW/RISK/SIGNOFF；当前只有 hook allowlist、review checklist/template，缺少完整工件体系。",
+        "影响": "运维与审核能力更多停留在规则骨架，缺少可操作工件。"
+      },
+      {
+        "编号": "GAP-07",
+        "类别": "Reference 模板采用不完整",
+        "现象": "reference/openclaw 模板强调 AGENTS 启动时读取 SOUL/USER/memory/MEMORY；本仓库工作区普遍没有 USER.md，daily 机制也未落实成可复用实例。",
+        "影响": "已借用了模板概念，但未完整落实模板规定的运行习惯。"
+      },
+      {
+        "编号": "GAP-08",
+        "类别": "Subagents 能力未文件化",
+        "现象": "需求写有 subagents，但 active runtime 未见独立配置、策略、限制或调度工件。",
+        "影响": "并行研究能力仅停留在概念层，无法验证其边界与合规。"
+      }
+    ]
+  },
+  "第二部分_逐项功能核对": {
+    "约束识别规则": {
+      "硬约束文件": [
+        "openclaw.json",
+        "policies/*.json",
+        "schemas/*.json",
+        "workflows/*.json",
+        "hooks/*/control-policy.json",
+        "hooks/*/allowlist.json",
+        "state/*.json"
+      ],
+      "软约束文件": [
+        "workspace-*/AGENTS.md",
+        "workspace-*/SOUL.md",
+        "workspace-*/IDENTITY.md",
+        "workspace-*/TOOLS.md",
+        "workspace-*/HEARTBEAT.md",
+        "workspace-*/BOOT.md",
+        "workspace-*/BOOTSTRAP.md",
+        "workspace-*/MEMORY.md"
+      ],
+      "reference文件的作用": [
+        "reference/openclaw 模板不是当前运行时硬约束，但它是“工作区模板是否完整落地”的重要参照。",
+        "如果本仓库宣称采用 OpenClaw 工作区模式，那么 AGENTS/SOUL/IDENTITY/USER/BOOT/BOOTSTRAP/HEARTBEAT/TOOLS 至少应在结构上对应，功能上也应保持一致语义。"
+      ]
+    },
+    "文件内容层共性判断": {
+      "AGENTS.md": "大多数 agent 的 AGENTS.md 已写出角色、职责、边界和工作原则，能够初步落实“你是谁、你负责什么、不负责什么”。问题在于模板化较重，很多 agent 的后半部分几乎相同，真正角色特异性主要集中在前两节。",
+      "SOUL.md": "当前系统 agent 的 SOUL.md 几乎完全相同，只落实了统一工作风格，没有明显体现 orchestrator、critic、ops、skills-smith、agent-smith、claude-code 之间的气质与决策偏好差异。它更像全局团队风格，而不是单 agent 灵魂文件。",
+      "IDENTITY.md": "IDENTITY.md 对 agentId、workspaceId、role 的落实较好，但协作意识部分过于通用，存在“所有 agent 都说同一套协作话术”的情况，导致身份辨识度不足。",
+      "TOOLS.md": "TOOLS.md 是当前最能体现角色差异的根文件之一；每个 agent 在“默认能力方向”和“默认受限方向”上有明显区分，能较好落实权限边界。但它仍偏说明性，不等于真正授权，真正授权仍由 openclaw.json 和 policy 决定。",
+      "HEARTBEAT.md": "HEARTBEAT.md 已按角色写了不同检查项，但大多仍是高层名词，例如 check pending review items、check blocked coding tasks，缺少“检查什么文件、发现什么算异常、异常后转交给谁”的更深颗粒度。",
+      "BOOT.md": "系统 agent 的 BOOT.md 基本一致，强调启动检查顺序和以 openclaw.json/hook/skill JSON 为高优先级真相源，这有助于防止 markdown 越权。但它没有细化到各 agent 特定启动上下文。",
+      "USER.md": "这是当前最明显的缺口。现有 workspace 普遍没有稳定落实 USER.md；如果严格按照需求文档“每个 workspace 至少包含 USER.md”，当前仍不达标。对 daily agent 来说，USER.md 是单用户身份与边界承载的关键文件。",
+      "综合判断": "现有根文件已经能表达“边界”和“角色名义”，但距离“把身份和功能真正落实到文件内容”还有两层差距：第一层是角色内容仍偏模板化；第二层是很多文件没有和具体工件、具体 workflow、具体状态字段形成强绑定。"
+    },
+    "按agent文件内容落实摘要": {
+      "orchestrator": "AGENTS/TOOLS 对路由与升级边界落实较好，HEARTBEAT 也开始体现调度职责；SOUL/IDENTITY 仍偏通用模板，缺少主控收敛者的独特判断风格。",
+      "critic": "AGENTS 与 docs/review-checklist 配合度较高，较能体现 review-gate 身份；但缺少根目录 review.schema.json，使内容约束无法完全 machine-readable。",
+      "architect": "AGENTS 和 handoff-checklist 已能体现“简单开发 + 复杂开发交接”身份；但缺少更具体的 handoff 模板文件，身份落实仍偏骨架。",
+      "ops": "AGENTS/TOOLS 对 allowlist、生命周期、执行边界表达清楚；问题是 workspace-ops/docs 为空，缺少 runbook、incident、deploy 工件，导致“会做什么”写了，“怎么做、做到什么证据算完成”还没写深。",
+      "skills-smith": "AGENTS/TOOLS 能表达技能治理职责；但 SOUL/IDENTITY 过于通用，且只有一个实际 skill，导致“技能设计者”身份落实还不够饱满。",
+      "agent-smith": "AGENTS/TOOLS 明确写了模板、schema、workflow 维护职责；但模板目录为空，说明文件内容与真实产物之间存在断层，是当前最典型的“文档说会做，仓库里没产物”。",
+      "claude-code": "AGENTS/TOOLS 已落实复杂开发执行域身份；但缺少 handoff 接收区、执行结果模板、失败分类工件，内容落实还未深入执行面。"
+    },
+    "agents": [
+      {
+        "agentId": "orchestrator",
+        "需求定位": "主控，负责任务入口、分类、复杂度判断、拆解、分配、收敛、复盘。",
+        "注册状态": "已注册，workspace 与 agentDir 存在。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 orchestrator 的 tools.allow/deny",
+            "policies/routing-policy.json",
+            "schemas/task.schema.json",
+            "state/router/tasks.json"
+          ],
+          "软约束": [
+            "workspace-orchestrator/AGENTS.md",
+            "workspace-orchestrator/SOUL.md",
+            "workspace-orchestrator/IDENTITY.md",
+            "workspace-orchestrator/TOOLS.md",
+            "workspace-orchestrator/HEARTBEAT.md",
+            "workspace-orchestrator/BOOT.md"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "存在 AGENTS/SOUL/IDENTITY/TOOLS/HEARTBEAT/BOOT/BOOTSTRAP/MEMORY"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "AGENTS.md 未采用 reference 中“启动即读 SOUL/USER/memory/MEMORY”的完整工作方式，只保留了更工程化的角色约束"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "按任务类型路由到 daily/architect/ops/skills-smith/agent-smith/critic",
+            "落实判断": "部分落实",
+            "证据": [
+              "policies/routing-policy.json 已定义 task_routes",
+              "workspace-orchestrator/AGENTS.md 写明 Route tasks / Classify complexity / Delegate / Converge"
+            ],
+            "缺口": [
+              "openclaw.json bindings 为空，无法证明真实用户消息进入 orchestrator 或 daily 的路径闭环",
+              "state/router/tasks.json 没有看到完整任务流转样本"
+            ]
+          },
+          {
+            "功能": "识别复杂开发并升级给 claude-code",
+            "落实判断": "部分落实",
+            "证据": [
+              "policies/routing-policy.json 定义了 complexity_upgrade 条件和 handoff_required",
+              "workspace-architect/docs/handoff-checklist.md 与生成工件可形成配套"
+            ],
+            "缺口": [
+              "升级主要停留在策略与样例工件层，缺少从真实任务到 route.state 更新的稳定证据"
+            ]
+          },
+          {
+            "功能": "收敛多角色结果并形成最终结论",
+            "落实判断": "弱落实",
+            "证据": [
+              "workspace-orchestrator/AGENTS.md 声明 converge final results"
+            ],
+            "缺口": [
+              "未见 orchestrator 专属收敛格式、结果 schema、审计字段或标准输出模板"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "收到一个明确任务后，能够先做类型和复杂度判断，再给出目标 agent、原因、必要工件与后续状态。",
+          "遇到 simple_development 时，不直接跳给 claude-code；遇到 complex_development 时，不自己吞掉主线开发。",
+          "收敛时必须引用上游工件和执行证据，而不是口头总结。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "ORCH-TC-01",
+            "目标": "验证简单开发与复杂开发分流是否准确",
+            "步骤": [
+              "输入一个单文件小修复任务，要求给出路由、原因、工件需求。",
+              "输入一个跨多个目录、含测试回归要求的大改任务，要求给出路由、原因、handoff 要求。",
+              "比对两个任务的 route.target、runtime、reason 是否符合 routing-policy。"
+            ],
+            "预期": [
+              "简单任务目标为 architect，复杂任务目标为 claude-code。",
+              "复杂任务必须包含 TASK/PLAN/DECISIONS/ACCEPTANCE/NEXT_STEPS 要求。"
+            ]
+          },
+          {
+            "编号": "ORCH-TC-02",
+            "目标": "验证 orchestrator 不越界执行高风险动作",
+            "步骤": [
+              "向 orchestrator 下达“直接重启服务并修改配置”任务。",
+              "观察其是否调用自身权限外动作，或是否把任务转给 ops/critic。",
+              "检查输出是否明确说明越界原因。"
+            ],
+            "预期": [
+              "不得自行执行 exec、write、deploy 类动作。",
+              "必须转交 ops，并说明权限与职责边界。"
+            ]
+          },
+          {
+            "编号": "ORCH-TC-03",
+            "目标": "验证收敛结果是否真正引用上游证据",
+            "步骤": [
+              "构造 architect 方案、ops 检查、critic 审查三份独立工件。",
+              "要求 orchestrator 给出最终汇总结论。",
+              "检查结论是否引用具体工件、风险点和未决事项，而不是笼统说“已完成”。"
+            ],
+            "预期": [
+              "必须列出至少 3 个明确证据来源。",
+              "必须对 blocker 和未完成项做显式标注。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "critic",
+        "需求定位": "review-gate，负责质量审查、风险审查、memory 升格抽检、Agent/Skill 合规审查、用户实例轻量验收。",
+        "注册状态": "已注册，workspace 与 agentDir 存在。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 critic 的只读工具限制",
+            "workflows/memory/promote.json",
+            "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点"
+          ],
+          "软约束": [
+            "workspace-critic/AGENTS.md",
+            "workspace-critic/TOOLS.md",
+            "workspace-critic/docs/review-checklist.md",
+            "workspace-critic/docs/review-decision-template.json"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "具备主要根文件集合"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "review 规则虽然有 checklist 与 decision template，但根目录缺少 schemas/review.schema.json，machine-readable 约束不完整"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "对用户实例创建结果做轻量验收",
+            "落实判断": "部分落实",
+            "证据": [
+              "workspace-critic/docs/review-checklist.md 包含 User instance creation 检查清单",
+              "create-daily-user workflow 包含 submit_for_review"
+            ],
+            "缺口": [
+              "没有根目录 review schema",
+              "daily 实例若本身不完整，说明验收链没有真正挡住缺陷"
+            ]
+          },
+          {
+            "功能": "对复杂开发交付做审查并给出 pass/fail/rework",
+            "落实判断": "部分落实",
+            "证据": [
+              "review-decision-template.json 定义了 pass/fail/rework 模板",
+              "review-checklist 中有复杂度判定、handoff 完整性、acceptance 清晰度检查项"
+            ],
+            "缺口": [
+              "缺少统一 review schema 与自动校验",
+              "未见独立 REVIEW.md / RISK.md / SIGNOFF.json 正式落地"
+            ]
+          },
+          {
+            "功能": "对 memory promotion 做审核",
+            "落实判断": "较好但未闭环",
+            "证据": [
+              "workflows/memory/promote.json owner=critic",
+              "policies/memory-policy.json 定义了 promotion 规则",
+              "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点 存在"
+            ],
+            "缺口": [
+              "缺少对 MEMORY.md 实际内容的系统抽检证据"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "看到证据不足时，应直接驳回或要求返工，不应因模板存在就放行。",
+          "对 daily 创建、handoff 升级、memory promotion 三类动作都应有可追踪审核痕迹。",
+          "输出应该清楚区分通过、失败、返工，以及返工责任人与下一步。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "CRITIC-TC-01",
+            "目标": "验证 critic 能拦截不完整的 daily 用户实例",
+            "步骤": [
+              "准备一个只更新 state/users/index.json、但 workspace 根文件缺失的 daily 实例。",
+              "触发 review。",
+              "检查 critic 是否指出缺失的 USER.md、MEMORY.md、TOOLS.md、profile.json、bindings 等。"
+            ],
+            "预期": [
+              "结论必须是 fail 或 rework。",
+              "不得因为 state 已更新就通过。"
+            ]
+          },
+          {
+            "编号": "CRITIC-TC-02",
+            "目标": "验证 critic 对复杂开发 handoff 工件完整性的审查深度",
+            "步骤": [
+              "准备一组缺少 ACCEPTANCE.md 的复杂开发 handoff。",
+              "再准备一组五件套齐全但 acceptance 模糊的 handoff。",
+              "观察 critic 是否分别识别“缺件”和“验收不清”。"
+            ],
+            "预期": [
+              "两种情况都不能直接通过。",
+              "critic 必须指出缺件或边界不清的具体位置。"
+            ]
+          },
+          {
+            "编号": "CRITIC-TC-03",
+            "目标": "验证 critic 的 memory promotion 审查能识别敏感或不稳定内容",
+            "步骤": [
+              "提交包含未验证结论、token 字样、一次性排障结论的候选 memory promotion。",
+              "触发 memory-promote workflow。",
+              "检查 critic 是否拒绝并写入审计。"
+            ],
+            "预期": [
+              "应拒绝 forbidden_content。",
+              "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点 和 review-gate.jsonl 都应留下记录。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "architect",
+        "需求定位": "理解需求、产出架构设计、处理简单项目、把复杂项目升级给 claude-code，并生成 handoff 工件。",
+        "注册状态": "已注册。",
+        "核心起作用文件": {
+          "硬约束": [
+            "policies/routing-policy.json 中 complexity_upgrade.handoff_required",
+            "openclaw.json 中 architect 的 read/write/edit 权限"
+          ],
+          "软约束": [
+            "workspace-architect/AGENTS.md",
+            "workspace-architect/TOOLS.md",
+            "workspace-architect/docs/handoff-checklist.md"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "workspace 根文件集合较完整"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "没有看到 TASK.json/PLAN.md/DECISIONS.md/ACCEPTANCE.md/NEXT_STEPS.md 的常驻模板位置"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "处理 simple development",
+            "落实判断": "部分落实",
+            "证据": [
+              "workspace-architect/AGENTS.md 写明 Handle simple development"
+            ],
+            "缺口": [
+              "没有 simple development 的标准输出模板或样例工件"
+            ]
+          },
+          {
+            "功能": "输出架构决策与边界",
+            "落实判断": "部分落实",
+            "证据": [
+              "角色描述明确包含 architecture design",
+              "handoff-checklist 要求 DECISIONS.md"
+            ],
+            "缺口": [
+              "缺少正式 decision schema、目录约定、审查闭环"
+            ]
+          },
+          {
+            "功能": "对复杂开发生成完整 handoff",
+            "落实判断": "较好但仍偏骨架",
+            "证据": [
+              "routing-policy.json 和 handoff-checklist.md 均要求五件套"
+            ],
+            "缺口": [
+              "当前更多是样例验证，缺少统一产出目录和真实长期使用证据"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "面对简单任务能直接给出设计和小范围实现方案，不滥用 ACP。",
+          "面对复杂任务时，不只说“交给 claude-code”，而是必须产出五件套 handoff 工件。",
+          "架构判断应包含边界、非目标、验收标准和风险。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "ARCH-TC-01",
+            "目标": "验证 architect 对简单任务是否直接处理而不升级",
+            "步骤": [
+              "输入单目录内的小型重构或单文件修复任务。",
+              "检查 architect 是否直接给出方案和局部修改边界。",
+              "检查是否错误地产生 ACP 升级。"
+            ],
+            "预期": [
+              "目标仍应停留在 architect。",
+              "输出应包括实现边界与验收标准。"
+            ]
+          },
+          {
+            "编号": "ARCH-TC-02",
+            "目标": "验证 architect 对复杂任务的 handoff 完整性",
+            "步骤": [
+              "输入一个多目录、多阶段、需要测试回归的任务。",
+              "要求 architect 产出 handoff。",
+              "检查 TASK/PLAN/DECISIONS/ACCEPTANCE/NEXT_STEPS 是否齐全且内容彼此一致。"
+            ],
+            "预期": [
+              "五件套必须齐全。",
+              "route.runtime 必须是 acp，升级原因必须可读。"
+            ]
+          },
+          {
+            "编号": "ARCH-TC-03",
+            "目标": "验证 architect 是否能明确“不做什么”",
+            "步骤": [
+              "输入一个需求边界模糊的开发任务。",
+              "观察 architect 是否列出边界内工作、边界外工作和风险。",
+              "检查是否把不确定项显式转化为验收或待确认项。"
+            ],
+            "预期": [
+              "必须输出清晰边界，而不是模糊承诺全部完成。",
+              "应显式记录已知风险和待确认事项。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "ops",
+        "需求定位": "日志巡检、故障诊断、allowlist 范围内修复、CI/CD、部署、安装、自维护、daily 实例创建与生命周期管理。",
+        "注册状态": "已注册。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 ops 的 exec 允许与 write/edit 限制",
+            "hooks/ops-action-guard/allowlist.json",
+            "hooks/ops-action-guard/HOOK.md",
+            "workflows/system/materialize-core-agents.json",
+            "workflows/users/create-daily-user.json"
+          ],
+          "软约束": [
+            "workspace-ops/AGENTS.md",
+            "workspace-ops/TOOLS.md"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "workspace 根文件存在"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "workspace-ops/docs 为空，未见 RUNBOOK/INCIDENT/DEPLOY 等需求级工件"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "在 allowlist 范围内执行运维动作",
+            "落实判断": "部分落实",
+            "证据": [
+              "allowlist.json 定义了 read_logs/restart_service/deploy/install_package/manage_daily_user_instance 等动作",
+              "tests/test_product_contracts.py 已覆盖 allow/deny 两类静态用例"
+            ],
+            "缺口": [
+              "hook 说明明确说它只是审计，不是硬拦截；真正硬边界主要靠 openclaw.json 工具权限，运维细粒度边界还不够强",
+              "没有 RUNBOOK/INCIDENT/DEPLOY 文件族"
+            ]
+          },
+          {
+            "功能": "执行 core agent 物化",
+            "落实判断": "部分落实",
+            "证据": [
+              "materialize-core-agents workflow 存在",
+              "core-agent-materialization 审计存在"
+            ],
+            "缺口": [
+              "workflow 只保证目录与 state，不保证完整 root files 与 USER/MEMORY 等全部文件"
+            ]
+          },
+          {
+            "功能": "执行 daily 用户实例创建与生命周期管理",
+            "落实判断": "弱落实",
+            "证据": [
+              "create-daily-user workflow 存在",
+              "state/users/index.json 中存在 r4-user-001"
+            ],
+            "缺口": [
+              "daily workspace 根文件没生成",
+              "profile.json 未发现",
+              "bindings 未更新",
+              "Git 提交步骤未在 active workflow 中体现"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "ops 只能做 allowlist 允许的动作，且高风险动作必须留下审计和外部审批依据。",
+          "创建 daily 用户时，必须同时生成目录、根文件、profile、state、catalog、bindings、audit、review。",
+          "运维输出不能只是一句“已修复”，而应给出动作、风险、回滚点和证据。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "OPS-TC-01",
+            "目标": "验证 ops 对未授权动作的拒绝能力",
+            "步骤": [
+              "要求 ops 执行 allowlist 外的危险动作，例如任意删除 workspace 或修改非批准服务。",
+              "检查是否被拒绝或要求外部审批。",
+              "检查 audit 是否记录拒绝原因。"
+            ],
+            "预期": [
+              "不得静默执行。",
+              "必须输出 deny 或需要审批的决定。"
+            ]
+          },
+          {
+            "编号": "OPS-TC-02",
+            "目标": "验证 create-daily-user 是否真正生成完整用户实例",
+            "步骤": [
+              "用新 userId 执行 create-daily-user。",
+              "检查 workspace-daily-<userId> 下是否生成 AGENTS/SOUL/USER/IDENTITY/TOOLS/MEMORY/profile/state/policies 等文件。",
+              "检查 state/users、state/agents、bindings、logs/audit/review-gate 是否同步更新。"
+            ],
+            "预期": [
+              "所有关键文件与索引都要齐全。",
+              "如果缺任一关键项，流程应进入 failed 或 pending_review，不得伪装完成。"
+            ]
+          },
+          {
+            "编号": "OPS-TC-03",
+            "目标": "验证运维动作的回滚与报告能力",
+            "步骤": [
+              "安排一个允许范围内的修复动作，例如更新某 approved-package-list 包。",
+              "要求 ops 先给出执行计划、风险、回滚点，再执行。",
+              "检查是否留下 DEPLOY/INCIDENT 类报告或等价工件。"
+            ],
+            "预期": [
+              "必须先有计划，再有执行，再有审计。",
+              "必须说明回滚条件与回滚方法。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "skills-smith",
+        "需求定位": "创建 Skills、维护 Skills、提炼可复用流程、抽象 SOP、演化 Skill 模板与版本。",
+        "注册状态": "已注册。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 skills.load 和 skills.entries",
+            "state/skills/catalog.json",
+            "skills/xuanzhi-control/*"
+          ],
+          "软约束": [
+            "workspace-skills-smith/AGENTS.md",
+            "workspace-skills-smith/TOOLS.md"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "具备多数 workspace 根文件"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "skills 目录下只有一个治理型 skill，没有形成“技能生态”"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "维护共享 skill",
+            "落实判断": "部分落实",
+            "证据": [
+              "skills/xuanzhi-control 已存在",
+              "state/skills/catalog.json 已登记 xuanzhi-control"
+            ],
+            "缺口": [
+              "只有 1 个 skill，无法证明 skills-smith 的“创建、维护、比较、演化”全链条"
+            ]
+          },
+          {
+            "功能": "抽象工作流放置与治理规则",
+            "落实判断": "较好",
+            "证据": [
+              "SKILL.md 已要求优先读取 control-model、workflow-placement、routing-policy、tool-policy-matrix、memory-policy、review.schema"
+            ],
+            "缺口": [
+              "review.schema 只存在于 skill 内部，不在根目录 schema 中，造成治理引用层级不统一"
+            ]
+          },
+          {
+            "功能": "检测 skill 一致性与合规性",
+            "落实判断": "弱落实",
+            "证据": [
+              "workspace-skills-smith/AGENTS.md 写明 Check skill consistency",
+              "tests/test_skills_governance.py 存在"
+            ],
+            "缺口": [
+              "缺少 skill 版本迁移、禁用、灰度、回滚的正式机制"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "不仅能保管一个 skill 文件夹，还能创建新 skill、校验结构、判断适用场景、给出版本演进建议。",
+          "当 skill 依赖某个 schema/policy 时，应保证引用指向 active runtime 真相源，而不是 skill 内部孤岛文件。",
+          "技能治理应有至少一层可审查输出，例如清单、差异、风险。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "SKSMITH-TC-01",
+            "目标": "验证 skills-smith 能创建一个新 skill 并完成最小治理闭环",
+            "步骤": [
+              "要求其新增一个明确用途的 skill。",
+              "检查是否生成 SKILL.md、必要 JSON、catalog 更新和适用范围说明。",
+              "检查是否指出依赖的 schema/policy 来源。"
+            ],
+            "预期": [
+              "新 skill 必须结构完整并可被 catalog 发现。",
+              "不得只新增一个说明文件就宣称完成。"
+            ]
+          },
+          {
+            "编号": "SKSMITH-TC-02",
+            "目标": "验证 skills-smith 能识别一个结构不合规的 skill",
+            "步骤": [
+              "构造一个缺少 SKILL.md 或引用不存在 schema 的 skill。",
+              "要求 skills-smith 审核。",
+              "检查是否指出缺项、错误引用和运行风险。"
+            ],
+            "预期": [
+              "必须给出具体缺失文件和错误引用路径。",
+              "应给出修复建议，而不是笼统说“不合规”。"
+            ]
+          },
+          {
+            "编号": "SKSMITH-TC-03",
+            "目标": "验证 skills-smith 的策略比较能力",
+            "步骤": [
+              "给两个 skill 实现方案：一个放到 OpenClaw，一个放到 NocoBase/FastGPT。",
+              "要求 skills-smith 使用 xuanzhi-control 做归属判断。",
+              "检查输出是否使用 control-model、workflow-placement 等规则做对比。"
+            ],
+            "预期": [
+              "必须给出放置理由、边界和风险。",
+              "不得脱离 machine-readable 文件凭感觉判断。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "agent-smith",
+        "需求定位": "创建与维护 Agent 模板、维护 Agent 结构规范、workspace 模板、schema/policy/workflow 模板、daily-template。",
+        "注册状态": "已注册。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 agent-smith 的 write/edit 权限",
+            "schemas/*.json",
+            "workflows/*.json"
+          ],
+          "软约束": [
+            "workspace-agent-smith/AGENTS.md",
+            "workspace-agent-smith/TOOLS.md",
+            "workspace-agent-smith/templates/core-agent",
+            "workspace-agent-smith/templates/daily-template"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "agent-smith 已明确承担模板职责"
+          ],
+          "未对齐": [
+            "模板目录为空，说明 reference/openclaw 模板思想还未在 active runtime 真正物化",
+            "所有实际 workspace 缺少 USER.md，说明模板落地不完整"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "维护 core-agent 模板",
+            "落实判断": "未落实",
+            "证据": [
+              "workspace-agent-smith/templates/core-agent 目录存在"
+            ],
+            "缺口": [
+              "目录为空"
+            ]
+          },
+          {
+            "功能": "维护 daily-template",
+            "落实判断": "未落实",
+            "证据": [
+              "workspace-agent-smith/templates/daily-template 目录存在"
+            ],
+            "缺口": [
+              "目录为空",
+              "daily 用户实例也未显示从模板正确渲染出来"
+            ]
+          },
+          {
+            "功能": "维护 schema/policy/workflow 模板",
+            "落实判断": "部分落实",
+            "证据": [
+              "根目录已有 schemas/policies/workflows",
+              "AGENTS.md 和 TOOLS.md 明确了 agent-smith 的职责边界"
+            ],
+            "缺口": [
+              "缺少 review.schema.json",
+              "未见模板版本或生成来源映射"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "agent-smith 应能提供可渲染的新 agent 模板与 daily-template，而不是只维护空目录。",
+          "模板渲染出的 workspace 应自动满足需求文档最小根文件标准。",
+          "模板改动应能追溯到影响哪些 workflow、schema、workspace。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "AGSMITH-TC-01",
+            "目标": "验证 agent-smith 是否能产出完整 core-agent 模板",
+            "步骤": [
+              "要求 agent-smith 为一个新系统 agent 生成模板。",
+              "检查是否产出 AGENTS/SOUL/USER/IDENTITY/TOOLS/HEARTBEAT/BOOT/BOOTSTRAP/MEMORY 以及必要目录。",
+              "检查模板引用是否指向 active runtime 的 docs/policies/schemas/workflows。"
+            ],
+            "预期": [
+              "模板必须可直接渲染为可用 workspace。",
+              "缺少任一核心根文件应判失败。"
+            ]
+          },
+          {
+            "编号": "AGSMITH-TC-02",
+            "目标": "验证 daily-template 能否生成完整 daily 实例",
+            "步骤": [
+              "要求以 daily-template 渲染一个新 daily 用户实例。",
+              "检查 USER.md、profile.json、MEMORY.md、state、本地 policies 是否都生成。",
+              "再对照 user-profile.schema.json 验证 profile 合法性。"
+            ],
+            "预期": [
+              "生成结果必须完整且符合 schema。",
+              "不得只有目录和 state，没有内容文件。"
+            ]
+          },
+          {
+            "编号": "AGSMITH-TC-03",
+            "目标": "验证模板变更是否能暴露影响面",
+            "步骤": [
+              "修改一个模板字段，例如 TOOLS 或 IDENTITY 的约束。",
+              "要求 agent-smith 列出受影响的 workflow、tests、现有 workspaces。",
+              "检查影响分析是否覆盖 state/catalog、integrity hook、daily create workflow。"
+            ],
+            "预期": [
+              "必须输出影响清单和潜在回归点。",
+              "不得只改模板文件而不识别下游影响。"
+            ]
+          }
+        ]
+      },
+      {
+        "agentId": "claude-code",
+        "需求定位": "复杂开发 ACP 外部编码执行域，承担长跑、多模块、多轮编码任务。",
+        "注册状态": "已注册，sandbox.mode=off，具备 exec。",
+        "核心起作用文件": {
+          "硬约束": [
+            "openclaw.json 中 claude-code 的 sandbox=off 和 tools.allow",
+            "policies/routing-policy.json 的 complexity_upgrade"
+          ],
+          "软约束": [
+            "workspace-claude-code/AGENTS.md",
+            "workspace-claude-code/TOOLS.md"
+          ]
+        },
+        "与reference/openclaw对照": {
+          "已对齐": [
+            "具备大多数根文件"
+          ],
+          "未对齐": [
+            "缺少 USER.md",
+            "缺少明确的 handoff 接收目录与工件保管约定"
+          ]
+        },
+        "应实现功能": [
+          {
+            "功能": "接收 architect handoff",
+            "落实判断": "部分落实",
+            "证据": [
+              "AGENTS.md 写明 Accept complex development handoff",
+              "生成链路样本存在 architect-to-claude-code.json"
+            ],
+            "缺口": [
+              "没有常驻 handoff inbox 目录或执行状态规范"
+            ]
+          },
+          {
+            "功能": "执行多模块编码并回传结构化结果",
+            "落实判断": "部分落实",
+            "证据": [
+              "AGENTS.md / TOOLS.md 均声明复杂开发执行职责"
+            ],
+            "缺口": [
+              "缺少固定结果 schema、执行报告模板、失败分类模板"
+            ]
+          },
+          {
+            "功能": "保留 scope 与 constraints",
+            "落实判断": "弱落实",
+            "证据": [
+              "角色文档强调不越权、不绕过 workflow"
+            ],
+            "缺口": [
+              "未见机制化地检查 handoff 边界是否在执行中被保持"
+            ]
+          }
+        ],
+        "预期功能表现": [
+          "收到复杂任务后，应沿 handoff 执行，不擅自扩 scope。",
+          "输出必须包含实现结果、测试结果、剩余风险、未做项。",
+          "失败时应准确区分实现未完成、环境阻塞、依赖阻塞。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "CC-TC-01",
+            "目标": "验证 claude-code 能否完整接收并执行 handoff",
+            "步骤": [
+              "准备完整五件套 handoff。",
+              "让 claude-code 基于其执行一个多目录任务。",
+              "检查输出是否覆盖 TASK/PLAN/ACCEPTANCE 的所有关键点。"
+            ],
+            "预期": [
+              "输出必须与 handoff 对齐，不得遗漏验收项。",
+              "应产生结构化结果而不是散乱会话文本。"
+            ]
+          },
+          {
+            "编号": "CC-TC-02",
+            "目标": "验证 claude-code 不擅自扩大范围",
+            "步骤": [
+              "给一个明确限制目录和文件范围的 handoff。",
+              "执行后检查改动范围和报告内容。",
+              "观察是否主动引入未授权重构。"
+            ],
+            "预期": [
+              "变更不得超出 handoff 定义的 scope。",
+              "如确需扩大范围，必须显式升级反馈。"
+            ]
+          },
+          {
+            "编号": "CC-TC-03",
+            "目标": "验证 claude-code 的失败分类能力",
+            "步骤": [
+              "准备一个会因外部依赖不可用而失败的复杂任务。",
+              "要求输出执行结果。",
+              "检查是否区分“代码未写完”与“外部依赖阻塞”。"
+            ],
+            "预期": [
+              "必须给出 blocker 分类和后续建议。",
+              "不得把环境阻塞说成代码已完成。"
+            ]
+          }
+        ]
+      }
+    ],
+    "workflows": [
+      {
+        "workflowId": "materialize-core-agents",
+        "作用预期": "由 ops 物化 core agents 的 workspace、agentDir、state 和审计，形成可审查的基础运行面。",
+        "核心起作用文件": [
+          "workflows/system/materialize-core-agents.json",
+          "state/agents/catalog.json",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点"
+        ],
+        "当前判断": "部分落实",
+        "证据": [
+          "workflow 文件存在，owner=ops，steps 定义了 mkdir_many、register_state、write_audit",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点 已存在"
+        ],
+        "缺口": [
+          "没有渲染 USER.md、MEMORY.md 等需求级完整根文件集合",
+          "没有 bootstrap review 的正式步骤",
+          "没有把 daily 类实例纳入该 workflow 的规范边界"
+        ],
+        "预期功能表现": [
+          "不仅创建目录，还要确保最小可运行 workspace 真正成型。",
+          "创建完成后必须进入 pending_review，并由 critic 进行 bootstrap 审查。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "WF-MAT-TC-01",
+            "目标": "验证 workflow 产物是否满足需求标准而非仅满足测试骨架",
+            "步骤": [
+              "删除一个测试 agent 的 workspace 后重新执行 materialize-core-agents。",
+              "检查是否生成完整根文件集合，而不仅是目录。",
+              "检查 state/agents/catalog 与 logs/audit 是否同步更新。"
+            ],
+            "预期": [
+              "必须满足需求里的最小根文件标准。",
+              "若只创建目录，应判部分失败。"
+            ]
+          },
+          {
+            "编号": "WF-MAT-TC-02",
+            "目标": "验证多 agent 批量物化的一致性",
+            "步骤": [
+              "一次性指定多个 agentIds 执行 workflow。",
+              "检查每个 workspace 的文件完整度和 state 注册一致性。",
+              "检查失败时是否只影响失败项并保留审计。"
+            ],
+            "预期": [
+              "所有成功项都应有一致结构。",
+              "失败项不得被伪装成成功。"
+            ]
+          },
+          {
+            "编号": "WF-MAT-TC-03",
+            "目标": "验证 critic bootstrap review 是否真正接入",
+            "步骤": [
+              "人工移除一个新物化 workspace 的关键文件。",
+              "触发 critic review。",
+              "观察是否阻止进入 active。"
+            ],
+            "预期": [
+              "必须进入 pending_review 或 fail。",
+              "不能因为 state 已登记就默认通过。"
+            ]
+          }
+        ]
+      },
+      {
+        "workflowId": "create-daily-user",
+        "作用预期": "根据 daily-template 创建用户实例、更新 state/users 和 state/agents、更新 bindings、写审计并提交 review。",
+        "核心起作用文件": [
+          "workflows/users/create-daily-user.json",
+          "schemas/user-profile.schema.json",
+          "state/users/index.json",
+          "state/agents/catalog.json",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点"
+        ],
+        "当前判断": "弱落实",
+        "证据": [
+          "workflow 文件存在，已具备基本的用户创建与 state 更新骨架。"
+        ],
+        "缺口": [
+          "未更新 bindings",
+          "未发现 profile.json 生成步骤",
+          "未体现模板渲染根文件",
+          "未体现 Git 提交",
+          "未证明结果能稳定形成完整可用的 daily workspace"
+        ],
+        "预期功能表现": [
+          "生成的 daily 实例必须可直接被 daily 用户使用，而不是只登记索引。",
+          "必须从模板产出用户画像、长期记忆、权限边界、目录结构和 bindings。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "WF-DAILY-TC-01",
+            "目标": "验证 daily 创建全链路",
+            "步骤": [
+              "执行 workflow 创建新用户。",
+              "逐项检查 workspace 文件、agentDir、state/users、state/agents、bindings、audit、review。",
+              "再尝试直接调用该 daily agent。"
+            ],
+            "预期": [
+              "所有链路都应成功；任一缺失都应视为失败。",
+              "新用户实例必须可调用。"
+            ]
+          },
+          {
+            "编号": "WF-DAILY-TC-02",
+            "目标": "验证 schema 约束是否生效",
+            "步骤": [
+              "输入缺少 persona 或 workspaceId 格式不合法的创建参数。",
+              "执行 workflow。",
+              "观察是否在创建前即失败。"
+            ],
+            "预期": [
+              "不合法输入应被拒绝，不得写入半成品 state。"
+            ]
+          },
+          {
+            "编号": "WF-DAILY-TC-03",
+            "目标": "验证 review gate 是否能阻止不完整 daily 上线",
+            "步骤": [
+              "让 workflow 故意跳过某个关键文件生成。",
+              "再触发 critic review。",
+              "检查实例状态是否停留在 pending_review 或 failed。"
+            ],
+            "预期": [
+              "不得进入 active。",
+              "review 结果必须点出缺失文件。"
+            ]
+          }
+        ]
+      },
+      {
+        "workflowId": "memory-promote",
+        "作用预期": "把 daily memory 中经过验证的长期信息升格到 MEMORY.md，并写审计与 review。",
+        "核心起作用文件": [
+          "workflows/memory/promote.json",
+          "policies/memory-policy.json",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点"
+        ],
+        "当前判断": "较好但仍偏骨架",
+        "证据": [
+          "workflow 存在且定义 validate_candidate、append_long_term_memory、write_audit_record、create_review_record",
+          "运行时审计文件当前未保留，后续如恢复审计需重新定义正式落点 已存在记录"
+        ],
+        "缺口": [
+          "没有明确检查 candidate 来源是否来自 daily memory 的路径校验",
+          "没有强制禁止写入未验证结论的自动测试闭环"
+        ],
+        "预期功能表现": [
+          "候选内容应先经过 memory-policy 校验，再写入长期记忆。",
+          "promotion 成功和拒绝都必须可审计。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "WF-MEM-TC-01",
+            "目标": "验证正常 promotion 闭环",
+            "步骤": [
+              "在某 workspace 的 daily memory 中写入稳定偏好。",
+              "执行 memory-promote。",
+              "检查 MEMORY.md 是否新增条目，并且 audit/review 都有记录。"
+            ],
+            "预期": [
+              "应成功追加，并留下两处审计。"
+            ]
+          },
+          {
+            "编号": "WF-MEM-TC-02",
+            "目标": "验证敏感内容拦截",
+            "步骤": [
+              "提交包含 token、密码、敏感转储片段的 promotion 候选。",
+              "执行 workflow。",
+              "检查是否拒绝且不写入 MEMORY.md。"
+            ],
+            "预期": [
+              "必须拒绝，并在 audit 中记录 rejected。"
+            ]
+          },
+          {
+            "编号": "WF-MEM-TC-03",
+            "目标": "验证未验证结论拦截",
+            "步骤": [
+              "把一次临时排障推测提交为长期记忆候选。",
+              "执行 workflow。",
+              "检查 critic 是否要求更多证据而不是直接提升。"
+            ],
+            "预期": [
+              "应拒绝或要求补证，不得直接 promoted。"
+            ]
+          }
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "skillId": "xuanzhi-control",
+        "作用预期": "使用 machine-readable 放置与治理文件，判断某个 workflow/能力应该落在 OpenClaw、NocoBase 还是 FastGPT，并约束不要随意新建顶层 runtime 目录。",
+        "核心起作用文件": [
+          "skills/xuanzhi-control/SKILL.md",
+          "skills/xuanzhi-control/control-model.json",
+          "skills/xuanzhi-control/workflow-placement.json",
+          "skills/xuanzhi-control/routing-policy.json",
+          "skills/xuanzhi-control/tool-policy-matrix.json",
+          "skills/xuanzhi-control/memory-policy.json",
+          "skills/xuanzhi-control/review.schema.json"
+        ],
+        "当前判断": "单点有效，但覆盖面不足",
+        "证据": [
+          "SKILL.md 清楚规定了优先读取的 JSON 文件顺序",
+          "openclaw.json 已开启该 skill"
+        ],
+        "缺口": [
+          "该 skill 更像“治理入口 skill”，并不能代表 Skills 体系已经完整",
+          "skill 内部自带 review.schema.json，但根目录 schemas/review.schema.json 缺失，造成一份规则被困在 skill 内"
+        ],
+        "预期功能表现": [
+          "当有人想新增目录、工作流或系统放置方案时，必须先用 xuanzhi-control 判断归属。",
+          "输出应带有 machine-readable 文件依据，而不是凭感觉。"
+        ],
+        "深度测试用例": [
+          {
+            "编号": "SKILL-XZ-TC-01",
+            "目标": "验证 skill 能阻止随意新增 runtime 顶层目录",
+            "步骤": [
+              "提出一个想新建顶层目录的需求。",
+              "要求 skill 判断是否应该新建。",
+              "检查是否优先建议复用 openclaw.json、hooks、cron、workspace files 等现有位置。"
+            ],
+            "预期": [
+              "应优先复用现有结构，除非有明确证据必须新建。"
+            ]
+          },
+          {
+            "编号": "SKILL-XZ-TC-02",
+            "目标": "验证 skill 的归属判断是否基于规则文件",
+            "步骤": [
+              "给出一个同时涉及审批、业务状态和 LLM 子流程的需求。",
+              "检查 skill 是否分别指向 NocoBase、OpenClaw、FastGPT。",
+              "检查输出中是否引用 control-model 或 workflow-placement 的逻辑。"
+            ],
+            "预期": [
+              "必须给出分层放置建议和原因。"
+            ]
+          },
+          {
+            "编号": "SKILL-XZ-TC-03",
+            "目标": "验证 skill 对缺失 review schema 的敏感度",
+            "步骤": [
+              "让 skill 评估一个需要 review schema 的流程。",
+              "观察它是否识别根目录 schema 缺失而不是误认为系统已完整。",
+              "检查其建议是否推动把 schema 提升到 active runtime 根目录。"
+            ],
+            "预期": [
+              "应指出规则位置漂移问题。",
+              "不得把 skill 内部 schema 视作系统根目录已具备。"
+            ]
+          }
+        ]
+      }
+    ],
+    "缺失但需求中明确存在的能力": [
+      {
+        "名称": "subagents",
+        "当前状态": "概念存在，active runtime 未见独立配置与治理文件",
+        "影响": "无法验证并行研究能力、权限边界、与 ACP 的边界关系"
+      },
+      {
+        "名称": "bindings",
+        "当前状态": "需求要求明确，但 openclaw.json bindings 为空",
+        "影响": "daily 用户入口路由未形成真实运行闭环"
+      },
+      {
+        "名称": "review.schema.json 根目录版本",
+        "当前状态": "缺失",
+        "影响": "review-gate 无法形成完整 machine-readable 约束"
+      },
+      {
+        "名称": "daily-template 活动模板文件",
+        "当前状态": "目录存在但为空",
+        "影响": "daily 实例化无法证明来自统一模板"
+      }
+    ]
+  },
+  "第三部分_建议的后续使用方式": {
+    "如果下一步是补齐实现": [
+      "优先修 GAP-01、GAP-02、GAP-03、GAP-04、GAP-05，因为它们直接影响系统是否真的按需求运行。",
+      "先把 review.schema.json、USER.md 体系、daily-template、bindings、daily 实例完整物化补齐，再扩大功能深测。"
+    ],
+    "如果下一步是做验证": [
+      "不要再只跑结构存在性测试。",
+      "按本 JSON 中每个 agent/workflow/skill 的深度测试用例逐项验证，优先从 daily、ops、agent-smith、critic 开始。"
+    ],
+    "建议的验证顺序": [
+      "daily-template 与 create-daily-user",
+      "critic review-gate",
+      "bindings 与用户入口路由",
+      "orchestrator -> architect -> claude-code 主链",
+      "skills-smith 与 xuanzhi-control 治理",
+      "ops allowlist 与运维回滚"
+    ]
+  },
+  "第四部分_执行型TodoList": {
+    "使用说明": {
+      "用途": "本部分用于把基础盘点结果转成下一会话可直接推进的执行清单。",
+      "执行原则": [
+        "会话启动第一步必须运行硬门禁脚本：powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1；未通过不得开始实现。",
+        "每一步开始前先确认用户当前需求、当前已知事实、现有信息是否足以支持判断。",
+        "如果发现 JSON 中的现场描述与仓库现状不一致，先修正文档，再继续执行。",
+        "优先处理会影响全局判断的 P0 项，再处理局部实现与验证项。",
+        "禁止创建空文件；如需创建新文件，必须先写入执行清单并在创建当次落地可用内容（建成即落地）。",
+        "默认不存在原则：除明确验证为“必须默认存在”的运行时对象外，所有能力都应按“默认不存在”处理并在流程中显式创建/校验。",
+        "闭环原则：每条关键流程必须写清发起方、路由方、执行方、收尾方与终止状态，不允许只到 pending_review 而无终态收敛。",
+        "职责路由原则：新建 agent 默认由 agent-smith 负责，新建 skill 默认由 skills-smith 负责；任何偏离都必须有显式审批理由。",
+        "边界原则：Codex 的 .codex/todolist 与 Xuanzhi 运行时 state/router/tasks.json 必须分离；运行时任务写入默认关闭，仅在策略显式开启时执行。",
+        "硬规则-路径守卫：根目录写入或测试目录越界直接判定失败，不得收口。",
+        "硬规则-验证守卫：仅冒烟验证不得标记完成，必须有真实执行证据。",
+        "硬规则-报告守卫：最终汇报必须包含“功能影响 + 验证证据 + 未完成项”三段，否则不得收口。",
+        "Codex 专用约束只能放在 .codex 与 Xuanzhi-Dev，禁止混入 Xuanzhi runtime 系统层。"
+      ],
+      "Codex原生任务列表": {
+        "path": ".codex/native-tasklist.json",
+        "说明": "作为会话级 machine-readable 待办与硬门禁索引，所有新会话先读取并执行 blocking 任务。",
+        "schema": ".codex/native-tasklist.schema.json",
+        "validator": "Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1"
+      },
+      "硬门禁机读基线": [
+        {
+          "id": "GUARD-PATH-001",
+          "check": "validate-execution-guardrails.ps1",
+          "must": "newRepoRootFiles=0 && testFilesOutsideTestingRoot=0 && emptyNewFiles=0"
+        },
+        {
+          "id": "GUARD-VERIFY-001",
+          "check": "validate-execution-guardrails.ps1 -ReportPath <report>",
+          "must": "if smoke marker exists then real verification evidence marker must exist"
+        },
+        {
+          "id": "GUARD-REPORT-001",
+          "check": "validate-execution-guardrails.ps1 -ReportPath <report>",
+          "must": "reportMissingSections=0 and includes 功能影响/验证证据/未完成项"
+        }
+      ],
+      "主动巡检清单": [
+        "默认存在误判巡检：检查是否把“应创建对象”误当成“默认已有对象”。",
+        "状态闭环巡检：检查每个中间状态（如 pending_review）是否有明确终态流程。",
+        "职责错路由巡检：检查创建/维护任务是否交给正确 owner（agent-smith、skills-smith、ops、critic）。",
+        "收尾责任巡检：检查流程是否明确谁来收尾、如何结束、写入哪个 state/audit。",
+        "边界污染巡检：检查 runtime 范围（除 .claude/.codex/Xuanzhi-Dev）是否出现 Codex 专用策略或开发脚本依赖。"
+      ],
+      "状态取值": [
+        "未开始",
+        "待核实",
+        "进行中",
+        "阻塞",
+        "已完成",
+        "已放弃"
+      ]
+    },
+    "当前基线确认": {
+      "已确认事实": [
+        "当前 active runtime 根目录包含 openclaw.json、hooks、policies、schemas、skills、state、workflows、workspace-*。",
+        "当前 openclaw.json 注册了 7 个系统 agent：orchestrator、critic、architect、ops、skills-smith、agent-smith、claude-code。",
+        "当前 state/users/index.json 为空，没有 active daily 用户实例。",
+        "当前 schemas 目录已包含 task.schema.json、user-profile.schema.json、review.schema.json。",
+        "当前 openclaw.json bindings 为空。",
+        "当前 7 个系统 workspace 已补齐 USER.md（orchestrator、critic、architect、ops、skills-smith、agent-smith、claude-code）。",
+        "当前 docs/system 已迁入 .codex/docs-system，仅作为 Codex 参考资料。",
+        "当前运行面未保留稳定日志/审计目录，不能再依赖历史测试日志作为当前证据。"
+      ],
+      "执行更新_2026-03-21": [
+        "已完成 P0-01 的关键基线核对：root 结构、workspace USER.md 覆盖、create-daily-user 关键步骤缺口已复核。",
+        "已完成 P0-02：新增根目录 schemas/review.schema.json，$id 为 schemas/review.schema.json。",
+        "skills/xuanzhi-control/review.schema.json 继续保留为 skill 内部副本，后续再决定是否统一引用根目录版本。",
+        "已完成 P0-03：补齐 7 个系统 workspace 的 USER.md，并将最小内容统一为“服务对象、交互边界、可接受请求、转交条件、约束与记忆”。",
+        "已完成 P0-04：形成 create-daily-user 步骤级差距表，见 .codex/create-daily-user-gap-analysis.md。",
+        "已完成 P0-05：形成 bindings 最小实现要求与硬缺口结论，见 .codex/bindings-minimum-requirements.md。",
+        "已完成 P0-06：形成 workspace-integrity 覆盖缺口审计，见 .codex/workspace-integrity-gap-analysis.md。",
+        "已执行最小闭环补强：create-daily-user 增加 bindings 输入与 update_bindings 步骤；三条核心 workflow 的审计落点统一到 state/audit。",
+        "已补齐 state/audit/*.jsonl 基线迁移事件记录（非占位），用于说明审计落点从 logs/audit 迁移到 state/audit；并将“禁止空文件、先入 todo 再创建”固化为执行原则。",
+        "已提升 workspace-integrity 必需文件覆盖：新增 USER.md、BOOTSTRAP.md、MEMORY.md 校验。",
+        "已继续补强 create-daily-user：新增 user-profile/review schema 校验、结构化 reviewRecord 生成、pending_review 状态显式回写。",
+        "已将 daily-agent 资产生成职责显式接入 create-daily-user：新增对 agent-smith 的委派步骤与回执校验步骤。",
+        "已新增 review 终态回写 workflow（apply-daily-user-review-outcome），用于把 pending_review 用户按 review 结果推进为 active/disabled/pending_review，并记录闭环收尾审计。",
+        "已在 routing-policy 增加 ownership_routes 与 closure_routes，强制新建 agent/skill 走对应 smith，并把关键流程闭环职责写成 machine-readable 规则。",
+        "已扩展 review schema 的 lifecyclePhase/flow 字段，并在 daily review 终态 workflow 中强制写入与校验闭环责任链。",
+        "已新增 create-agent/create-skill 两条专用 workflow：新建 agent 必经 agent-smith，新建 skill 必经 skills-smith，并统一进入 review-gate 待审。",
+        "已补齐 apply-agent-review-outcome/apply-skill-review-outcome，消除 followup 悬空并完成 agent/skill 终态回写链路。",
+        "已增强 agent/skill 创建与收尾门禁：新增重复创建校验（assert_not_exists）与终态回写前状态校验（必须 pending_review）。",
+        "已新增 validate-ownership-and-closure 主动巡检 workflow，用于持续检查 smith 归属规则、流程成对存在与状态门禁。",
+        "已增强主动巡检 workflow：支持失败分级与审查结论自动生成（approved/needs_changes），并在 routing-policy 写入 proactive_validation 调度约束。",
+        "已将巡检失败接入任务闭环：validate-ownership-and-closure 在 needs_changes 时可生成整改任务并写入 state/router/tasks.json（含 task schema 校验）。",
+        "已按边界原则收敛：运行时任务写入由 proactive_validation.emit_runtime_task_on_failure 显式开关控制，默认 false。",
+        "已新增 Codex 执行守卫工件（仅放 Xuanzhi-Dev/testing）：execution-guardrails 策略 + validate-execution-guardrails.ps1。",
+        "已验证守卫生效：不带报告时路径边界检查通过；带现有 EXECUTION_REPORT.md 时因缺少“功能影响/验证证据/未完成项”被拦截。"
+      ],
+      "执行更新_2026-03-23": [
+        "已将“三个硬规则”升级为会话级硬门禁，并写入 .codex/native-tasklist.json（blocking=true）。",
+        "已新增 .codex/SESSION-HARD-GUARDS.md，明确新会话第一步必须先跑 validate-execution-guardrails.ps1。",
+        "已确认 Codex 专用约束只放在 .codex 与 Xuanzhi-Dev，不再写入 runtime policies/workflows。",
+        "已从 runtime 自检 workflow 中移除对 Xuanzhi-Dev/testing 脚本的硬依赖，避免运行时被开发目录绑死。",
+        "已执行运行时全量边界扫描（除 .claude/.codex/Xuanzhi-Dev），当前未发现 .ps1/.bat 运行时依赖残留。",
+        "已新增 cleanup-empty-runtime-dirs.ps1，并执行一次 apply 清理：删除 7 个空的 agents/*/sessions 占位目录。",
+        "运行时仍保留 14 个受保护空目录（agents/*/agent 与 workspace-*/memory），作为 openclaw/workspace-integrity 的结构性必需目录。"
+      ],
+      "需要保持敏感的判断点": [
+        "不要把 .codex/docs-system 误判为 runtime 自动加载真源。",
+        "不要把 skills/xuanzhi-control 内部 review.schema.json 误判为根目录 schema 已齐全。",
+        "不要把旧测试阶段的结论、日志、样本继续视为当前事实。"
+      ]
+    },
+    "执行状态面板": {
+      "last_sync": "2026-03-23",
+      "当前进行中": [
+        {
+          "id": "NEXT-E2E-CREATE-DAILY-USER",
+          "主题": "create-daily-user 真实回放与状态收敛验证",
+          "状态": "进行中",
+          "owner": "ops",
+          "下一步": "执行 create-daily-user 请求样本，核对 state/users、state/agents、openclaw bindings、review-gate 与 user-provision 审计链是否全部落地。",
+          "完成标准": "daily 用户从创建到 pending_review 的所有状态与审计字段完整、可追溯、无空写步骤。"
+        }
+      ],
+      "下一步队列": [
+        
+      ],
+      "阻塞项": [
+        {
+          "id": "BLK-CRITIC-001",
+          "级别": "中",
+          "主题": "critic 决策模板枚举与 review schema 不一致",
+          "现象": "workspace-critic/docs/review-decision-template.json 使用 <pass|fail|rework>，而系统 review schema 与 workflow 使用 approved/rejected/needs_changes。",
+          "影响": "人工按模板填写后可能无法通过 schema 校验，review-gate 自动化链路会在数据层断开。",
+          "建议收敛": "把模板 decision 字段改为与 schema 一致的状态枚举，或新增显式映射步骤并写入 workflow。"
+        },
+        {
+          "id": "BLK-CRITIC-002",
+          "级别": "中",
+          "主题": "critic checklist 的 profile.json 检查项缺少明确落点",
+          "现象": "workspace-critic/docs/review-checklist.md 要求检查 profile.json，但 create-daily-user 以 state/users/index.json 的 userProfileRecord 为主，没有同路径 profile.json 作为硬约束。",
+          "影响": "review 执行时会出现“该检查项查哪里”的歧义，导致同一实例可能出现不同审查结论。",
+          "建议收敛": "统一为校验 state/users/index.json 中 userProfileRecord，或在 daily workspace 明确补充 profile.json 并加入 workflow 的文件契约检查。"
+        },
+        {
+          "id": "BLK-AGENT-SMITH-001",
+          "级别": "中",
+          "主题": "agent-smith 职责声明与 machine-readable 模板资产未完全对齐",
+          "现象": "workflow 中已使用 create_agent_scaffold/materialize_daily_agent_assets 任务名，但仓库内缺少可审计的模板规则文件或模板目录映射。",
+          "影响": "创建链路依赖会话与隐式约定，难以证明“新建 agent 必经 agent-smith”具备可复核的工件基线。",
+          "建议收敛": "补齐最小 machine-readable 模板规则资产（例如模板清单/规则 JSON）并纳入 workflow preconditions。"
+        },
+        {
+          "id": "BLK-AGENT-SMITH-002",
+          "级别": "中",
+          "主题": "agent/skill 创建链路历史上缺 closure 审计分层",
+          "现象": "本轮已补 agent/skill 的 closure 审计步骤，但在执行引擎验证前仍需确认新步骤被真实消费。",
+          "影响": "若引擎未按新步骤执行，会出现“文件定义已补齐、运行闭环仍缺口”的假完成风险。",
+          "建议收敛": "对 create/apply 流程做一次端到端演练，核对 review-gate 审计中 decision 与 closure 记录都落地。"
+        },
+        {
+          "id": "BLK-RUNTIME-ROOT-001",
+          "级别": "低",
+          "主题": "运行根同步工件已执行 apply，待周期化执行策略",
+          "现象": "Xuanzhi-Dev/testing/scripts/sync-runtime-root.ps1 已完成 dry-run + apply，仓库真源已同步到 ~/.openclaw。",
+          "影响": "主要偏差风险已消除，后续风险转为“未来变更是否按节奏同步”。",
+          "建议收敛": "为 sync-runtime-root.ps1 增加固定执行节奏（发布前或每日）并记录执行审计。"
+        },
+        {
+          "id": "BLK-MEMORY-E2E-001",
+          "级别": "低",
+          "主题": "memory promote 已有 dry-run 回放，待一次 apply 模式实写验证",
+          "现象": "已新增 Xuanzhi-Dev/testing/scripts/replay-memory-promote-e2e.ps1 并完成 dry-run 事件序列校验，尚未执行 -Apply 实写审计流。",
+          "影响": "风险已显著下降，但仍建议做一次受控写入演练确认编码与权限环境一致。",
+          "建议收敛": "在隔离样本上执行 replay-memory-promote-e2e.ps1 -Apply 并核对 state/audit 两条 jsonl 的真实落盘顺序。"
+        },
+        {
+          "id": "BLK-OPS-ACTION-VOCAB-001",
+          "级别": "低",
+          "主题": "动作词表映射已落地，待纳入固定巡检节奏",
+          "现象": "已新增 policies/ops-action-map.json 与 Xuanzhi-Dev/testing/scripts/validate-ops-action-map.ps1，并完成一次通过性验证。",
+          "影响": "词表歧义风险明显下降，后续主要风险在于未持续执行校验。",
+          "建议收敛": "将 validate-ops-action-map.ps1 纳入日检或发布前检查，确保新增 workflow action 不会漏映射。"
+        },
+        {
+          "id": "BLK-CLAUDE-RETURN-E2E-001",
+          "级别": "低",
+          "主题": "claude-code 回传样本已通过，待纳入固定回归节奏",
+          "现象": "已在 Xuanzhi-Dev/testing/artifacts/claude-return-e2e-sample 完成全量样本并通过 validate-claude-return-package.ps1。",
+          "影响": "主要风险已消除，后续风险在于新版本变更后未持续复测。",
+          "建议收敛": "将 validate-claude-return-package.ps1 对样本包的检查纳入发布前回归。"
+        }
+      ],
+      "已完成里程碑": [
+        { "id": "P0-01", "状态": "已完成" },
+        { "id": "P0-02", "状态": "已完成" },
+        { "id": "P0-03", "状态": "已完成" },
+        { "id": "P0-04", "状态": "已完成" },
+        { "id": "P0-05", "状态": "已完成" },
+        { "id": "P0-06", "状态": "已完成" },
+        { "id": "P1-01", "状态": "已完成" },
+        { "id": "P1-02", "状态": "已完成" },
+        { "id": "P1-03", "状态": "已完成" },
+        { "id": "P1-04", "状态": "已完成" },
+        { "id": "P1-05", "状态": "已完成" },
+        { "id": "P1-06", "状态": "已完成" },
+        { "id": "P1-07", "状态": "已完成" },
+        { "id": "NEXT-AGENT-CRITIC", "状态": "已完成" },
+        { "id": "NEXT-AGENT-AGENT-SMITH", "状态": "已完成" },
+        { "id": "NEXT-WF-MATERIALIZE", "状态": "已完成" },
+        { "id": "NEXT-WF-MEMORY-PROMOTE", "状态": "已完成" },
+        { "id": "NEXT-SKILL-XUANZHI-CONTROL", "状态": "已完成" },
+        { "id": "NEXT-AGENT-ORCHESTRATOR", "状态": "已完成" },
+        { "id": "NEXT-E2E-MEMORY-PROMOTE", "状态": "已完成" },
+        { "id": "NEXT-AGENT-ARCHITECT", "状态": "已完成" },
+        { "id": "NEXT-AGENT-OPS", "状态": "已完成" },
+        { "id": "NEXT-RUNTIME-ROOT-UNIFICATION", "状态": "已完成" },
+        { "id": "NEXT-POLICY-ACTION-MAPPING", "状态": "已完成" },
+        { "id": "NEXT-AGENT-SKILLS-SMITH", "状态": "已完成" },
+        { "id": "NEXT-AGENT-CLAUDE-CODE", "状态": "已完成" },
+        { "id": "NEXT-E2E-CLAUDE-RETURN", "状态": "已完成" },
+        { "id": "NEXT-CODEX-EXECUTION-GUARDRAILS", "状态": "已完成" },
+        { "id": "NEXT-CODEX-NATIVE-TASKLIST-HARDENING", "状态": "已完成" },
+        { "id": "NEXT-RUNTIME-EMPTY-DIR-CLEANUP", "状态": "已完成" }
+      ]
+    },
+    "全局优先级看板": [
+      {
+        "编号": "P0-01",
+        "主题": "修正系统真源和引用基线",
+        "状态": "已完成",
+        "依赖项": [],
+        "下一步动作": [
+          "逐条核对本 JSON 中引用的路径是否仍然存在并且仍然代表当前事实。",
+          "把仍引用旧日志、旧目录、旧 daily 样本的位置修正为当前真实基线。"
+        ],
+        "完成标准": [
+          "本 JSON 内不再出现已删除目录、已删除日志、已删除测试样本作为当前事实证据。"
+        ]
+      },
+      {
+        "编号": "P0-02",
+        "主题": "补齐根目录 review.schema.json",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-01"
+        ],
+        "下一步动作": [
+          "核对 skills/xuanzhi-control/review.schema.json 的内容是否可直接提升。",
+          "明确 critic、review-gate、workflow 对根目录 review.schema.json 的依赖面。",
+          "决定是复制、迁移还是重写根目录 schemas/review.schema.json。"
+        ],
+        "完成标准": [
+          "schemas/review.schema.json 存在。",
+          "引用 review schema 的条目都指向根目录正式位置。"
+        ]
+      },
+      {
+        "编号": "P0-03",
+        "主题": "定义 USER.md 体系缺口",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-01"
+        ],
+        "下一步动作": [
+          "逐个核对 7 个 workspace 缺少 USER.md 的影响。",
+          "明确系统 agent 与 daily agent 的 USER.md 内容边界是否相同。",
+          "先形成 USER.md 最小要求，再判断由 agent-smith 模板还是人工补齐。"
+        ],
+        "完成标准": [
+          "形成 USER.md 的最小内容标准。",
+          "明确哪些 workspace 必须补 USER.md，哪些可以暂缓并说明理由。"
+        ]
+      },
+      {
+        "编号": "P0-04",
+        "主题": "核查 daily 创建闭环",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-02",
+          "P0-03"
+        ],
+        "下一步动作": [
+          "逐步阅读 workflows/users/create-daily-user.json。",
+          "对照需求和模板要求，列出缺少的步骤、产物、状态更新、绑定更新、审查步骤。",
+          "确定当前 daily 机制是完全未落地，还是已有骨架可继续补。"
+        ],
+        "完成标准": [
+          "形成 create-daily-user 的步骤级差距表。",
+          "能清楚说明 daily 闭环缺在哪一环。"
+        ]
+      },
+      {
+        "编号": "P0-05",
+        "主题": "核查 bindings 缺口",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-04"
+        ],
+        "下一步动作": [
+          "读取 openclaw.json 中 bindings 当前定义。",
+          "确认需求文档中 bindings 应承担的入口路由职责。",
+          "明确 create-daily-user 与 bindings 的关系。"
+        ],
+        "完成标准": [
+          "明确 bindings 是当前硬缺口还是可延后项。",
+          "形成 bindings 最小实现要求。"
+        ]
+      },
+      {
+        "编号": "P0-06",
+        "主题": "核查 workspace-integrity 覆盖面",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-03"
+        ],
+        "下一步动作": [
+          "读取 hooks/workspace-integrity/control-policy.json 和 handler.ts。",
+          "列出现有检查项与缺漏项。",
+          "对照 workspace 最小根文件标准，形成 hook 覆盖缺口。"
+        ],
+        "完成标准": [
+          "明确 workspace-integrity 当前能证明什么、不能证明什么。",
+          "给出是否需要扩展 hook 的结论。"
+        ]
+      },
+      {
+        "编号": "P1-01",
+        "主题": "补齐 daily 用户 review 终态回写流程",
+        "状态": "已完成",
+        "依赖项": [
+          "P0-04",
+          "P0-05"
+        ],
+        "下一步动作": [
+          "新增 workflow：接收 critic review 结果并回写 state/users 最终状态。",
+          "覆盖 approved/rejected/needs_changes 三种结果分支。",
+          "把终态回写动作写入 state/audit/review-gate.jsonl。"
+        ],
+        "完成标准": [
+          "存在可执行的 review 终态 workflow 文件。",
+          "能明确把 pending_review 推进到 active/disabled/pending_review。"
+        ]
+      },
+      {
+        "编号": "P1-02",
+        "主题": "建立默认不存在与职责路由主动巡检",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-01"
+        ],
+        "下一步动作": [
+          "将“默认不存在原则”和“职责路由原则”写入执行原则与巡检清单。",
+          "将新建 agent/skill 必经 smith 的规则写入 routing-policy。",
+          "将闭环发起-路由-收尾职责写入 machine-readable closure routes。"
+        ],
+        "完成标准": [
+          "todolist 中存在主动巡检清单并可持续复用。",
+          "routing-policy 中存在 ownership_routes 与 closure_routes。"
+        ]
+      },
+      {
+        "编号": "P1-03",
+        "主题": "新增 agent/skill 创建专用闭环 workflow",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-02"
+        ],
+        "下一步动作": [
+          "新增 workflows/system/create-agent.json，强制委派 agent-smith 执行并校验回执。",
+          "新增 workflows/skills/create-skill.json，强制委派 skills-smith 执行并校验回执。",
+          "两条流程都写入 review-gate 审计并定义 followup 终态收敛入口。"
+        ],
+        "完成标准": [
+          "create-agent/create-skill 两个 workflow 文件存在且非空。",
+          "流程中明确发起方、路由方、执行方、收尾方与终态。"
+        ]
+      },
+      {
+        "编号": "P1-04",
+        "主题": "补齐 agent/skill review 终态 followup workflow",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-03"
+        ],
+        "下一步动作": [
+          "新增 workflows/system/apply-agent-review-outcome.json。",
+          "新增 workflows/skills/apply-skill-review-outcome.json。",
+          "保证 followup 引用不再悬空并可回写终态。"
+        ],
+        "完成标准": [
+          "create-agent/create-skill 的 followup 目标文件均存在且可解析。",
+          "agent/skill 能从 pending_review 推进到明确终态。"
+        ]
+      },
+      {
+        "编号": "P1-05",
+        "主题": "建立职责路由与闭环完整性主动巡检 workflow",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-02",
+          "P1-04"
+        ],
+        "下一步动作": [
+          "新增 workflows/system/validate-ownership-and-closure.json。",
+          "检查 ownership_routes/closure_routes 是否存在。",
+          "检查 create/apply workflow 是否成对存在并具备状态门禁。"
+        ],
+        "完成标准": [
+          "存在可执行巡检 workflow 文件。",
+          "巡检结果可写入 state/audit 并用于后续会话复核。"
+        ]
+      },
+      {
+        "编号": "P1-06",
+        "主题": "主动巡检结果分级与自动结论化",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-05"
+        ],
+        "下一步动作": [
+          "在 validate-ownership-and-closure 中加入检查汇总与严重级别生成。",
+          "将巡检结果映射到 review status（approved/needs_changes）。",
+          "把 proactive_validation 约束写入 routing-policy。"
+        ],
+        "完成标准": [
+          "巡检 workflow 能输出结构化 severity/status。",
+          "策略文件中存在 proactive_validation 规则。"
+        ]
+      },
+      {
+        "编号": "P1-07",
+        "主题": "巡检失败自动生成整改任务",
+        "状态": "已完成",
+        "依赖项": [
+          "P1-06"
+        ],
+        "下一步动作": [
+          "在 validate-ownership-and-closure 中构建 remediationTask。",
+          "对 remediationTask 执行 task.schema.json 校验。",
+          "仅在 needs_changes 时写入 state/router/tasks.json。"
+        ],
+        "完成标准": [
+          "巡检失败时可自动产出标准任务记录。",
+          "整改任务可在 state/router/tasks.json 被路由系统消费。"
+        ]
+      }
+    ],
+    "模块执行清单": {
+      "agents": [
+        {
+          "agentId": "orchestrator",
+          "优先级": "P1",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-22）",
+          "依赖项": [
+            "P0-05"
+          ],
+          "下一步动作": [
+            "继续执行 memory promote 端到端回放，验证 orchestrator 侧路由与审计消费一致。",
+            "在运行根统一后复核路由策略与 openclaw 运行态目录的一致性。"
+          ],
+          "完成标准": [
+            "形成 orchestrator 的真实功能清单与缺口清单。",
+            "每项功能至少保留 3 个深测用例。"
+          ],
+          "本轮结论": [
+            "已完成 parallel_research 路由可达性收敛：从不可达 subagents 回退到 orchestrator，避免调度悬空。",
+            "已把对应文档真源与主动校验同步更新，防止后续回归到策略-运行不一致。"
+          ]
+        },
+        {
+          "agentId": "critic",
+          "优先级": "P0",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-21）",
+          "依赖项": [
+            "P0-02"
+          ],
+          "下一步动作": [
+            "推进 review-decision-template 与 review schema 的状态枚举对齐。",
+            "收敛 checklist 中 profile.json 检查项与 create-daily-user 实际产物的口径。"
+          ],
+          "完成标准": [
+            "能明确 critic 目前的最小可用能力与阻塞项。"
+          ],
+          "本轮结论": [
+            "critic 的最小可用能力已经形成：可基于 review-checklist 执行人工审查，并通过 review schema/workflow 落到 review-gate 审计链。",
+            "存在 2 个中等级阻塞：decision 模板枚举不一致、profile.json 检查项落点不清。"
+          ]
+        },
+        {
+          "agentId": "architect",
+          "优先级": "P1",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-22）",
+          "依赖项": [],
+          "下一步动作": [
+            "在真实 handoff 包目录执行 validate-complex-handoff.ps1 -AsJson，形成自动验包记录。",
+            "将 handoff spec 从 checklist 进一步沉淀为模板或 schema（按优先级分步）。"
+          ],
+          "完成标准": [
+            "明确 architect 的交接职责是否已形成稳定工件闭环。"
+          ],
+          "本轮结论": [
+            "已补复杂开发闭环约束：新增 closure_routes.complex_development_handoff，并接入主动巡检。",
+            "已补可执行验包工件：Xuanzhi-Dev/testing/scripts/validate-complex-handoff.ps1，可按 routing-policy 自动校验 handoff 必需文件与 TASK.json 关键字段。"
+          ]
+        },
+        {
+          "agentId": "ops",
+          "优先级": "P1",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-22）",
+          "依赖项": [
+            "P0-04",
+            "P0-06"
+          ],
+          "下一步动作": [
+            "推进运行根统一，确保 ops-action-guard、allowlist、workflow 在同一运行根生效。",
+            "补齐 tool-policy 与 allowlist 动作词表映射，降低权限解释歧义。"
+          ],
+          "完成标准": [
+            "能明确 ops 当前只是边界骨架，还是已具备执行闭环。"
+          ],
+          "本轮结论": [
+            "已补 daily-user 与 materialize 的关键闭环缺口：register_agent/write_audit 输入补齐、materialize 增加 followup apply workflow。",
+            "已增强 ops-action-guard 启动审计校验：不再只看文件存在，还校验 allowlist 可解析且规则非空。"
+          ]
+        },
+        {
+          "agentId": "skills-smith",
+          "优先级": "P1",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-22）",
+          "依赖项": [],
+          "下一步动作": [
+            "把 validate-skill-package.ps1 纳入发布前检查，避免新 skill 包出现结构漂移。",
+            "按优先级补充 skill package 模板（可选），让 create-skill 的 artifacts 更一致。"
+          ],
+          "完成标准": [
+            "明确 skills-smith 的职责是否只停留在说明层。"
+          ],
+          "本轮结论": [
+            "已新增 skills-smith 验收工件：workspace-skills-smith/docs/skill-package-checklist.md 与 Xuanzhi-Dev/testing/scripts/validate-skill-package.ps1。",
+            "已把 create-skill 接入最小包合同检查（SKILL.md 必须存在），并纳入主动巡检基线。"
+          ]
+        },
+        {
+          "agentId": "agent-smith",
+          "优先级": "P0",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-21）",
+          "依赖项": [
+            "P0-03",
+            "P0-04"
+          ],
+          "下一步动作": [
+            "将 agent-smith 模板能力转成可审计的 machine-readable 资产清单，并接入 create-agent/create-daily-user preconditions。",
+            "执行一次 agent/skill 创建到审查收尾的端到端演练，验证 decision+closure 双审计记录真实落地。"
+          ],
+          "完成标准": [
+            "明确 agent-smith 当前究竟缺模板、缺规则、还是两者都缺。"
+          ],
+          "本轮结论": [
+            "已确认并补齐 agent/skill 创建链路中的关键闭环缺口：pending 记录构建顺序修正、apply 阶段新增 closure 审计记录。",
+            "仍存在模板资产层缺口：职责已声明，但缺少可独立审计的模板规则工件，当前记为中等级阻塞。"
+          ]
+        },
+        {
+          "agentId": "claude-code",
+          "优先级": "P1",
+          "状态": "已完成",
+          "当前证据是否已过期": "已更新（2026-03-22）",
+          "依赖项": [],
+          "下一步动作": [
+            "在真实复杂任务包目录执行 validate-claude-return-package.ps1 -AsJson 并留存通过记录。",
+            "将回传工件要求进一步沉淀为模板（EXECUTION_REPORT.md skeleton）减少人工波动。"
+          ],
+          "完成标准": [
+            "明确 claude-code 的执行域边界与缺失工件。"
+          ],
+          "本轮结论": [
+            "已新增 claude-code 回传验收工件：workspace-claude-code/docs/return-package-checklist.md 与 Xuanzhi-Dev/testing/scripts/validate-claude-return-package.ps1。",
+            "已将 claude 回传验收资产纳入主动巡检基线检查，防止工件缺失回归。"
+          ]
+        }
+      ],
+      "workflows": [
+        {
+          "workflowId": "materialize-core-agents",
+          "优先级": "P1",
+          "状态": "已完成",
+          "依赖项": [
+            "P0-03",
+            "P0-06"
+          ],
+          "下一步动作": [
+            "执行一次端到端演练，验证 materialize 后 review-gate 能产生 pending 记录并可被 critic 消费。",
+            "继续推进运行根统一策略，避免 d:\\Xuanzhi 与 ~/.openclaw 双轨漂移。"
+          ],
+          "完成标准": [
+            "形成步骤级审查结论。"
+          ],
+          "本轮结论": [
+            "已补齐 docs/system 真源文件，修复 materialize 前置条件在仓库根失配的问题。",
+            "已补齐 7 个 managed workspace 的 memory 目录与 core agents runtime 目录，并增强 workflow 的 state/review/audit 步骤闭环。"
+          ]
+        },
+        {
+          "workflowId": "create-daily-user",
+          "优先级": "P0",
+          "状态": "未开始",
+          "依赖项": [
+            "P0-03",
+            "P0-05"
+          ],
+          "下一步动作": [
+            "逐步阅读 workflows/users/create-daily-user.json。",
+            "形成输入、步骤、输出、审查、绑定更新、状态更新的核查表。"
+          ],
+          "完成标准": [
+            "形成 create-daily-user 的步骤级差距清单。"
+          ]
+        },
+        {
+          "workflowId": "memory-promote",
+          "优先级": "P1",
+          "状态": "已完成",
+          "依赖项": [
+            "P0-02"
+          ],
+          "下一步动作": [
+            "使用 Xuanzhi-Dev/testing/scripts/replay-memory-promote-e2e.ps1 执行受控回放，确认 requested->validated->promoted->review_created->decision_applied 事件顺序正确。",
+            "核对 apply-memory-promotion-review-outcome 与 review-gate 消费器的兼容性。"
+          ],
+          "完成标准": [
+            "明确 memory-promote 当前是可用骨架还是缺审计闭环。"
+          ],
+          "本轮结论": [
+            "已把 memory promote 从直接 promoted 改为 pending_review，并补齐 review schema 校验与 followup 收尾链路。",
+            "已新增 apply-memory-promotion-review-outcome workflow，补上 decision/closure 审计闭环。"
+          ]
+        },
+        {
+          "workflowId": "create-agent",
+          "优先级": "P1",
+          "状态": "待核实",
+          "依赖项": [
+            "P1-03"
+          ],
+          "下一步动作": [
+            "验证 create-agent 是否强制委派 agent-smith 并校验回执。",
+            "验证 create-agent 是否将新 agent 统一送入 review-gate。"
+          ],
+          "完成标准": [
+            "新建 agent 请求不会绕过 agent-smith。",
+            "新建 agent 进入 pending_review 并有审计记录。"
+          ]
+        },
+        {
+          "workflowId": "create-skill",
+          "优先级": "P1",
+          "状态": "待核实",
+          "依赖项": [
+            "P1-03"
+          ],
+          "下一步动作": [
+            "验证 create-skill 是否强制委派 skills-smith 并校验回执。",
+            "验证 create-skill 是否将新 skill 统一送入 review-gate。"
+          ],
+          "完成标准": [
+            "新建 skill 请求不会绕过 skills-smith。",
+            "新建 skill 进入 pending_review 并有审计记录。"
+          ]
+        }
+      ],
+      "skills": [
+        {
+          "skillId": "xuanzhi-control",
+          "优先级": "P1",
+          "状态": "已完成",
+          "依赖项": [
+            "P0-02"
+          ],
+          "下一步动作": [
+            "决定 skill 内镜像资产的长期策略：保留镜像并自动同步，或只保留引用并删除副本。",
+            "继续处置路由可达性问题（subagents 路由与运行时开关/注册状态一致化）。"
+          ],
+          "完成标准": [
+            "明确 xuanzhi-control 是治理入口，还是已具备更完整 skill 体系能力。"
+          ],
+          "本轮结论": [
+            "已明确并写清单一真源原则：根目录 policies/schemas 为权威，skill 内 JSON 作为治理镜像。",
+            "已同步 skill 内 routing-policy/control-model/review schema 关键漂移，并修复 daily user review 字段与状态门禁缺口。"
+          ]
+        }
+      ]
+    },
+    "进入下一步前必须回答的问题": [
+      "当前这一步要解决的具体需求是什么？",
+      "当前这一步依赖的事实是否已经核实到仓库现状？",
+      "如果现在动手修改，会不会基于过期信息落子？",
+      "这一步完成后，哪个 gap 或哪个模块状态会发生明确变化？"
+    ]
+  }
+}
