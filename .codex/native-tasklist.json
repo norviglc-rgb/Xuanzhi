@@ -77,7 +77,7 @@
       "id": "NEXT-E2E-CREATE-DAILY-USER",
       "kind": "workitem",
       "title": "create-daily-user real replay and state-closure verification",
-      "status": "in_progress",
+      "status": "completed",
       "blocking": false,
       "scope": "xuanzhi_runtime",
       "owner": "agent-smith",

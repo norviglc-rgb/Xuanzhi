@@ -49,16 +49,9 @@ function Upsert-ByKey {
         [string[]]$Keys
     )
 
-    $list = New-Object System.Collections.Generic.List[object]
-    if ($null -ne $Items) {
-        foreach ($item in @($Items)) {
-            $list.Add($item)
-        }
-    }
-
+    $list = @()
     $found = $false
-    for ($i = 0; $i -lt $list.Count; $i++) {
-        $item = $list[$i]
+    foreach ($item in @($Items)) {
         $isMatch = $true
         foreach ($k in $Keys) {
             if ([string]$item.$k -ne [string]$Candidate.$k) {
@@ -67,14 +60,15 @@ function Upsert-ByKey {
             }
         }
         if ($isMatch) {
-            $list[$i] = $Candidate
+            $list += $Candidate
             $found = $true
-            break
+        } else {
+            $list += $item
         }
     }
 
     if (-not $found) {
-        $list.Add($Candidate)
+        $list += $Candidate
     }
 
     return @($list)
@@ -93,18 +87,22 @@ function Add-BindingEntries {
         $existing += $item
     }
 
-    foreach ($entry in @($NewEntries)) {
-        $exists = $false
-        foreach ($item in @($existing)) {
-            $sameUser = ([string]$item.userId -eq [string]$entry.userId)
-            $sameAgent = ([string]$item.agentId -eq [string]$entry.agentId)
-            $sameAccount = ([string]$item.match.accountId -eq [string]$entry.match.accountId)
-            $sameChannel = ([string]$item.match.channelId -eq [string]$entry.match.channelId)
-            if ($sameUser -and $sameAgent -and $sameAccount -and $sameChannel) {
-                $exists = $true
-                break
+        foreach ($entry in @($NewEntries)) {
+            $exists = $false
+            foreach ($item in @($existing)) {
+                $sameUser = ([string]$item.userId -eq [string]$entry.userId)
+                $sameAgent = ([string]$item.agentId -eq [string]$entry.agentId)
+                $itemAccount = if ($null -ne $item.match -and $item.match.PSObject.Properties.Name -contains "accountId") { [string]$item.match.accountId } else { "" }
+                $entryAccount = if ($null -ne $entry.match -and $entry.match.PSObject.Properties.Name -contains "accountId") { [string]$entry.match.accountId } else { "" }
+                $itemChannel = if ($null -ne $item.match -and $item.match.PSObject.Properties.Name -contains "channelId") { [string]$item.match.channelId } else { "" }
+                $entryChannel = if ($null -ne $entry.match -and $entry.match.PSObject.Properties.Name -contains "channelId") { [string]$entry.match.channelId } else { "" }
+                $sameAccount = ($itemAccount -eq $entryAccount)
+                $sameChannel = ($itemChannel -eq $entryChannel)
+                if ($sameUser -and $sameAgent -and $sameAccount -and $sameChannel) {
+                    $exists = $true
+                    break
+                }
             }
-        }
         if (-not $exists) {
             $existing += $entry
         }
@@ -154,7 +152,17 @@ function Jsonl-HasMatch {
     foreach ($item in @($Items)) {
         $match = $true
         foreach ($k in $Keys) {
-            if ([string]$item.$k -ne [string]$Candidate.$k) {
+            if ($item -is [System.Collections.IDictionary]) {
+                $left = if ($item.Contains($k)) { [string]$item[$k] } else { "" }
+            } else {
+                $left = if ($item.PSObject.Properties.Name -contains $k) { [string]$item.$k } else { "" }
+            }
+            if ($Candidate -is [System.Collections.IDictionary]) {
+                $right = if ($Candidate.Contains($k)) { [string]$Candidate[$k] } else { "" }
+            } else {
+                $right = if ($Candidate.PSObject.Properties.Name -contains $k) { [string]$Candidate.$k } else { "" }
+            }
+            if ($left -ne $right) {
                 $match = $false
                 break
             }

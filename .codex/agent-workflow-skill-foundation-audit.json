@@ -101,11 +101,9 @@
     "hardRule": "Do not mark completed in audit if corresponding native-tasklist task remains in_progress/blocked."
   },
   "executionState": {
-    "syncedFromTasklistAt": "2026-03-23T03:35:00+08:00",
+    "syncedFromTasklistAt": "2026-03-23T03:47:00+08:00",
     "statusSource": ".codex/native-tasklist.json",
-    "currentFocus": [
-      "NEXT-E2E-CREATE-DAILY-USER"
-    ],
+    "currentFocus": [],
     "nextQueue": [],
     "blockers": [
       {
@@ -135,7 +133,7 @@
       "owner": "agent-smith",
       "scope": "xuanzhi_runtime",
       "priority": "P0",
-      "status": "in_progress",
+      "status": "completed",
       "dependsOn": [
         "GUARD-PATH-001",
         "GUARD-VERIFY-001",
@@ -271,6 +269,7 @@
     "NEXT-AGENT-SKILLS-SMITH",
     "NEXT-AGENT-CLAUDE-CODE",
     "NEXT-E2E-CLAUDE-RETURN",
+    "NEXT-E2E-CREATE-DAILY-USER",
     "NEXT-GUARD-FOUNDATION-001",
     "NEXT-GUARD-FOUNDATION-ALL-CHAINS",
     "NEXT-GUARD-ROUTING-MIRROR-DRIFT"

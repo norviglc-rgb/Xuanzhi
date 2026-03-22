@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$UserId,
+    [ValidateSet("pending_review", "active", "disabled", "archived")]
+    [string]$ExpectedStatus = "pending_review",
     [switch]$AsJson
 )
 
@@ -71,7 +73,7 @@ foreach ($line in $reviewGateLines) {
 
 $checks = [ordered]@{
     userRecordExists = ($null -ne $userRecord)
-    userStatusPendingReview = ($null -ne $userRecord -and [string]$userRecord.status -eq "pending_review")
+    userStatusMatchesExpected = ($null -ne $userRecord -and [string]$userRecord.status -eq $ExpectedStatus)
     userWorkspaceMatches = ($null -ne $userRecord -and [string]$userRecord.workspaceId -eq $workspaceId)
     userDailyAgentMatches = ($null -ne $userRecord -and [string]$userRecord.dailyAgentId -eq $dailyAgentId)
     agentRecordExists = ($null -ne $agentRecord)
@@ -88,6 +90,7 @@ foreach ($k in $checks.Keys) {
 
 $result = [ordered]@{
     userId = $UserId
+    expectedStatus = $ExpectedStatus
     dailyAgentId = $dailyAgentId
     workspaceId = $workspaceId
     checks = $checks
