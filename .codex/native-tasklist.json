@@ -8,7 +8,8 @@
       "GUARD-PATH-001",
       "GUARD-VERIFY-001",
       "GUARD-REPORT-001",
-      "GUARD-FOUNDATION-001"
+      "GUARD-FOUNDATION-001",
+      "GUARD-CODEX-STATE-001"
     ],
     "rule": "Any blocking guard failure stops implementation and final closeout."
   },
@@ -74,6 +75,21 @@
       ]
     },
     {
+      "id": "GUARD-CODEX-STATE-001",
+      "kind": "guard",
+      "title": "Codex session foundation guard (.codex bootstrap/state alignment)",
+      "status": "in_progress",
+      "blocking": true,
+      "scope": "codex_only",
+      "owner": "codex",
+      "checks": [
+        {
+          "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1 -AsJson",
+          "passWhen": "violations=0"
+        }
+      ]
+    },
+    {
       "id": "NEXT-E2E-CREATE-DAILY-USER",
       "kind": "workitem",
       "title": "create-daily-user real replay and state-closure verification",
@@ -82,6 +98,26 @@
       "scope": "xuanzhi_runtime",
       "owner": "agent-smith",
       "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
+    },
+    {
+      "id": "NEXT-CODEX-EXECUTION-GUARDRAILS",
+      "kind": "workitem",
+      "title": "codex execution hard guardrails",
+      "status": "completed",
+      "blocking": false,
+      "scope": "codex_only",
+      "owner": "codex",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001", "GUARD-CODEX-STATE-001"]
+    },
+    {
+      "id": "NEXT-CODEX-NATIVE-TASKLIST-HARDENING",
+      "kind": "workitem",
+      "title": "native tasklist schema + validator",
+      "status": "completed",
+      "blocking": false,
+      "scope": "codex_only",
+      "owner": "codex",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001", "GUARD-CODEX-STATE-001"]
     },
     {
       "id": "NEXT-CODEX-FOUNDATION-GATE-EXPANSION",
@@ -102,6 +138,16 @@
       "scope": "codex_only",
       "owner": "codex",
       "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
+    },
+    {
+      "id": "NEXT-CODEX-SESSION-FOUNDATION-GUARD",
+      "kind": "workitem",
+      "title": "enforce .codex bootstrap and state-sync discipline with a dedicated hard guard",
+      "status": "completed",
+      "blocking": false,
+      "scope": "codex_only",
+      "owner": "codex",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001", "GUARD-CODEX-STATE-001"]
     }
   ],
   "lastUpdated": "2026-03-23"

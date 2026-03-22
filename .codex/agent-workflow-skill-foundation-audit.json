@@ -18,11 +18,13 @@
     "tasklistPath": ".codex/native-tasklist.json",
     "tasklistSchemaPath": ".codex/native-tasklist.schema.json",
     "tasklistValidator": "Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1",
+    "codexSessionValidator": "Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1",
     "sessionHardGuardsDoc": ".codex/SESSION-HARD-GUARDS.md",
     "enforcementOrder": [
       "validate-native-tasklist.ps1",
       "validate-execution-guardrails.ps1",
       "validate-agent-workflow-skill-foundation.ps1",
+      "validate-codex-session-foundation.ps1",
       "implementation",
       "real verification",
       "report with required sections"
@@ -61,6 +63,14 @@
         "blocking": true,
         "rule": "Daily-user production ownership and agent/workflow/skill contracts must stay aligned and machine-readable.",
         "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1 -AsJson",
+        "passCondition": "violations=0"
+      },
+      {
+        "id": "GUARD-CODEX-STATE-001",
+        "name": "Codex session foundation guard",
+        "blocking": true,
+        "rule": ".codex bootstrap files, native tasklist, and foundation audit must stay aligned so lower-context models cannot skip required startup and status-sync steps.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1 -AsJson",
         "passCondition": "violations=0"
       }
     ]
@@ -101,7 +111,7 @@
     "hardRule": "Do not mark completed in audit if corresponding native-tasklist task remains in_progress/blocked."
   },
   "executionState": {
-    "syncedFromTasklistAt": "2026-03-23T04:56:30+08:00",
+    "syncedFromTasklistAt": "2026-03-23T05:28:30+08:00",
     "statusSource": ".codex/native-tasklist.json",
     "currentFocus": [],
     "nextQueue": [],
@@ -264,6 +274,28 @@
         "terminalState": "completed"
       },
       "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CODEX-SESSION-FOUNDATION-GUARD",
+      "title": "make .codex bootstrap and status-sync rules machine-readable for low-context sessions",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P0",
+      "status": "completed",
+      "definitionOfDone": ".codex startup order, hard-guard validator set, and codex task state mirroring are enforced by a dedicated validator and referenced from every startup entrypoint.",
+      "verificationPlan": [
+        "Run validate-codex-session-foundation.ps1 -AsJson and expect violations=0.",
+        "Run validate-native-tasklist.ps1 -AsJson and expect the new blocking guard to be present.",
+        "Confirm README/session-state/handoff all direct new sessions through SESSION-HARD-GUARDS, native-tasklist, and foundation audit."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
     }
   ],
   "completedMilestones": [
@@ -298,7 +330,8 @@
     "NEXT-GUARD-FOUNDATION-001",
     "NEXT-GUARD-FOUNDATION-ALL-CHAINS",
     "NEXT-GUARD-ROUTING-MIRROR-DRIFT",
-    "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE"
+    "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE",
+    "NEXT-CODEX-SESSION-FOUNDATION-GUARD"
   ],
   "runtimeBoundaryAudit": {
     "lastScanAt": "2026-03-23",
@@ -312,7 +345,7 @@
     "reason": "Full-file refactor to native machine-readable structure while preserving historical narrative.",
     "compressionNote": "The current file is an execution-focused index, not a full narrative report.",
     "lineCountComparison": {
-      "current": 242,
+      "current": 354,
       "archive": 2037
     },
     "narrativeSourceOfTruth": ".codex/archive/agent-workflow-skill-foundation-audit.2026-03-23.pre-refactor.json",
