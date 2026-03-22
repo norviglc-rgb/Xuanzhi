@@ -19,8 +19,11 @@
     "upsert_json": ["allowlisted_write"],
     "append_jsonl": ["allowlisted_write"],
     "delegate_to_agent": ["exec"],
+    "transform_input": ["read"],
     "check_schema": ["read"],
     "check_policy": ["read"],
+    "check_required_fields": ["read"],
+    "assert_not_exists": ["read"],
     "assert_current_status": ["read"],
     "check_files_exist": ["read"]
   },
