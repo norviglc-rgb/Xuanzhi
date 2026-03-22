@@ -39,6 +39,7 @@ $createAgentPath = Join-Path $RepoRoot "workflows/system/create-agent.json"
 $applyAgentReviewPath = Join-Path $RepoRoot "workflows/system/apply-agent-review-outcome.json"
 $createSkillPath = Join-Path $RepoRoot "workflows/skills/create-skill.json"
 $applySkillReviewPath = Join-Path $RepoRoot "workflows/skills/apply-skill-review-outcome.json"
+$applyDailyUserReviewPath = Join-Path $RepoRoot "workflows/users/apply-daily-user-review-outcome.json"
 $skillsCatalogPath = Join-Path $RepoRoot "state/skills/catalog.json"
 $agentsCatalogPath = Join-Path $RepoRoot "state/agents/catalog.json"
 $skillDir = Join-Path $RepoRoot "skills/agent-smith-daily-user-materialization"
@@ -51,6 +52,8 @@ $createDaily = Read-Json $createDailyPath
 $createAgent = Read-Json $createAgentPath
 $applyAgentReview = Read-Json $applyAgentReviewPath
 $createSkill = Read-Json $createSkillPath
+$applySkillReview = Read-Json $applySkillReviewPath
+$applyDailyUserReview = Read-Json $applyDailyUserReviewPath
 $skillsCatalog = Read-Json $skillsCatalogPath
 $agentsCatalog = Read-Json $agentsCatalogPath
 $skillJson = Read-Json $skillJsonPath
@@ -188,6 +191,206 @@ if ($null -eq $applyDecisionAudit -or [string]$applyDecisionAudit.target -ne "st
 $applyClosureAudit = @($applyAgentReview.steps | Where-Object { [string]$_.id -eq "write_agent_closure_audit" }) | Select-Object -First 1
 if ($null -eq $applyClosureAudit -or [string]$applyClosureAudit.target -ne "state/audit/review-gate.jsonl") {
     $violations += "workflow_apply_agent_review_closure_audit_target_mismatch"
+}
+
+# Enforce full-chain contracts for create-skill/apply-skill-review-outcome.
+if ([string]$createSkill.workflowId -ne "create-skill") {
+    $violations += "workflow_create_skill_id_mismatch"
+}
+if ([string]$createSkill.owner -ne "ops") {
+    $violations += "workflow_create_skill_owner_not_ops"
+}
+
+$createSkillDelegate = @($createSkill.steps | Where-Object { [string]$_.id -eq "delegate_skill_creation_to_skills_smith" }) | Select-Object -First 1
+if ($null -eq $createSkillDelegate) {
+    $violations += "workflow_create_skill_missing_delegate_step"
+} else {
+    if ([string]$createSkillDelegate.action -ne "delegate_to_agent") {
+        $violations += "workflow_create_skill_delegate_action_mismatch"
+    }
+    if ([string]$createSkillDelegate.targetAgent -ne "skills-smith") {
+        $violations += "workflow_create_skill_delegate_target_not_skills_smith"
+    }
+    if ([string]$createSkillDelegate.task -ne "create_skill_package") {
+        $violations += "workflow_create_skill_delegate_task_mismatch"
+    }
+}
+
+$createSkillVerify = @($createSkill.steps | Where-Object { [string]$_.id -eq "verify_skill_creation_report" }) | Select-Object -First 1
+if ($null -eq $createSkillVerify) {
+    $violations += "workflow_create_skill_missing_verify_report_step"
+} else {
+    $requiredFields = @($createSkillVerify.requiredFields)
+    foreach ($required in @("skillId", "skillPath", "status", "artifacts")) {
+        if ($requiredFields -notcontains $required) {
+            $violations += "workflow_create_skill_verify_report_missing_required_field:$required"
+        }
+    }
+}
+
+$createSkillPackageContract = @($createSkill.steps | Where-Object { [string]$_.id -eq "verify_skill_package_contract" }) | Select-Object -First 1
+if ($null -eq $createSkillPackageContract) {
+    $violations += "workflow_create_skill_missing_package_contract_step"
+} else {
+    $requiredFiles = @($createSkillPackageContract.requiredFiles)
+    foreach ($requiredFile in @("SKILL.md", "skill.json")) {
+        if ($requiredFiles -notcontains $requiredFile) {
+            $violations += "workflow_create_skill_contract_missing_required_file:$requiredFile"
+        }
+    }
+}
+
+$createSkillPendingRules = (@($createSkill.steps | Where-Object { [string]$_.id -eq "build_skill_pending_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $createSkillPendingRules.Contains("contractPath = <skillCreationReport.skillPath>/skill.json")) {
+    $violations += "workflow_create_skill_pending_record_missing_contract_path_rule"
+}
+if (-not $createSkillPendingRules.Contains("reviewPath.submitWorkflow = workflows/skills/create-skill.json")) {
+    $violations += "workflow_create_skill_pending_record_missing_submit_review_path_rule"
+}
+if (-not $createSkillPendingRules.Contains("reviewPath.applyWorkflow = workflows/skills/apply-skill-review-outcome.json")) {
+    $violations += "workflow_create_skill_pending_record_missing_apply_review_path_rule"
+}
+if (-not $createSkillPendingRules.Contains("owner = skills-smith")) {
+    $violations += "workflow_create_skill_pending_record_owner_not_skills_smith"
+}
+
+$createSkillReviewRules = (@($createSkill.steps | Where-Object { [string]$_.id -eq "build_skill_creation_review_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $createSkillReviewRules.Contains("targetType = skill")) {
+    $violations += "workflow_create_skill_review_target_type_not_skill"
+}
+if (-not $createSkillReviewRules.Contains("flow.handledBy = skills-smith")) {
+    $violations += "workflow_create_skill_review_handledby_not_skills_smith"
+}
+if (-not $createSkillReviewRules.Contains("flow.closedBy = apply-skill-review-outcome")) {
+    $violations += "workflow_create_skill_review_closedby_mismatch"
+}
+
+$createSkillSubmit = @($createSkill.steps | Where-Object { [string]$_.id -eq "submit_skill_creation_for_review" }) | Select-Object -First 1
+if ($null -eq $createSkillSubmit -or [string]$createSkillSubmit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_create_skill_submit_target_not_review_gate_audit"
+}
+
+if ([string]$createSkill.followup.onReviewDecision -ne "workflows/skills/apply-skill-review-outcome.json") {
+    $violations += "workflow_create_skill_followup_mismatch"
+}
+
+if ([string]$applySkillReview.workflowId -ne "apply-skill-review-outcome") {
+    $violations += "workflow_apply_skill_review_id_mismatch"
+}
+if ([string]$applySkillReview.owner -ne "ops") {
+    $violations += "workflow_apply_skill_review_owner_not_ops"
+}
+
+$applySkillAssert = @($applySkillReview.steps | Where-Object { [string]$_.id -eq "assert_skill_is_pending_review" }) | Select-Object -First 1
+if ($null -eq $applySkillAssert) {
+    $violations += "workflow_apply_skill_review_missing_assert_pending_step"
+} else {
+    if ([string]$applySkillAssert.action -ne "assert_current_status") {
+        $violations += "workflow_apply_skill_review_assert_action_mismatch"
+    }
+    if ([string]$applySkillAssert.requiredStatus -ne "pending_review") {
+        $violations += "workflow_apply_skill_review_assert_required_status_mismatch"
+    }
+}
+
+$applySkillDecisionRules = (@($applySkillReview.steps | Where-Object { [string]$_.id -eq "build_skill_review_decision_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applySkillDecisionRules.Contains("targetType = skill")) {
+    $violations += "workflow_apply_skill_review_decision_target_type_not_skill"
+}
+if (-not $applySkillDecisionRules.Contains("lifecyclePhase = decision")) {
+    $violations += "workflow_apply_skill_review_decision_phase_mismatch"
+}
+if (-not $applySkillDecisionRules.Contains("flow.handledBy = skills-smith")) {
+    $violations += "workflow_apply_skill_review_decision_handledby_not_skills_smith"
+}
+if (-not $applySkillDecisionRules.Contains("flow.closedBy = apply-skill-review-outcome")) {
+    $violations += "workflow_apply_skill_review_decision_closedby_mismatch"
+}
+
+$applySkillClosureRules = (@($applySkillReview.steps | Where-Object { [string]$_.id -eq "build_skill_closure_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applySkillClosureRules.Contains("targetType = skill")) {
+    $violations += "workflow_apply_skill_review_closure_target_type_not_skill"
+}
+if (-not $applySkillClosureRules.Contains("lifecyclePhase = closure")) {
+    $violations += "workflow_apply_skill_review_closure_phase_mismatch"
+}
+if (-not $applySkillClosureRules.Contains("flow.handledBy = skills-smith")) {
+    $violations += "workflow_apply_skill_review_closure_handledby_not_skills_smith"
+}
+if (-not $applySkillClosureRules.Contains("flow.closedBy = apply-skill-review-outcome")) {
+    $violations += "workflow_apply_skill_review_closure_closedby_mismatch"
+}
+
+$applySkillWriteFinal = @($applySkillReview.steps | Where-Object { [string]$_.id -eq "write_skill_final_status" }) | Select-Object -First 1
+if ($null -eq $applySkillWriteFinal -or [string]$applySkillWriteFinal.target -ne "state/skills/catalog.json") {
+    $violations += "workflow_apply_skill_review_write_final_target_mismatch"
+}
+
+$applySkillDecisionAudit = @($applySkillReview.steps | Where-Object { [string]$_.id -eq "write_skill_review_decision_audit" }) | Select-Object -First 1
+if ($null -eq $applySkillDecisionAudit -or [string]$applySkillDecisionAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_skill_review_decision_audit_target_mismatch"
+}
+
+$applySkillClosureAudit = @($applySkillReview.steps | Where-Object { [string]$_.id -eq "write_skill_closure_audit" }) | Select-Object -First 1
+if ($null -eq $applySkillClosureAudit -or [string]$applySkillClosureAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_skill_review_closure_audit_target_mismatch"
+}
+
+# Enforce full-chain contracts for apply-daily-user-review-outcome.
+if ([string]$applyDailyUserReview.workflowId -ne "apply-daily-user-review-outcome") {
+    $violations += "workflow_apply_daily_user_review_id_mismatch"
+}
+if ([string]$applyDailyUserReview.owner -ne "ops") {
+    $violations += "workflow_apply_daily_user_review_owner_not_ops"
+}
+
+$applyDailyAssert = @($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "assert_user_is_pending_review" }) | Select-Object -First 1
+if ($null -eq $applyDailyAssert) {
+    $violations += "workflow_apply_daily_user_review_missing_assert_pending_step"
+} else {
+    if ([string]$applyDailyAssert.action -ne "assert_current_status") {
+        $violations += "workflow_apply_daily_user_review_assert_action_mismatch"
+    }
+    if ([string]$applyDailyAssert.requiredStatus -ne "pending_review") {
+        $violations += "workflow_apply_daily_user_review_assert_required_status_mismatch"
+    }
+}
+
+$applyDailyDecisionRules = (@($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "build_review_outcome_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applyDailyDecisionRules.Contains("targetType = user_instance")) {
+    $violations += "workflow_apply_daily_user_review_decision_target_type_not_user_instance"
+}
+if (-not $applyDailyDecisionRules.Contains("lifecyclePhase = decision")) {
+    $violations += "workflow_apply_daily_user_review_decision_phase_mismatch"
+}
+if (-not $applyDailyDecisionRules.Contains("flow.closedBy = apply-daily-user-review-outcome")) {
+    $violations += "workflow_apply_daily_user_review_decision_closedby_mismatch"
+}
+
+$applyDailyClosureRules = (@($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "build_closure_record" } | Select-Object -First 1).rules) -join " | "
+if (-not $applyDailyClosureRules.Contains("targetType = user_instance")) {
+    $violations += "workflow_apply_daily_user_review_closure_target_type_not_user_instance"
+}
+if (-not $applyDailyClosureRules.Contains("lifecyclePhase = closure")) {
+    $violations += "workflow_apply_daily_user_review_closure_phase_mismatch"
+}
+if (-not $applyDailyClosureRules.Contains("flow.closedBy = apply-daily-user-review-outcome")) {
+    $violations += "workflow_apply_daily_user_review_closure_closedby_mismatch"
+}
+
+$applyDailyWriteFinal = @($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "write_user_final_status" }) | Select-Object -First 1
+if ($null -eq $applyDailyWriteFinal -or [string]$applyDailyWriteFinal.target -ne "state/users/index.json") {
+    $violations += "workflow_apply_daily_user_review_write_final_target_mismatch"
+}
+
+$applyDailyDecisionAudit = @($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "write_review_outcome_audit" }) | Select-Object -First 1
+if ($null -eq $applyDailyDecisionAudit -or [string]$applyDailyDecisionAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_daily_user_review_decision_audit_target_mismatch"
+}
+
+$applyDailyClosureAudit = @($applyDailyUserReview.steps | Where-Object { [string]$_.id -eq "write_closure_audit" }) | Select-Object -First 1
+if ($null -eq $applyDailyClosureAudit -or [string]$applyDailyClosureAudit.target -ne "state/audit/review-gate.jsonl") {
+    $violations += "workflow_apply_daily_user_review_closure_audit_target_mismatch"
 }
 
 $materializationStep = @($createDaily.steps | Where-Object { [string]$_.id -eq "run_materialization_skill" }) | Select-Object -First 1
@@ -388,6 +591,7 @@ $result = [ordered]@{
         createAgentWorkflow = $createAgentPath
         applyAgentReviewWorkflow = $applyAgentReviewPath
         createDailyWorkflow = $createDailyPath
+        applyDailyUserReviewWorkflow = $applyDailyUserReviewPath
         createSkillWorkflow = $createSkillPath
         applySkillReviewWorkflow = $applySkillReviewPath
         skillCatalog = $skillsCatalogPath
