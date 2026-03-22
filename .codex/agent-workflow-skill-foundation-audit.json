@@ -101,7 +101,7 @@
     "hardRule": "Do not mark completed in audit if corresponding native-tasklist task remains in_progress/blocked."
   },
   "executionState": {
-    "syncedFromTasklistAt": "2026-03-23T03:47:00+08:00",
+    "syncedFromTasklistAt": "2026-03-23T04:56:30+08:00",
     "statusSource": ".codex/native-tasklist.json",
     "currentFocus": [],
     "nextQueue": [],
@@ -110,19 +110,23 @@
         "id": "BLK-CRITIC-001",
         "severity": "medium",
         "topic": "critic decision template enum mismatch",
-        "status": "blocked",
-        "impact": "Review payload can fail schema validation and break automated closure.",
+        "status": "resolved",
+        "impact": "Review payload could fail schema validation and break automated closure.",
         "owner": "critic",
-        "nextAction": "Align template status enum to approved/rejected/needs_changes or add explicit mapping."
+        "nextAction": "closed",
+        "resolution": "workspace-critic/docs/review-decision-template.json status enum is aligned to pending/approved/rejected/needs_changes and no mapping gap remains.",
+        "resolvedAt": "2026-03-23"
       },
       {
         "id": "BLK-CRITIC-002",
         "severity": "medium",
         "topic": "profile check path ambiguity",
-        "status": "blocked",
-        "impact": "Review outputs can diverge because profile source of truth is unclear.",
+        "status": "resolved",
+        "impact": "Review outputs could diverge because profile source of truth was unclear.",
         "owner": "critic",
-        "nextAction": "Use state/users/index.json.userProfileRecord as the single review target or add explicit profile.json contract."
+        "nextAction": "closed",
+        "resolution": "workspace-critic/docs/review-checklist.md now pins profile review to state/users/index.json and rejects ad-hoc workspace profile copies.",
+        "resolvedAt": "2026-03-23"
       }
     ]
   },
@@ -239,6 +243,27 @@
         "terminalState": "completed"
       },
       "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE",
+      "title": "resolve critic template enum/profile-source blockers in foundation audit",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P1",
+      "status": "completed",
+      "definitionOfDone": "BLK-CRITIC-001/002 are closed with explicit machine-readable resolution notes and reviewer checklist consistency.",
+      "verificationPlan": [
+        "Check workspace-critic/docs/review-decision-template.json status enum includes pending/approved/rejected/needs_changes.",
+        "Check workspace-critic/docs/review-checklist.md declares state/users/index.json as profile source of truth."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
     }
   ],
   "completedMilestones": [
@@ -272,7 +297,8 @@
     "NEXT-E2E-CREATE-DAILY-USER",
     "NEXT-GUARD-FOUNDATION-001",
     "NEXT-GUARD-FOUNDATION-ALL-CHAINS",
-    "NEXT-GUARD-ROUTING-MIRROR-DRIFT"
+    "NEXT-GUARD-ROUTING-MIRROR-DRIFT",
+    "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE"
   ],
   "runtimeBoundaryAudit": {
     "lastScanAt": "2026-03-23",

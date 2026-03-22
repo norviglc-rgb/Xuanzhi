@@ -92,6 +92,16 @@
       "scope": "codex_only",
       "owner": "codex",
       "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
+    },
+    {
+      "id": "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE",
+      "kind": "workitem",
+      "title": "close critic enum/profile-source blockers and sync foundation audit",
+      "status": "completed",
+      "blocking": false,
+      "scope": "codex_only",
+      "owner": "codex",
+      "dependsOn": ["GUARD-PATH-001", "GUARD-VERIFY-001", "GUARD-REPORT-001", "GUARD-FOUNDATION-001"]
     }
   ],
   "lastUpdated": "2026-03-23"

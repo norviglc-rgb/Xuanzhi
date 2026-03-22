@@ -9,6 +9,7 @@
 ## User instance creation
 - daily-<userId> generated correctly
 - workspaceId matches userId
+- user profile source of truth is state/users/index.json (not ad-hoc workspace profile copy)
 - user profile record in state/users/index.json valid against schema
 - bindings updated
 - daily_light permissions intact
