@@ -3,7 +3,10 @@
   "intent": "enforce_codex_execution_boundaries",
   "change_boundaries": {
     "forbid_new_repo_root_files": true,
-    "allow_new_repo_root_files": [],
+    "allow_new_repo_root_files": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
     "test_related_must_live_under": "Xuanzhi-Dev/testing/",
     "test_related_path_markers": [
       "test",

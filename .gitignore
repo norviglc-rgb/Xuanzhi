@@ -1,5 +1,6 @@
 # Claude Code settings
 .claude/*
+!.claude/settings.json
 
 # Development-only mirror and research materials
 Xuanzhi-Dev/reference/openclaw/
@@ -20,6 +21,7 @@ workspace-*/reports/
 
 # codex settings
 .codex/*
+!.codex/client-control-plane-status.json
 
 # Python test cache
 tests/__pycache__/

@@ -19,12 +19,14 @@
     "tasklistSchemaPath": ".codex/native-tasklist.schema.json",
     "tasklistValidator": "Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1",
     "codexSessionValidator": "Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1",
+    "clientControlValidator": "Xuanzhi-Dev/testing/scripts/validate-client-control-plane.ps1",
     "sessionHardGuardsDoc": ".codex/SESSION-HARD-GUARDS.md",
     "enforcementOrder": [
       "validate-native-tasklist.ps1",
       "validate-execution-guardrails.ps1",
       "validate-agent-workflow-skill-foundation.ps1",
       "validate-codex-session-foundation.ps1",
+      "validate-client-control-plane.ps1",
       "implementation",
       "real verification",
       "report with required sections"
@@ -72,6 +74,14 @@
         "rule": ".codex bootstrap files, native tasklist, and foundation audit must stay aligned so lower-context models cannot skip required startup and status-sync steps.",
         "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1 -AsJson",
         "passCondition": "violations=0"
+      },
+      {
+        "id": "GUARD-CLIENT-CONTROL-001",
+        "name": "Official client control-plane guard",
+        "blocking": true,
+        "rule": "Root AGENTS.md, CLAUDE.md, and .claude/settings.json must point both Codex and Claude Code at the same validator suite and shared .codex task/audit state.",
+        "checkCommand": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-client-control-plane.ps1 -AsJson",
+        "passCondition": "violations=0"
       }
     ]
   },
@@ -111,7 +121,7 @@
     "hardRule": "Do not mark completed in audit if corresponding native-tasklist task remains in_progress/blocked."
   },
   "executionState": {
-    "syncedFromTasklistAt": "2026-03-23T05:28:30+08:00",
+    "syncedFromTasklistAt": "2026-03-23T06:00:00+08:00",
     "statusSource": ".codex/native-tasklist.json",
     "currentFocus": [],
     "nextQueue": [],
@@ -296,6 +306,28 @@
         "terminalState": "completed"
       },
       "lastUpdated": "2026-03-23"
+    },
+    {
+      "id": "NEXT-CLIENT-CONTROL-PLANE-NATIVE-ALIGNMENT",
+      "title": "project shared guard/task control into official Codex and Claude Code entrypoints",
+      "owner": "codex",
+      "scope": "codex_only",
+      "priority": "P0",
+      "status": "completed",
+      "definitionOfDone": "Root AGENTS.md, root CLAUDE.md, project .claude/settings.json, and a dedicated client-control validator keep Codex and Claude Code aligned on the same task/audit control plane.",
+      "verificationPlan": [
+        "Run validate-client-control-plane.ps1 -AsJson and expect violations=0.",
+        "Run invoke-session-hard-guards.ps1 and expect all validators to pass.",
+        "Confirm AGENTS.md, CLAUDE.md, and .claude/settings.json all reference the same shared .codex sources."
+      ],
+      "closure": {
+        "startedBy": "codex",
+        "routedBy": "codex",
+        "handledBy": "codex",
+        "closedBy": "codex",
+        "terminalState": "completed"
+      },
+      "lastUpdated": "2026-03-23"
     }
   ],
   "completedMilestones": [
@@ -331,7 +363,8 @@
     "NEXT-GUARD-FOUNDATION-ALL-CHAINS",
     "NEXT-GUARD-ROUTING-MIRROR-DRIFT",
     "NEXT-CRITIC-FOUNDATION-BLOCKER-CLOSURE",
-    "NEXT-CODEX-SESSION-FOUNDATION-GUARD"
+    "NEXT-CODEX-SESSION-FOUNDATION-GUARD",
+    "NEXT-CLIENT-CONTROL-PLANE-NATIVE-ALIGNMENT"
   ],
   "runtimeBoundaryAudit": {
     "lastScanAt": "2026-03-23",
@@ -345,7 +378,7 @@
     "reason": "Full-file refactor to native machine-readable structure while preserving historical narrative.",
     "compressionNote": "The current file is an execution-focused index, not a full narrative report.",
     "lineCountComparison": {
-      "current": 354,
+      "current": 387,
       "archive": 2037
     },
     "narrativeSourceOfTruth": ".codex/archive/agent-workflow-skill-foundation-audit.2026-03-23.pre-refactor.json",

@@ -1,0 +1,29 @@
+﻿{
+    "version":  "v1",
+    "owner":  "codex",
+    "sourceOfTruth":  {
+                          "tasklist":  ".codex/native-tasklist.json",
+                          "audit":  ".codex/agent-workflow-skill-foundation-audit.json"
+                      },
+    "cadencePolicy":  {
+                          "codex":  "Run sync-client-progress.ps1 at session checkpoint and before closeout.",
+                          "claude":  "Run sync-client-progress.ps1 at SessionStart and Stop via .claude/settings.json hooks."
+                      },
+    "clients":  {
+                    "codex":  {
+                                  "lastSyncAt":  "2026-03-23T14:50:14.9528218+08:00",
+                                  "lastPhase":  "closeout",
+                                  "summary":  {
+                                                  "nativeTaskCount":  13,
+                                                  "auditTaskCount":  8,
+                                                  "blockingGuardCount":  6,
+                                                  "mirrorPassed":  true
+                                              }
+                              },
+                    "claude":  {
+                                   "lastSyncAt":  null,
+                                   "lastPhase":  null
+                               }
+                },
+    "lastUpdated":  "2026-03-23T14:50:14.9528218+08:00"
+}

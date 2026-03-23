@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/emit-client-control-brief.ps1 -Client claude -Phase session_start"
+          },
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/sync-client-progress.ps1 -Client claude -Phase session_start"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/invoke-session-hard-guards.ps1"
+          },
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-client-control-plane.ps1 -AsJson"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/invoke-session-hard-guards.ps1"
+          },
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/sync-client-progress.ps1 -Client claude -Phase stop"
+          }
+        ]
+      }
+    ]
+  }
+}

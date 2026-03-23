@@ -123,7 +123,8 @@ $expectedCommands = @(
     "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-native-tasklist.ps1",
     "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1",
     "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1",
-    "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1"
+    "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1",
+    "powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-client-control-plane.ps1"
 )
 foreach ($command in $expectedCommands) {
     if (-not $hardGuardsText.Contains($command)) {
@@ -136,7 +137,8 @@ $requiredGuardIds = @(
     "GUARD-VERIFY-001",
     "GUARD-REPORT-001",
     "GUARD-FOUNDATION-001",
-    "GUARD-CODEX-STATE-001"
+    "GUARD-CODEX-STATE-001",
+    "GUARD-CLIENT-CONTROL-001"
 )
 
 $alwaysRunIds = @($tasklist.priorityPolicy.alwaysRunBeforeAnyTask | ForEach-Object { [string]$_ })
@@ -171,6 +173,7 @@ $expectedEnforcementOrder = @(
     "validate-execution-guardrails.ps1",
     "validate-agent-workflow-skill-foundation.ps1",
     "validate-codex-session-foundation.ps1",
+    "validate-client-control-plane.ps1",
     "implementation",
     "real verification",
     "report with required sections"

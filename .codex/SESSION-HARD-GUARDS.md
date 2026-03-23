@@ -10,6 +10,7 @@ powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-na
 powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-execution-guardrails.ps1
 powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-agent-workflow-skill-foundation.ps1
 powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-codex-session-foundation.ps1
+powershell -ExecutionPolicy Bypass -File Xuanzhi-Dev/testing/scripts/validate-client-control-plane.ps1
 ```
 
 If the command fails, stop implementation and fix violations first.
@@ -42,6 +43,12 @@ If the command fails, stop implementation and fix violations first.
 - resume order must require `SESSION-HARD-GUARDS.md`, `session-state.json`, `handoff.md`, `engineering-standards.md`, `native-tasklist.json`, `agent-workflow-skill-foundation-audit.json`
 - `.codex/native-tasklist.json` and `.codex/agent-workflow-skill-foundation-audit.json` task state must mirror for codex-owned work
 - the hard-guard doc, native tasklist, and audit enforcement order must all include the same validator set
+
+6. Client Control Guard
+- Official Codex and Claude Code project entrypoints must stay aligned with the shared control plane:
+- root `AGENTS.md` must point Codex to the shared validator suite and `.codex` status files
+- root `CLAUDE.md` and `.claude/settings.json` must point Claude Code to the same validator suite and `.codex` status files
+- both clients must use the same progress-sync source files and must not maintain separate task truth
 
 ## Scope Boundary
 - Codex execution constraints may only live in `.codex` and `Xuanzhi-Dev`.
